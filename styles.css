@@ -248,3 +248,37 @@ footer a:hover{color:var(--accent);}
 @media (prefers-reduced-motion:reduce){
   *{transition:none !important;animation:none !important;scroll-behavior:auto !important;}
 }
+
+/* ---------- Weather Station Pro (forecast-pro) ---------- */
+.pro-wrap{position:relative;z-index:1;}
+.bg-fix{position:fixed;inset:0;background:url('images/gallery/exterior/ai-exterior.jpg') 30% center/cover no-repeat;z-index:-2;transition:background-image 1.5s ease-in-out;}
+.overlay-fix{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:-1;}
+.pro-card{background:rgba(255,255,255,.1);padding:20px;border-radius:20px;margin-bottom:20px;border:1px solid rgba(255,255,255,.1);}
+.pro-card h2{font-size:1.15rem;margin:0 0 14px;}
+.pro-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;}
+.pro-grid .value{font-size:22px;font-weight:700;}
+.pro-grid .label{font-size:11px;color:#ccc;text-transform:uppercase;}
+.pro-updated{margin-top:10px;font-size:11px;color:#aaa;}
+.pro-loading{text-align:center;width:100%;color:#ccc;}
+.pro-copyright{margin-top:20px;font-size:12px;}
+#wind_arrow{display:inline-block;font-size:24px;transition:.5s;}
+.chart-container-scroll{width:100%;overflow-x:auto;background:rgba(0,0,0,.3);border-radius:20px;padding:10px;margin-top:15px;}
+.chart-inner{height:350px;min-width:100%;}
+.chart-box-static{background:rgba(0,0,0,.3);padding:10px;border-radius:20px;height:300px;margin-top:15px;position:relative;}
+.cta-footer{margin-top:40px;padding:30px;background:rgba(0,0,0,.6);border-radius:20px;text-align:center;}
+.btn-book{display:inline-block;background:#fff;color:#000;padding:12px 25px;border-radius:30px;text-decoration:none;font-weight:700;}
+#forecast-grid{display:grid;grid-template-columns:1fr;gap:12px;}
+.forecast-item{text-align:center;padding:15px 10px;background:rgba(255,255,255,.05);border-radius:15px;border:1px solid rgba(255,255,255,.1);}
+.forecast-icon{width:50px;height:50px;margin:5px 0;}
+.fc-date{font-weight:700;margin-bottom:5px;text-transform:capitalize;font-size:14px;color:#00d4ff;}
+.fc-temp-max{color:#ff4d4d;font-size:18px;font-weight:700;}
+.fc-temp-min{color:#00d4ff;font-size:14px;margin-left:4px;}
+.fc-details{margin-top:10px;font-size:11px;color:#ddd;display:flex;flex-direction:column;gap:4px;border-top:1px solid rgba(255,255,255,.1);padding-top:8px;}
+.fc-wind-dir{color:#00d4ff;font-weight:700;}
+.seo-intro{background:rgba(255,255,255,.1);padding:20px;border-radius:20px;text-align:center;margin-bottom:20px;border:1px solid rgba(255,255,255,.1);}
+.seo-intro h1{font-size:1.25rem;margin:0 0 12px;color:#fff;}
+.seo-intro p{margin:0;font-size:.94rem;line-height:1.6;color:#e8eef2;}
+/* Η σελίδα Pro έχει σκούρο φόντο: το navbar δεν χρειάζεται επιπλέον φόντο */
+body.pro-page{color:#fff;}
+@media (min-width:480px){#forecast-grid{grid-template-columns:repeat(3,minmax(0,1fr));}}
+@media (min-width:600px){.pro-grid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));}.pro-grid .value{font-size:28px;}}

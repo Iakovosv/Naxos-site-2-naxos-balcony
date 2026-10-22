@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ο Καιρός στο Γλινάδο Νάξου – Weather Pro | Naxos Balcony</title>
+<link rel="icon" type="image/png" href="favicon-naxos-balcony.png">
+<meta name="description" content="Αναλυτικά δεδομένα καιρού στο Γλινάδο Νάξου. Θερμοκρασία, άνεμος, πίεση και στατιστικά σε πραγματικό χρόνο.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="pro-page">
+
+<header class="navbar" id="navbar">
+  <div class="container navbar-inner">
+    <a class="logo" href="index.html">
+      <img src="logo-naxos-balcony.png" alt="Naxos Balcony Apartments logo">
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="nav" id="nav">
+      <ul class="nav-links">
+        <li><a href="index.html" data-i18n="home">Αρχική</a></li>
+        <li><a href="gallery.html" data-i18n="gallery">Φωτογραφίες</a></li>
+        <li><a href="amenities.html" data-i18n="amenities">Παροχές</a></li>
+        <li><a href="weather.html" data-i18n="weather">Live Weather</a></li>
+        <li><a href="contact.html" data-i18n="contact">Επικοινωνία</a></li>
+        <li class="lang-group">
+          <button id="langEl" type="button">EL</button>
+          <span class="sep">|</span>
+          <button id="langEn" type="button">EN</button>
+        </li>
+        <li><a class="call-btn" href="tel:+306942279665" data-i18n="callUs">ΚΑΛΕΣΤΕ ΜΑΣ</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<div class="bg-fix" id="bgFix"></div>
+<div class="overlay-fix"></div>
+
+<main class="wrap pro-wrap">
+
+  <div class="seo-intro">
+    <h1>Ζωντανά Μετεωρολογικά Δεδομένα &amp; Καιρός στο Γλινάδο Νάξου – Weather Station Pro.</h1>
+    <p>Παρακολουθήστε σε πραγματικό χρόνο τις καιρικές συνθήκες στο Γλινάδο Νάξου μέσα από τον επαγγελματικό μετεωρολογικό σταθμό του Naxos Balcony. Η σελίδα Weather Station Pro προσφέρει αναλυτικά δεδομένα, όπως ιστορικό βροχόπτωσης 24 μηνών, διακυμάνσεις ατμοσφαιρικής πίεσης και μετρήσεις ηλιακής ακτινοβολίας. Αποτελεί το απόλυτο εργαλείο για windsurfers, λάτρεις της μετεωρολογίας και ταξιδιώτες που αναζητούν την πιο έγκυρη πρόγνωση καιρού στις Κυκλάδες.</p>
+  </div>
+
+  <div class="pro-card">
+    <h2>Live Δεδομένα</h2>
+    <div class="pro-grid">
+      <div><div class="label">Θερμοκρασία</div><div id="temp" class="value">—</div></div>
+      <div><div class="label">Feels Like</div><div id="feels" class="value">—</div></div>
+      <div><div class="label">Άνεμος</div><div id="wind" class="value">—</div></div>
+      <div><div class="label">Ριπές</div><div id="gust" class="value">—</div></div>
+      <div><div class="label">Κατεύθυνση</div><div id="dir" class="value">—</div><div id="wind_arrow">↑</div></div>
+      <div><div class="label">Υγρασία</div><div id="hum" class="value">—</div></div>
+      <div><div class="label">Dew Point</div><div id="dew" class="value">—</div></div>
+      <div><div class="label">Πίεση</div><div id="press" class="value">—</div></div>
+      <div><div class="label">Rain Rate</div><div id="rain_rate" class="value">—</div></div>
+      <div><div class="label">Ετήσια Βροχή</div><div id="rain_day" class="value">—</div></div>
+      <div><div class="label">UV Index</div><div id="uv" class="value">—</div></div>
+      <div><div class="label">Ηλιακή Ακτινοβολία</div><div id="solar" class="value">—</div></div>
+    </div>
+    <div class="pro-updated">Ενημέρωση: <span id="updated">—</span></div>
+  </div>
+
+  <div class="pro-card">
+    <h2>Πρόβλεψη Επόμενων Ημερών</h2>
+    <div id="forecast-grid"><div class="pro-loading">Φόρτωση...</div></div>
+  </div>
+
+  <div class="pro-card">
+    <h2>Μηνιαία Βροχόπτωση</h2>
+    <div class="chart-container-scroll">
+      <div class="chart-inner" id="rain-inner"><canvas id="rainChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="pro-card">
+    <h2>Ατμοσφαιρική Πίεση (24h)</h2>
+    <div class="chart-box-static"><canvas id="pressureChart"></canvas></div>
+  </div>
+
+  <div class="pro-card">
+    <h2>Min / Max Θερμοκρασίες</h2>
+    <div class="chart-container-scroll">
+      <div class="chart-inner" id="temp-inner"><canvas id="tempChart"></canvas></div>
+    </div>
+  </div>
+
+  <div class="cta-footer">
+    <h3>Η καλύτερη θέα της Νάξου σας περιμένει...</h3>
+    <p>Κάντε την κράτησή σας στο Naxos Balcony Apartments και ζήστε την απόλυτη εμπειρία διαμονής στη Νάξο</p>
+    <a href="index.html" class="btn-book">ΔΕΙΤΕ ΤΑ ΔΩΜΑΤΙΑ</a>
+    <p class="pro-copyright">© 2026 Naxos Balcony Apartments</p>
+  </div>
+
+</main>
+
+
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div>
+        <p>📞 6942279665</p>
+        <p>📧 naxosbalcony@gmail.com</p>
+        
+      </div>
+      <div>
+        <div class="socials">
+          <a href="https://www.facebook.com/naxosbalconyapartments">Facebook</a>
+          <a href="https://www.instagram.com/naxos_balcony_apartments/">Instagram</a>
+        </div>
+      </div>
+    </div>
+    <div class="license-number" data-i18n="license">Αριθμός άδειας: 1174Κ13000166800</div>
+  </div>
+</footer>
+
+<script src="pro.js"></script>
+<script src="lang-system.js"></script>
+</body>
+</html>
