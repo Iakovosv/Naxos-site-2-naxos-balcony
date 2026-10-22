@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Naxos Balcony Apartments</title>
+<link rel="icon" type="image/png" href="favicon-naxos-balcony.png">
+<meta name="description" content="Naxos Balcony Apartments στο Γλινάδο Νάξου. Πολυτελής διαμονή με θέα στη θάλασσα.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="navbar" id="navbar">
+  <div class="container navbar-inner">
+    <a class="logo" href="index.html">
+      <img src="logo-naxos-balcony.png" alt="Naxos Balcony Apartments logo">
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="nav" id="nav">
+      <ul class="nav-links">
+        <li><a href="index.html" class="active" data-i18n="home">Αρχική</a></li>
+        <li><a href="gallery.html" data-i18n="gallery">Φωτογραφίες</a></li>
+        <li><a href="amenities.html" data-i18n="amenities">Παροχές</a></li>
+        <li><a href="weather.html" data-i18n="weather">Live Weather</a></li>
+        <li><a href="contact.html" data-i18n="contact">Επικοινωνία</a></li>
+        <li class="lang-group">
+          <button id="langEl" type="button">EL</button>
+          <span class="sep">|</span>
+          <button id="langEn" type="button">EN</button>
+        </li>
+        <li><a class="call-btn" href="tel:+306942279665" data-i18n="callUs">ΚΑΛΕΣΤΕ ΜΑΣ</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hero-content">
+    <h1 data-i18n="heroTitle">Naxos Balcony Apartments</h1>
+    <h2 data-i18n="heroSubtitle">Διαμονή με Θέα στο Γλινάδο</h2>
+    <p data-i18n="heroDescription">Απολαύστε την απόλυτη ηρεμία και το ομορφότερο ηλιοβασίλεμα της Νάξου</p>
+  </div>
+</section>
+
+<section class="intro">
+  <div class="container">
+    <h2 class="section-title" data-i18n="welcomeTitle">Καλώς ήρθατε</h2>
+    <p data-i18n="welcomeText">
+      Καλώς ήρθατε στο Naxos Balcony Apartments, το δικό σας ησυχαστήριο στο γραφικό Γλινάδο της Νάξου. Τα πλήρως εξοπλισμένα δωμάτιά μας συνδυάζουν την παραδοσιακή κυκλαδίτικη φιλοξενία με σύγχρονες ανέσεις, προσφέροντας πανοραμική θέα στο Αιγαίο. Είναι η ιδανική επιλογή για όσους αναζητούν χαλάρωση και αυθεντικές διακοπές, μόλις μια ανάσα από την κοσμοπολίτικη Χώρα.
+    </p>
+  </div>
+</section>
+
+<section class="naxos-info">
+  <div class="container">
+    <h2 class="section-title" data-i18n="naxosTitle">Η Νάξος &amp; Το Γλινάδο</h2>
+    <p class="section-sub" data-i18n="naxosSubtitle">Ανακαλύψτε τη μαγεία του νησιού και την ηρεμία του παραδοσιακού χωριού μας</p>
+
+    <div class="grid-3">
+      <div class="card">
+        <h3 data-i18n="glinadoTitle">Γλινάδο Νάξου</h3>
+        <ul>
+          <li><strong data-i18n="glinadoLocationLabel">Παραδοσιακή τοποθεσία:</strong> <span data-i18n="glinadoLocation">Μόλις 5 λεπτά (5χλμ) από το λιμάνι και τη Χώρα της Νάξου</span></li>
+          <li><strong data-i18n="glinadoTranquilityLabel">Γαλήνη &amp; Ηρεμία:</strong> <span data-i18n="glinadoTranquility">Μακριά από τον τουριστικό θόρυβο, στην καρδιά της ναξιώτικης φύσης</span></li>
+          <li><strong data-i18n="glinadoViewLabel">Πανέμορφη θέα:</strong> <span data-i18n="glinadoView">Πανοραμική ματιά στο Αιγαίο Πέλαγος, την Πάρο και τα γύρω νησιά.</span></li>
+          <li><strong data-i18n="glinadoConvenienceLabel">Ευκολία:</strong> <span data-i18n="glinadoConvenience">Σε κοντινή απόσταση θα βρείτε Mini Market, φαρμακείο και στάση λεωφορείου για τις μετακινήσεις σας.</span></li>
+          <li><strong data-i18n="glinadoHubLabel">Ορμητήριο:</strong> <span data-i18n="glinadoHub">Η θέση του χωριού επιτρέπει την ταχύτατη πρόσβαση τόσο στις ακτές όσο και στην ορεινή Νάξο.</span></li>
+          <li><strong data-i18n="glinadoBeachesLabel">Κοντινές παραλίες:</strong> <span data-i18n="glinadoBeaches">Άγιος Προκόπιος (12'), Αγία Άννα (9'), Άγιος Γεώργιος (11'), Αλυκό (18'), Μικρή Βίγλα (20') και Χαβάη (15')</span></li>
+          <li><strong data-i18n="glinadoTasteLabel">Τοπική γεύση:</strong> <span data-i18n="glinadoTaste">Αυθεντικές ταβέρνες και ο παραδοσιακός φούρνος του χωριού με φρέσκα τοπικά προϊόντα</span></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="attractionsTitle">Αξιοθέατα Νάξου</h3>
+        <ul>
+          <li><strong data-i18n="attractionsPortaraLabel">Πόρταρα:</strong> <span data-i18n="attractionsPortara">- Το εμβληματικό μαρμάρινο μνημείο (12 λεπτά 5,5 km)</span></li>
+          <li><strong data-i18n="attractionsCastleLabel">Κάστρο της Νάξου:</strong> <span data-i18n="attractionsCastle">- Μεσαιωνική πόλη (12 λεπτά)</span></li>
+          <li><strong data-i18n="attractionsTownLabel">Χώρα Νάξου:</strong> <span data-i18n="attractionsTown">- Παραδοσιακά σοκάκια και καταστήματα (περίπου 12 λεπτά)</span></li>
+          <li><strong data-i18n="attractionsBeachesLabel">Παραλίες:</strong> <span data-i18n="attractionsBeaches">Πλάκα, Άγιος Προκόπιος, Αγία Άννα, Μικρή Βίγλα, Αλυκό &amp; Χαβάη (10-20 λεπτά)</span></li>
+          <li><strong data-i18n="attractionsMountainLabel">Ορεινή Νάξος:</strong> <span data-i18n="attractionsMountain">Τα γραφικά χωριά Απείρανθος, Φιλώτι, Κόρωνος (40'), και το Χαλκί (20') για το περίφημο λικέρ Κίτρο και παραδοσιακά γλυκά.</span></li>
+          <li><strong data-i18n="attractionsYriaLabel">Αρχαιολογικός Χώρος Ύρια:</strong> <span data-i18n="attractionsYria">Ο εντυπωσιακός αρχαίος ναός του Διονύσου, μόλις 10 λεπτά από το κατάλυμα.</span></li>
+          <li><strong data-i18n="attractionsKourosLabel">Οι Κούροι της Νάξου:</strong> <span data-i18n="attractionsKouros">Επισκεφθείτε τα επιβλητικά αρχαία αγάλματα στις Μέλανες (15') και στον Απόλλωνα (53').</span></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3 data-i18n="activitiesTitle">Δραστηριότητες &amp; Εμπειρίες</h3>
+        <ul>
+          <li><strong data-i18n="activitiesWatersportsLabel">Θαλάσσια σπορ:</strong> <span data-i18n="activitiesWatersports">windsurfing, kitesurfing, diving</span></li>
+          <li><strong data-i18n="activitiesHikingLabel">Φύση &amp; Περιπέτεια:</strong> <span data-i18n="activitiesHiking">Ορεινές βόλτες, πεζοπορία σε αρχαία μονοπάτια και ποδηλασία βουνού</span></li>
+          <li><strong data-i18n="activitiesGastronomyLabel">Γαστρονομία:</strong> <span data-i18n="activitiesGastronomy">Γευσιγνωσία τοπικών προϊόντων, όπως η περίφημη Γραβιέρα Νάξου, οι διάσημες Πατάτες και το παραδοσιακό λικέρ Κίτρο.</span></li>
+          <li><strong data-i18n="activitiesWineLabel">Οινογνωσία:</strong> <span data-i18n="activitiesWine">Επισκεφθείτε τοπικά οινοποιεία για να δοκιμάσετε τις εκλεκτές ποικιλίες ναξιώτικου κρασιού και αποστάγματα.</span></li>
+          <li><strong data-i18n="activitiesFestivalsLabel">Παραδοσιακά πανηγύρια:</strong> <span data-i18n="activitiesFestivals">Ζήστε την αυθεντική ναξιώτικη διασκέδαση με βιολιά και τοπικούς χορούς κατά τους καλοκαιρινούς μήνες.</span></li>
+          <li><strong data-i18n="activitiesSunsetsLabel">Ηλιοβασιλέματα:</strong> <span data-i18n="activitiesSunsets">Μοναδικές στιγμές με θέα τον ήλιο να χάνεται στο Αιγαίο, απευθείας από το κατάλυμά μας.</span></li>
+          <li><strong data-i18n="activitiesSailingLabel">Ιστιοπλοΐα &amp; Σκάφος:</strong> <span data-i18n="activitiesSailing">Ημερήσιες εκδρομές με ιστιοπλοϊκό ή ταχύπλοο στις Μικρές Κυκλάδες και σε δυσπρόσιτες παραλίες</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="rooms">
+  <div class="container">
+    <h2 class="section-title" data-i18n="roomsTitle">Τα Δωμάτιά μας</h2>
+    <div class="grid-4">
+      <div class="room">
+        <img loading="lazy" src="images/gallery/room3/naxos-apartment-bedroom-sea-view-1.jpg" alt="Room 3">
+        <h3 data-i18n="room3Title">Room 3 (26 τ.μ.)</h3>
+        <p data-i18n="room3Desc">Άνετο και αυτόνομο δωμάτιο 26 τ.μ., ιδανικό για 2 άτομα. Διαθέτει πλήρως εξοπλισμένη κουζίνα και ιδιωτικό μπαλκόνι για στιγμές χαλάρωσης σε μια ήσυχη γωνιά του συγκροτήματος.</p>
+      </div>
+      <div class="room">
+        <img loading="lazy" src="images/gallery/room4/naxos-apartment-bedroom-sea-view-1.jpg" alt="Room 4">
+        <h3 data-i18n="room4Title">Room 4 (26 τ.μ.)</h3>
+        <p data-i18n="room4Desc">Ευρύχωρο διαμέρισμα 26 τ.μ. που προσφέρει απόλυτη αυτονομία με πλήρη κουζίνα. Απολαύστε τον πρωινό σας καφέ στο ιδιωτικό μπαλκόνι με θέα το Αιγαίο και τη γαλήνη του ναξιώτικου τοπίου, σε μια εξαιρετική επιλογή για 2 άτομα που αναζητούν την τέλεια ισορροπία άνεσης και λειτουργικότητας.</p>
+      </div>
+      <div class="room">
+        <img loading="lazy" src="images/gallery/room5/naxos-balcony-apartment-accommodation-1.jpg" alt="Room 5">
+        <h3 data-i18n="room5Title">Room 5 (23 τ.μ. - Η Καλύτερη Θέα)</h3>
+        <p data-i18n="room5Desc">Φωτεινό στούντιο 23 τ.μ. με προνομιακή θέση και πανοραμική, ανεμπόδιστη θέα στο Αιγαίο. Περιλαμβάνει πλήρως εξοπλισμένη κουζίνα, συνδυάζοντας την άνεση με το ομορφότερο ηλιοβασίλεμα του Γλινάδου.</p>
+      </div>
+      <div class="room">
+        <img loading="lazy" src="images/gallery/room6/naxos-luxury-studio-glinado-1.jpg" alt="Room 6">
+        <h3 data-i18n="room6Title">Room 6 (26 τ.μ. - Η Καλύτερη Θέα)</h3>
+        <p data-i18n="room6Desc">Αυτόνομο διαμέρισμα 26 τ.μ. για 2 άτομα, που ξεχωρίζει για την εκπληκτική θέα στη θάλασσα. Με πλήρη εξοπλισμό κουζίνας και μεγάλους χώρους, αποτελεί το ιδανικό καταφύγιο για τις διακοπές σας.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div>
+        <p>📞 6942279665</p>
+        <p>📧 naxosbalcony@gmail.com</p>
+        <p style="opacity:.8;" data-i18n="address">Γλινάδο, Νάξος, Κυκλάδες</p>
+      </div>
+      <div>
+        <div class="socials">
+          <a href="https://www.facebook.com/naxosbalconyapartments">Facebook</a>
+          <a href="https://www.instagram.com/naxos_balcony_apartments/">Instagram</a>
+        </div>
+      </div>
+    </div>
+    <div class="license-number" data-i18n="license">Αριθμός άδειας: 1174Κ13000166800</div>
+  </div>
+</footer>
+
+<script src="site.js"></script>
+<script src="lang-system.js"></script>
+</body>
+</html>

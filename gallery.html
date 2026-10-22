@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Φωτογραφίες & Θέα | Naxos Balcony Apartments</title>
+<link rel="icon" type="image/png" href="favicon-naxos-balcony.png">
+<meta name="description" content="Φωτογραφίες από τα δωμάτια και τους χώρους του Naxos Balcony Apartments στο Γλινάδο Νάξου.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="navbar" id="navbar">
+  <div class="container navbar-inner">
+    <a class="logo" href="index.html">
+      <img src="logo-naxos-balcony.png" alt="Naxos Balcony Apartments logo">
+    </a>
+    <button class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <nav class="nav" id="nav">
+      <ul class="nav-links">
+        <li><a href="index.html" data-i18n="home">Αρχική</a></li>
+        <li><a href="gallery.html" class="active" data-i18n="gallery">Φωτογραφίες</a></li>
+        <li><a href="amenities.html" data-i18n="amenities">Παροχές</a></li>
+        <li><a href="weather.html" data-i18n="weather">Live Weather</a></li>
+        <li><a href="contact.html" data-i18n="contact">Επικοινωνία</a></li>
+        <li class="lang-group">
+          <button id="langEl" type="button">EL</button>
+          <span class="sep">|</span>
+          <button id="langEn" type="button">EN</button>
+        </li>
+        <li><a class="call-btn" href="tel:+306942279665" data-i18n="callUs">ΚΑΛΕΣΤΕ ΜΑΣ</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<section class="page-hero">
+  <div class="container page-hero-inner">
+    <h1 data-i18n="galleryTitle">Φωτογραφίες</h1>
+    <p data-i18n="gallerySubtitle">Room 3 • Room 4 • Room 5 • Room 6 • Εξωτερικοί χώροι • Ηλιοβασίλεμα</p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="tabs" id="tabs">
+    <button class="tab-btn active" data-filter="all" data-i18n="galleryAll">Όλες</button>
+    <button class="tab-btn" data-filter="room3" data-i18n="galleryRoom3">Room 3</button>
+    <button class="tab-btn" data-filter="room4" data-i18n="galleryRoom4">Room 4</button>
+    <button class="tab-btn" data-filter="room5" data-i18n="galleryRoom5">Room 5</button>
+    <button class="tab-btn" data-filter="room6" data-i18n="galleryRoom6">Room 6</button>
+    <button class="tab-btn" data-filter="exterior" data-i18n="galleryExterior">Εξωτερικοί χώροι</button>
+    <button class="tab-btn" data-filter="sunset" data-i18n="gallerySunset">Ηλιοβασίλεμα</button>
+  </div>
+
+  <p class="room-info" id="room-info"></p>
+
+  <section class="grid" id="grid"></section>
+</main>
+
+<div class="lightbox" id="lightbox" aria-hidden="true">
+  <button class="lb-btn lb-close" id="lbClose" aria-label="Close">&times;</button>
+  <button class="lb-btn lb-prev" id="lbPrev" aria-label="Previous">&#8249;</button>
+  <img id="lbImg" src="" alt="">
+  <button class="lb-btn lb-next" id="lbNext" aria-label="Next">&#8250;</button>
+</div>
+
+
+<footer>
+  <div class="container">
+    <div class="footer-inner">
+      <div>
+        <p>📞 6942279665</p>
+        <p>📧 naxosbalcony@gmail.com</p>
+        
+      </div>
+      <div>
+        <div class="socials">
+          <a href="https://www.facebook.com/naxosbalconyapartments">Facebook</a>
+          <a href="https://www.instagram.com/naxos_balcony_apartments/">Instagram</a>
+        </div>
+      </div>
+    </div>
+    <div class="license-number" data-i18n="license">Αριθμός άδειας: 1174Κ13000166800</div>
+  </div>
+</footer>
+
+<script src="gallery-data.js"></script>
+<script src="site.js"></script>
+<script src="lang-system.js"></script>
+</body>
+</html>
