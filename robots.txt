@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Keep crawlers out of the private areas and the raw photo folders.
+Disallow: /admin/
+Disallow: /api/
+
+Sitemap: https://www.naxosbalcony.gr/sitemap.xml

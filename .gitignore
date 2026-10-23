@@ -1,0 +1,6 @@
+# Never commit admin credentials (created on first visit to /admin/)
+admin/credentials.php
+
+# Local build artefacts
+*.orig
+*.bak

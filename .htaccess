@@ -1,0 +1,157 @@
+# ============================================================
+# Naxos Balcony Apartments — Apache configuration
+# ============================================================
+# ⚠️  IMPORTANT — READ BEFORE RELYING ON THIS FILE
+#
+# The site is currently served by nginx, which does not read .htaccess at all.
+# Verified on 2026-10-23: no custom 404 page, no security headers and no
+# http->https redirect are in effect on the live host, even though this file
+# (or a predecessor) was already uploaded. So everything below is inert today.
+#
+# Consequences, and what we did about them:
+#   * We do NOT redirect /index.html to /. Our canonical tags point at
+#     /index.html, so such a redirect would contradict them.
+#   * We do NOT rely on DirectoryIndex. Every internal link spells out
+#     "index.html", so /en/ never has to be resolved.
+#   * The headers below are a bonus for a future Apache setup, not a
+#     dependency. If you want them now, ask the host for the nginx equivalent
+#     (see "nginx equivalent" at the bottom of this file).
+# ============================================================
+
+# ---------- HTTPS + canonical host (https://www.naxosbalcony.gr) ----------
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # http -> https
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^(.*)$ https://www.naxosbalcony.gr/$1 [R=301,L]
+
+  # non-www -> www
+  RewriteCond %{HTTP_HOST} !^www\. [NC]
+  RewriteCond %{HTTP_HOST} !^$
+  RewriteRule ^(.*)$ https://www.naxosbalcony.gr/$1 [R=301,L]
+</IfModule>
+
+# ---------- Custom error page ----------
+# Only takes effect under Apache; the host's nginx returns its own 404 page.
+ErrorDocument 404 /404.html
+
+# ---------- Default documents ----------
+DirectoryIndex index.html index.php
+
+# ---------- Security headers ----------
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  # Enable once you are certain every asset is served over https:
+  # Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+
+  # Content-Security-Policy is deliberately NOT enabled here. It is easy to get
+  # wrong and it fails closed: one missed host and the gallery or the weather
+  # page goes blank, with no server-side error to point at. Enable it only
+  # after testing on the real host. When you do, these are the origins the
+  # pages actually use today:
+  #
+  #   script-src  'self' 'unsafe-inline'
+  #               https://www.googletagmanager.com https://www.google-analytics.com
+  #               https://cdn.jsdelivr.net                 (Chart.js on forecast-pro)
+  #   style-src   'self' 'unsafe-inline' https://fonts.googleapis.com
+  #   font-src    'self' https://fonts.gstatic.com data:
+  #   img-src     'self' data: https://www.google-analytics.com
+  #               https://www.googletagmanager.com https://*.googleapis.com
+  #               https://*.gstatic.com https://icons.wxug.com
+  #   connect-src 'self' https://www.google-analytics.com
+  #               https://region1.google-analytics.com https://www.googletagmanager.com
+  #   frame-src   'self' https://www.google.com https://maps.google.com
+  #
+  # 'unsafe-inline' is required: the GA4/Consent-Mode snippet and the JSON-LD
+  # blocks are inline, and several elements carry style="" attributes.
+</IfModule>
+
+# ---------- Compression ----------
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE application/xml image/svg+xml
+</IfModule>
+
+# ---------- Caching ----------
+# NOTE: assets are NOT fingerprinted, so css/js are cached for a week rather
+# than a year. Bump the version query in the <link>/<script> tags to bust it.
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/html "access plus 0 seconds"
+  ExpiresByType text/css "access plus 1 week"
+  ExpiresByType application/javascript "access plus 1 week"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/x-icon "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType application/manifest+json "access plus 1 week"
+  ExpiresByType application/xml "access plus 1 day"
+</IfModule>
+
+<IfModule mod_headers.c>
+  <FilesMatch "\.(jpg|jpeg|png|webp|ico)$">
+    Header set Cache-Control "public, max-age=31536000"
+  </FilesMatch>
+  <FilesMatch "\.(css|js)$">
+    Header set Cache-Control "public, max-age=604800"
+  </FilesMatch>
+  <FilesMatch "\.(html|xml)$">
+    Header set Cache-Control "public, max-age=0, must-revalidate"
+  </FilesMatch>
+</IfModule>
+
+# ---------- Block dotfile and source leaks ----------
+<FilesMatch "^\.(?!well-known)">
+  Require all denied
+</FilesMatch>
+<FilesMatch "\.(md|bak|log|sql|sh|py)$">
+  Require all denied
+</FilesMatch>
+# admin/credentials.php must never be fetchable, whatever else is allowed.
+<FilesMatch "^credentials\.php$">
+  Require all denied
+</FilesMatch>
+# The weather API must stay reachable by the pages that call it.
+<FilesMatch "^(weather-latest|weather-forecast|weather-latest-pro)\.php$">
+  Require all granted
+</FilesMatch>
+
+# ============================================================
+# nginx equivalent — give this to the host if you want the headers
+# and the https/www redirect without moving to Apache.
+# ============================================================
+# server {
+#   listen 80;
+#   server_name naxosbalcony.gr www.naxosbalcony.gr;
+#   return 301 https://www.naxosbalcony.gr$request_uri;
+# }
+# server {
+#   listen 443 ssl;
+#   server_name naxosbalcony.gr;
+#   return 301 https://www.naxosbalcony.gr$request_uri;
+# }
+# server {
+#   listen 443 ssl;
+#   server_name www.naxosbalcony.gr;
+#   root /path/to/public_html;
+#   index index.html;
+#   error_page 404 /404.html;
+#
+#   add_header X-Content-Type-Options "nosniff" always;
+#   add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+#   add_header X-Frame-Options "SAMEORIGIN" always;
+#   add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
+#
+#   location = /admin/credentials.php { deny all; }
+#   location ~* ^/admin/            { add_header X-Robots-Tag "noindex, nofollow" always; }
+#
+#   location ~* \.(jpg|jpeg|png|webp|ico)$ { expires 1y; }
+#   location ~* \.(css|js)$                { expires 7d; }
+#   location ~* \.(html|xml)$              { expires -1; }
+# }

@@ -21,6 +21,15 @@ function kmhToBeaufort(kmh) {
 // Τοπικό preview: δεν υπάρχει το PHP api → δείχνουμε δείγμα.
 const IS_PREVIEW = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
 
+// The English copy of this page lives in /en/ and loads the same script, so
+// every relative path below has to be resolved against the script's own URL.
+// Using document-relative paths would look for /en/api/... and /en/images/...
+const SITE_ROOT = (function () {
+  const el = document.currentScript ||
+    Array.prototype.slice.call(document.scripts).filter(s => /pro\.js/.test(s.src)).pop();
+  return el ? el.src.replace(/pro\.js.*$/, '') : '';
+})();
+
 const DEMO_LATEST = {
   temperature: 25.9, feels_like: 25.9, wind_speed: 7.2, wind_gust: 13,
   wind_dir: 'ΝΝΔ', wind_deg: 199, humidity: 42, dew_point: 12, pressure: 1016.8,
@@ -73,7 +82,7 @@ function updateDynamicBackground(solar, rain) {
   if (isRaining) newImg = isNight ? 'naxos-balcony-exterior-night-rain.jpg' : 'naxos-balcony-exterior-rain.jpg';
   else newImg = isNight ? 'naxos-balcony-exterior-night.jpg' : 'ai-exterior.jpg';
 
-  const path = 'images/gallery/exterior/';
+  const path = SITE_ROOT + 'images/gallery/exterior/';
   if (bgEl.dataset.bg === newImg) return;
   const img = new Image();
   img.onload = function () {
@@ -85,7 +94,7 @@ function updateDynamicBackground(solar, rain) {
 
 async function load() {
   try {
-    const d = IS_PREVIEW ? DEMO_LATEST : await fetchJSON('api/weather-latest-pro.php');
+    const d = IS_PREVIEW ? DEMO_LATEST : await fetchJSON(SITE_ROOT + 'api/weather-latest-pro.php');
 
     document.getElementById('temp').textContent = d.temperature + '°C';
     document.getElementById('feels').textContent = d.feels_like + '°C';
@@ -135,7 +144,7 @@ async function load() {
 
 async function loadForecast() {
   try {
-    const d = IS_PREVIEW ? DEMO_FORECAST : await fetchJSON('api/weather-forecast.php');
+    const d = IS_PREVIEW ? DEMO_FORECAST : await fetchJSON(SITE_ROOT + 'api/weather-forecast.php');
     const grid = document.getElementById('forecast-grid');
     let html = '';
 

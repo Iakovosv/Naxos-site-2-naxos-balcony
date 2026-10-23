@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  <url>
+    <loc>https://www.naxosbalcony.gr/index.html</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="el" href="https://www.naxosbalcony.gr/index.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.naxosbalcony.gr/en/index.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.naxosbalcony.gr/index.html"/>
+  </url>
+  <url>
+    <loc>https://www.naxosbalcony.gr/en/index.html</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="el" href="https://www.naxosbalcony.gr/index.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.naxosbalcony.gr/en/index.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.naxosbalcony.gr/index.html"/>
+  </url>
+  <url>
+    <loc>https://www.naxosbalcony.gr/gallery.html</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="el" href="https://www.naxosbalcony.gr/gallery.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.naxosbalcony.gr/en/gallery.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.naxosbalcony.gr/gallery.html"/>
+  </url>
+  <url>
+    <loc>https://www.naxosbalcony.gr/en/gallery.html</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="el" href="https://www.naxosbalcony.gr/gallery.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.naxosbalcony.gr/en/gallery.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.naxosbalcony.gr/gallery.html"/>
+  </url>
+  <url>
+    <loc>https://www.naxosbalcony.gr/amenities.html</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="el" href="https://www.naxosbalcony.gr/amenities.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.naxosbalcony.gr/en/amenities.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.naxosbalcony.gr/amenities.html"/>
+  </url>
+  <url>
+    <loc>https://www.naxosbalcony.gr/en/amenities.html</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="el" href="https://www.naxosbalcony.gr/amenities.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.naxosbalcony.gr/en/amenities.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.naxosbalcony.gr/amenities.html"/>
+  </url>
+  <url>
+    <loc>https://www.naxosbalcony.gr/weather.html</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="el" href="https://www.naxosbalcony.gr/weather.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.naxosbalcony.gr/en/weather.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.naxosbalcony.gr/weather.html"/>
+  </url>
+  <url>
+    <loc>https://www.naxosbalcony.gr/en/weather.html</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="el" href="https://www.naxosbalcony.gr/weather.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.naxosbalcony.gr/en/weather.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.naxosbalcony.gr/weather.html"/>
+  </url>
+  <url>
+    <loc>https://www.naxosbalcony.gr/contact.html</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="el" href="https://www.naxosbalcony.gr/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.naxosbalcony.gr/en/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.naxosbalcony.gr/contact.html"/>
+  </url>
+  <url>
+    <loc>https://www.naxosbalcony.gr/en/contact.html</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="el" href="https://www.naxosbalcony.gr/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.naxosbalcony.gr/en/contact.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.naxosbalcony.gr/contact.html"/>
+  </url>
+  <url>
+    <loc>https://www.naxosbalcony.gr/forecast-pro.html</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="el" href="https://www.naxosbalcony.gr/forecast-pro.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.naxosbalcony.gr/en/forecast-pro.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.naxosbalcony.gr/forecast-pro.html"/>
+  </url>
+  <url>
+    <loc>https://www.naxosbalcony.gr/en/forecast-pro.html</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="el" href="https://www.naxosbalcony.gr/forecast-pro.html"/>
+    <xhtml:link rel="alternate" hreflang="en" href="https://www.naxosbalcony.gr/en/forecast-pro.html"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://www.naxosbalcony.gr/forecast-pro.html"/>
+  </url>
+  <url>
+    <loc>https://www.naxosbalcony.gr/privacy.html</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://www.naxosbalcony.gr/en/privacy.html</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://www.naxosbalcony.gr/cookies.html</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  <url>
+    <loc>https://www.naxosbalcony.gr/en/cookies.html</loc>
+    <lastmod>2026-10-23</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>

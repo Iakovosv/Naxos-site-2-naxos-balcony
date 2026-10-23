@@ -38,7 +38,9 @@
   const tiles = window.GALLERY_TILES || [];
   const info = document.getElementById('room-info');
 
-  const details = {
+  // Τα κείμενα των φίλτρων. Στις αγγλικές σελίδες έρχονται έτοιμα από το HTML
+  // (data-room-info), ώστε να μη χρειάζεται το lang-system.js.
+  const details = JSON.parse(grid.getAttribute('data-room-info') || 'null') || {
     all: '',
     room3: 'Room 3: Αυτόνομο δωμάτιο 26 τ.μ. με πλήρη κουζίνα.',
     room4: 'Room 4: Ευρύχωρο διαμέρισμα 26 τ.μ. με πλήρη κουζίνα.',
@@ -48,24 +50,27 @@
     sunset: 'Το μαγευτικό ηλιοβασίλεμα από το μπαλκόνι μας.'
   };
 
-  // Render tiles (lazy loaded) — αποφεύγει να φορτώνει 84 εικόνες με τη μία
-  const frag = document.createDocumentFragment();
-  tiles.forEach(function (t) {
-    const div = document.createElement('div');
-    div.className = 'tile';
-    div.dataset.cat = t.cat;
-    const a = document.createElement('a');
-    a.href = t.src;
-    const img = document.createElement('img');
-    img.loading = 'lazy';
-    img.decoding = 'async';
-    img.src = t.src;
-    img.alt = t.alt;
-    a.appendChild(img);
-    div.appendChild(a);
-    frag.appendChild(div);
-  });
-  grid.appendChild(frag);
+  // Τα tiles είναι προ-σχεδιασμένα στο HTML (τα βλέπει η Google χωρίς JS).
+  // Αν για οποιονδήποτε λόγο λείπει το HTML, τα φτιάχνουμε από το gallery-data.js.
+  if (!grid.querySelector('.tile')) {
+    const frag = document.createDocumentFragment();
+    tiles.forEach(function (t) {
+      const div = document.createElement('div');
+      div.className = 'tile';
+      div.dataset.cat = t.cat;
+      const a = document.createElement('a');
+      a.href = t.src;
+      const img = document.createElement('img');
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.src = t.src;
+      img.alt = t.alt;
+      a.appendChild(img);
+      div.appendChild(a);
+      frag.appendChild(div);
+    });
+    grid.appendChild(frag);
+  }
 
   const allTiles = Array.from(grid.querySelectorAll('.tile'));
   const tabs = document.getElementById('tabs');
