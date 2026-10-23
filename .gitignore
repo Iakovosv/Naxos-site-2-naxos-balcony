@@ -4,3 +4,7 @@ admin/credentials.php
 # Local build artefacts
 *.orig
 *.bak
+
+# Preview-only weather proxy. MUST NOT be deployed: the real host has its own
+# api/ with the live weather station. Overwriting it would break the site.
+api/
