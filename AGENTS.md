@@ -436,6 +436,12 @@ tile, which is an exterior shot also listed under `exterior`. Room 4 also lists
 `room4_12.jpg` twice (as `room4_16.jpg`). The `idx` field is not unique within a
 category and is display metadata only — the render order is the array order.
 
+## 10d. Do not hardcode the head commit in the docs
+
+Writing "main is at <sha>" into `STATUS.md` goes stale the moment you push the
+file that contains it — the push itself creates a new head. Say what the state
+is and point at `git log -1 --oneline gh/main` instead.
+
 ## 11. Push status and the preview link
 
 ### Push — DONE
