@@ -11,3 +11,14 @@ api/
 
 # Admin login throttle state (runtime, per-installation)
 admin/.login-attempts.json
+
+# Guest records: real names, stay dates and link codes. Personal data, and it is
+# generated per installation by admin/guests.php. Never belongs in the repo.
+admin/guests-data.php
+admin/staff-data.php
+# Legacy position. Never commit: holds hashed staff passwords.
+admin/staff.json
+naxos-data/
+welcome/*.php
+!welcome/_view.php
+!welcome/index.php
