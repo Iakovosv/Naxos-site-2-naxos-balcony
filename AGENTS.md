@@ -425,6 +425,17 @@ So the gallery login must set `$_SESSION['role'] = 'admin'` as well as
 redirected from `guests.php` back to `guests.php` forever (measured: 50 hops) and
 never reached the booking page. Keep the two in step.
 
+## 10c. Gallery duplicates are inherited from the live site
+
+A duplicate-photo audit reports **26 groups**, but all 26 exist on the live site
+already: live and preview both show 83 tiles covering 56 unique images, with the
+identical 26 groups. Do not "fix" them without the owner's decision — removing a
+tile changes what a visitor sees, and the hard constraint forbids content change.
+The overlap is room4↔room6 (17 shared), room3↔room5 (5), and each room's last
+tile, which is an exterior shot also listed under `exterior`. Room 4 also lists
+`room4_12.jpg` twice (as `room4_16.jpg`). The `idx` field is not unique within a
+category and is display metadata only — the render order is the array order.
+
 ## 11. Push status and the preview link
 
 ### Push — DONE

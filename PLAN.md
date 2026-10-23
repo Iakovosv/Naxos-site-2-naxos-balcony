@@ -179,6 +179,14 @@ Recommended: PHP auto-scan + optional `captions.json`, static list as fallback.
 - Lighthouse on mobile + desktop for the 6 pages
 - Link check (no 404s, no absolute links pointing at the live site)
 
+## 5b. Open: duplicate gallery photos (needs an owner decision)
+
+The gallery shows 83 tiles covering 56 unique images — 26 groups repeat, exactly
+as the live site does today. Nothing was changed: deleting or swapping a tile is
+a content change, which the hard constraint forbids. Ask the owner whether to
+(a) keep as is, or (b) show each image once. If (b), drop the repeated entries
+from `gallery-tiles.json` and keep one appearance per image.
+
 ## 6. Open questions for the owner
 
 1. **Duplicate photos:** room3 == room5 and room4 == room6 entirely (22 groups,
