@@ -269,7 +269,8 @@ code.lnk{background:var(--soft);border:1px solid var(--line);border-radius:8px;p
         <div>
           <label for="wifi">Κωδικός WiFi</label>
           <input id="wifi" type="text" name="wifi" maxlength="40" autocomplete="off"
-                 value="<?= h((string)($g['wifi'] ?? DEFAULT_WIFI_PASSWORD)) ?>">
+                 placeholder="<?= h(wifi_default()) ?> (ο προεπιλεγμένος)"
+                         value="<?= h((string)($g['wifi'] ?? '')) ?>">
         </div>
         <div>
           <label for="doorCode">Κωδικός εισόδου διαμερίσματος</label>

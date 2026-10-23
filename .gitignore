@@ -16,6 +16,7 @@ admin/.login-attempts.json
 # generated per installation by admin/guests.php. Never belongs in the repo.
 admin/guests-data.php
 admin/staff-data.php
+admin/settings-data.php
 # Legacy position. Never commit: holds hashed staff passwords.
 admin/staff.json
 naxos-data/

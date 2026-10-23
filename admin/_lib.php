@@ -300,8 +300,10 @@ function staff_gen_password(int $len = 10): string {
 
 /* ======================================================== booking sources */
 
-/* Προεπιλεγμένος κωδικός WiFi. Ο διαχειριστής τον αλλάζει ανά κράτηση· αυτός
- * εδώ είναι απλώς η αρχική τιμή στο πεδίο της φόρμας. */
+/* Αρχικός προεπιλεγμένος κωδικός WiFi — μόνο εφεδρική τιμή. Ο πραγματικός
+ * προεπιλεγμένος είναι ρύθμιση (δες wifi_default() παρακάτω), γιατί ο κωδικός
+ * του ρούτερ αλλάζει κατά διαστήματα και δεν πρέπει να απαιτεί επεξεργασία
+ * κώδικα. Αυτή η σταθερά ισχύει μέχρι να αποθηκευτεί ρύθμιση. */
 const DEFAULT_WIFI_PASSWORD = 'NAXOS2027';
 
 const BOOKING_SOURCES = [
@@ -497,6 +499,79 @@ function guests_save(array $guests): bool {
     if (!@rename($tmp, $a['file'])) { @unlink($tmp); return false; }
     @chmod($a['file'], 0600);
     return true;
+}
+
+/* ============================================================== site settings
+ *
+ * Ρυθμίσεις που τις αλλάζει ο ιδιοκτήτης μόνος του από το admin — προς το παρόν
+ * ο προεπιλεγμένος κωδικός WiFi. Δεν είναι μυστικό, αλλά δεν έχει λόγο να
+ * σερβίρεται, οπότε φυλάσσεται με τον ίδιο μηχανισμό με τα δεδομένα επισκεπτών:
+ * έξω από το site αν ο φάκελος μπορεί να δημιουργηθεί, αλλιώς σε αρχείο .php
+ * που η PHP εκτελεί και δεν τυπώνει τίποτα. */
+
+const SETTINGS_OPEN  = "<<<'NAXOS_SETTINGS'\n";
+const SETTINGS_CLOSE = "\nNAXOS_SETTINGS;";
+
+function settings_paths(): array {
+    $outside = dirname(dirname(ADMIN_DIR)) . '/naxos-data';
+    return [
+        'outside_dir'  => $outside,
+        'outside_file' => $outside . '/settings.json',
+        'inside_file'  => ADMIN_DIR . '/settings-data.php',
+    ];
+}
+
+function settings_store_active(): array {
+    $p = settings_paths();
+    if (is_file($p['outside_file'])) return ['file' => $p['outside_file'], 'kind' => 'outside'];
+    if (is_dir($p['outside_dir']) && is_writable($p['outside_dir'])) {
+        return ['file' => $p['outside_file'], 'kind' => 'outside'];
+    }
+    return ['file' => $p['inside_file'], 'kind' => 'inside'];
+}
+
+function settings_load(): array {
+    $a = settings_store_active();
+    if (!is_file($a['file'])) return [];
+    $raw = (string)@file_get_contents($a['file']);
+    if ($a['kind'] === 'inside') {
+        $i = strpos($raw, SETTINGS_OPEN);
+        $j = strrpos($raw, SETTINGS_CLOSE);
+        if ($i === false || $j === false || $j < $i) return [];
+        $raw = substr($raw, $i + strlen(SETTINGS_OPEN), $j - $i - strlen(SETTINGS_OPEN));
+    }
+    $d = json_decode((string)$raw, true);
+    return is_array($d) ? $d : [];
+}
+
+function settings_save(array $s): bool {
+    $a = settings_store_active();
+    $json = json_encode($s, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    $body = $a['kind'] === 'inside'
+        ? "<?php\n/* Ρυθμίσεις. Η PHP το εκτελεί και δεν τυπώνει τίποτα.\n"
+        . "   Μην το επεξεργαστείς με το χέρι: το διαχειρίζεται το admin/guests.php */\n"
+        . "return " . SETTINGS_OPEN . $json . SETTINGS_CLOSE . "\n"
+        : (string)$json;
+    $tmp = $a['file'] . '.tmp';
+    if (@file_put_contents($tmp, $body, LOCK_EX) === false) return false;
+    @chmod($tmp, 0600);
+    if (!@rename($tmp, $a['file'])) { @unlink($tmp); return false; }
+    @chmod($a['file'], 0600);
+    return true;
+}
+
+/** Ο τρέχων προεπιλεγμένος κωδικός WiFi. */
+function wifi_default(): string {
+    $v = trim((string)(settings_load()['wifiDefault'] ?? ''));
+    return $v !== '' ? $v : DEFAULT_WIFI_PASSWORD;
+}
+
+/** Ο κωδικός που βλέπει ο επισκέπτης: δικός του, αλλιώς ο προεπιλεγμένος.
+ *  Κενό σημαίνει «ακολούθησε τον προεπιλεγμένο», ώστε μια αλλαγή στον κωδικό
+ *  του ρούτερ να φτάνει σε όλους όσους δεν έχουν ειδικό κωδικό. */
+function guest_wifi(array $g): string {
+    $w = trim((string)($g['wifi'] ?? ''));
+    return $w !== '' ? $w : wifi_default();
 }
 
 /* ------------------------------------------------------------- guest records */

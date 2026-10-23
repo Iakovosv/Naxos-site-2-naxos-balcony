@@ -48,8 +48,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $notes    = trim((string)($_POST['notes'] ?? ''));
         // Ο κωδικός WiFi έχει έτοιμη τιμή· ο κωδικός εισόδου μένει κενός μέχρι
         // να τον δώσει ο διαχειριστής, γιατί αλλάζει σε κάθε κράτηση.
-        $wifi     = trim((string)($_POST['wifi'] ?? '')) !== ''
-                    ? trim((string)$_POST['wifi']) : DEFAULT_WIFI_PASSWORD;
+        // Κενό σημαίνει «ακολούθησε τον προεπιλεγμένο κωδικό». Δεν αντιγράφουμε
+                // την τιμή, ώστε αλλαγή του κωδικού του ρούτερ να φτάνει σε όλους.
+                $wifi     = trim((string)($_POST['wifi'] ?? ''));
         $door     = trim((string)($_POST['doorCode'] ?? ''));
 
         $err = null;
@@ -143,8 +144,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $g['email']   = trim((string)($_POST['email'] ?? ''));
         $g['adults']  = max(1, (int)($_POST['adults'] ?? 2));
         $g['notes']   = trim((string)($_POST['notes'] ?? ''));
-        $wifi = trim((string)($_POST['wifi'] ?? ''));
-        $g['wifi']     = $wifi !== '' ? $wifi : DEFAULT_WIFI_PASSWORD;
+        // Κενό = ακολούθησε τον προεπιλεγμένο (δες guest_wifi() στο _lib.php).
+                $g['wifi']     = trim((string)($_POST['wifi'] ?? ''));
         $g['doorCode'] = trim((string)($_POST['doorCode'] ?? ''));
 
         // Ημέρες καθαριότητας: το κενό πεδίο σημαίνει «αυτόματο».
@@ -167,6 +168,34 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         header('Location: guest.php?id=' . urlencode($id)); exit;
     }
 
+    elseif ($action === 'wifi_default') {
+        $v   = trim((string)($_POST['wifiDefault'] ?? ''));
+        $old = wifi_default();
+        $st  = settings_load();
+        if (strlen($v) > 40) {   // strlen αρκεί: 40 bytes = 40 χαρακτήρες εδώ
+            fail('Ο κωδικός WiFi δεν μπορεί να ξεπερνά τους 40 χαρακτήρες.');
+        } else {
+            // Κενό = «γύρνα στην αρχική τιμή του κώδικα».
+            if ($v === '') unset($st['wifiDefault']); else $st['wifiDefault'] = $v;
+            settings_save($st);
+
+            // Οι παλιές κρατήσεις έχουν τον κωδικό αντιγραμμένο. Όσες έχουν ακριβώς
+            // τον προηγούμενο προεπιλεγμένο δεν είχαν ποτέ δικό τους κωδικό — τις
+            // αδειάζουμε, ώστε να ακολουθήσουν τον νέο. Όποιος είχε βάλει άλλον
+            // κωδικό επίτηδες δεν τον χάνει.
+            $moved = 0;
+            foreach ($guests as $i => $g) {
+                if (trim((string)($g['wifi'] ?? '')) === $old) { $guests[$i]['wifi'] = ''; $moved++; }
+            }
+            if ($moved > 0) guests_save($guests);
+
+            $now = wifi_default();
+            ok($now === $old
+                ? 'Ο προεπιλεγμένος κωδικός WiFi έμεινε ' . $now . '.'
+                : 'Ο προεπιλεγμένος κωδικός WiFi έγινε ' . $now . '.'
+                  . ($moved > 0 ? ' Ενημερώθηκαν ' . $moved . ' κρατήσεις που ακολουθούσαν τον παλιό.' : ''));
+        }
+    }
     elseif ($action === 'toggle' || $action === 'delete' || $action === 'regen') {
         $id = (string)($_POST['id'] ?? '');
         $i  = guests_index($guests, $id);
@@ -362,6 +391,30 @@ details.help div{margin-top:10px;font-size:.88rem;color:var(--muted)}
   <?php endif; ?>
 
   <div class="card">
+    <h2>Προεπιλεγμένος κωδικός WiFi</h2>
+    <p class="hint" style="margin:0 0 12px">
+      Ο κωδικός του ρούτερ. Τον βλέπουν <strong>όλοι οι επισκέπτες</strong> που δεν
+      έχουν δικό τους κωδικό στη σελίδα τους. Όταν αλλάξεις τον κωδικό του ρούτερ,
+      άλλαξέ τον κι εδώ — μία φορά, και ισχύει για όλους.
+    </p>
+    <form method="post" class="row">
+      <input type="hidden" name="action" value="wifi_default">
+      <input type="hidden" name="csrf" value="<?= h(csrf()) ?>">
+      <div>
+        <label for="wifiDefault">Κωδικός WiFi</label>
+        <input id="wifiDefault" type="text" name="wifiDefault" maxlength="40"
+               value="<?= h(wifi_default()) ?>" autocomplete="off">
+      </div>
+      <div style="display:flex;align-items:flex-end">
+        <button type="submit">Αποθήκευση</button>
+      </div>
+    </form>
+    <p class="hint" style="margin:10px 0 0">
+      Άφησέ το κενό για να επιστρέψει στο <code><?= h(DEFAULT_WIFI_PASSWORD) ?></code>.
+    </p>
+  </div>
+
+  <div class="card">
     <h2>Νέο link</h2>
     <form method="post">
       <input type="hidden" name="action" value="add">
@@ -472,7 +525,7 @@ details.help div{margin-top:10px;font-size:.88rem;color:var(--muted)}
           <div>
             <label for="wifi">Κωδικός WiFi</label>
             <input id="wifi" type="text" name="wifi" maxlength="40"
-                   value="<?= h(DEFAULT_WIFI_PASSWORD) ?>" autocomplete="off">
+                   placeholder="<?= h(wifi_default()) ?> (ο προεπιλεγμένος)" autocomplete="off">
           </div>
           <div>
             <label for="doorCode">Κωδικός εισόδου διαμερίσματος</label>

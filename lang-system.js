@@ -95,7 +95,7 @@ const translations = {
 
         // Footer
         address: "Γλινάδο, Νάξος, Κυκλάδες",
-        license: "Αρ. Γνωστοποίησης: 1174Κ13000166800",
+        license: "Αριθμός Γνωστοποίησης: 1174Κ13000166800",
         
         // Gallery page
         galleryTitle: "Φωτογραφίες",
@@ -305,7 +305,7 @@ const translations = {
 
         // Footer
         address: "Glinado, Naxos, Cyclades",
-        license: "License Number: 1174Κ13000166800",
+        license: "Notification Number: 1174Κ13000166800",
         
         // Gallery page
         galleryTitle: "Gallery",

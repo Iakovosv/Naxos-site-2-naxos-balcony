@@ -126,8 +126,7 @@ $roomLabel = $guest !== null ? (ROOMS_G[$guest['room'] ?? ''][$lang] ?? '') : ''
 
 // Στοιχεία πρόσβασης. Ο κωδικός WiFi έχει προεπιλογή· ο κωδικός εισόδου
 // εμφανίζεται μόνο αν τον έχει δώσει ο διαχειριστής.
-$wifiPass = $guest !== null
-    ? (trim((string)($guest['wifi'] ?? '')) ?: DEFAULT_WIFI_PASSWORD) : '';
+$wifiPass = $guest !== null ? guest_wifi($guest) : '';
 $doorCode = $guest !== null
     ? trim((string)($guest['doorCode'] ?? '')) : '';
 
