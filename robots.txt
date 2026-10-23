@@ -1,8 +1,9 @@
 User-agent: *
 Allow: /
 
-# Keep crawlers out of the private areas and the raw photo folders.
-Disallow: /admin/
+# Keep crawlers out of the weather API. The gallery admin is protected by
+# authentication and is deliberately not named here: a Disallow entry would
+# advertise its location without actually keeping anyone out.
 Disallow: /api/
 
 Sitemap: https://www.naxosbalcony.gr/sitemap.xml

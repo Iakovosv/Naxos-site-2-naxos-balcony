@@ -8,3 +8,6 @@ admin/credentials.php
 # Preview-only weather proxy. MUST NOT be deployed: the real host has its own
 # api/ with the live weather station. Overwriting it would break the site.
 api/
+
+# Admin login throttle state (runtime, per-installation)
+admin/.login-attempts.json

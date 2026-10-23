@@ -63,7 +63,8 @@
       const img = document.createElement('img');
       img.loading = 'lazy';
       img.decoding = 'async';
-      img.src = t.src;
+      // Prefer the 700px thumbnail in the grid; fall back to the original.
+      img.src = t.thumb || t.src;
       img.alt = t.alt;
       a.appendChild(img);
       div.appendChild(a);
@@ -103,8 +104,11 @@
     const list = visible();
     if (!list.length) return;
     current = (i + list.length) % list.length;
-    const img = list[current].querySelector('img');
-    lbImg.src = img.src;
+    const tile = list[current];
+    const img = tile.querySelector('img');
+    // The tile shows a 700px thumbnail; the anchor holds the full-size file.
+    const link = tile.querySelector('a');
+    lbImg.src = (link && link.getAttribute('href')) || img.src;
     lbImg.alt = img.alt;
   }
   function open(tile) {

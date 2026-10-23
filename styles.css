@@ -307,7 +307,9 @@ body.pro-page{color:#fff;}
   border-radius:999px;padding:10px 22px;border:1px solid transparent;
   transition:background .18s ease,color .18s ease,border-color .18s ease;
 }
-.cookie-accept{background:var(--accent);color:#fff;}
+/* --accent-dark, not --accent: white on --accent is 3.70:1, which fails
+   WCAG AA (4.5:1). --accent-dark gives 4.95:1, matching .call-btn. */
+.cookie-accept{background:var(--accent-dark);color:#fff;}
 .cookie-accept:hover{background:var(--accent-dark);}
 .cookie-reject{background:transparent;color:#fff;border-color:rgba(255,255,255,.45);}
 .cookie-reject:hover{border-color:#fff;background:rgba(255,255,255,.1);}

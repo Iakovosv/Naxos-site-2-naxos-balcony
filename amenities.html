@@ -31,9 +31,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="favicon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="manifest" href="site.webmanifest">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="fonts.css">
 <link rel="preload" as="image" href="naxos-balcony-apartments-glinado-view-1280.jpg" imagesrcset="naxos-balcony-apartments-glinado-view-480.jpg 480w, naxos-balcony-apartments-glinado-view-800.jpg 800w, naxos-balcony-apartments-glinado-view-1280.jpg 1280w, naxos-balcony-apartments-glinado-view-1600.jpg 1600w" imagesizes="100vw">
 <link rel="stylesheet" href="styles.css">
 <script>
@@ -53,7 +51,11 @@ gtag('js',new Date());gtag('config','G-XVJ1VN5JLF',{anonymize_ip:true});
 <header class="navbar" id="navbar">
   <div class="container navbar-inner">
     <a class="logo" href="index.html">
-      <img src="logo-naxos-balcony.png" width="480" height="256" alt="Naxos Balcony Apartments logo">
+      <picture>
+        <source type="image/webp" srcset="logo-naxos-balcony-240.webp 240w, logo-naxos-balcony-480.webp 480w"
+                sizes="(max-width:600px) 84px, 105px">
+        <img src="logo-naxos-balcony-240.png" width="240" height="128" alt="Naxos Balcony Apartments logo" decoding="async">
+      </picture>
     </a>
     <button class="nav-toggle" id="navToggle" aria-label="Μενού" aria-expanded="false" aria-controls="nav">
       <span></span><span></span><span></span>

@@ -32,6 +32,7 @@ const GRID_DIR    = 'images/gallery';
 const MAX_EDGE    = 1920;
 const THUMB_EDGE  = 700;
 const JPEG_Q      = 82;
+const WEBP_Q      = 80;
 
 const ROOMS = [
     'room3'    => ['el' => 'Room 3', 'en' => 'Room 3'],
@@ -73,7 +74,10 @@ function save_tiles(array $tiles): void {
     file_put_contents(TILES_JSON,
         json_encode($tiles, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES), LOCK_EX);
     // keep the JS copy in step (it is the fallback path when the HTML is absent)
-    $flat = array_map(fn($t) => ['cat' => $t['cat'], 'src' => $t['src'], 'alt' => $t['alt']], $tiles);
+    $flat = array_map(fn($t) => [
+        'cat' => $t['cat'], 'src' => $t['src'], 'alt' => $t['alt'],
+        'thumb' => $t['thumb'] ?? null, 'thumb_jpg' => $t['thumb_jpg'] ?? null,
+    ], $tiles);
     file_put_contents(TILES_JS,
         "window.GALLERY_TILES = "
         . json_encode($flat, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) . ";\n", LOCK_EX);
@@ -94,10 +98,21 @@ function rebuild_gallery_pages(array $tiles): void {
             foreach ($grouped[$cat] ?? [] as $t) {
                 $alt = $lang === 'en' ? ($t['alt_en'] ?? $t['alt']) : $t['alt'];
                 $src = $up . $t['src'];
-                $rows[] = sprintf(
-                    '    <div class="tile" data-cat="%s"><a href="%s">'
-                    . '<img loading="lazy" decoding="async" width="%d" height="%d" src="%s" alt="%s"></a></div>',
-                    h($cat), h($src), (int)$t['w'], (int)$t['h'], h($src), h($alt));
+                $thumb = isset($t['thumb']) ? $up . $t['thumb'] : '';
+                $thumbJpg = isset($t['thumb_jpg']) ? $up . $t['thumb_jpg'] : $thumb;
+                if ($thumb !== '') {
+                    // Grid gets the 700px thumbnail, the lightbox gets the original.
+                    $rows[] = sprintf(
+                        '    <div class="tile" data-cat="%s"><a href="%s">'
+                        . '<picture><source type="image/webp" srcset="%s">'
+                        . '<img loading="lazy" decoding="async" src="%s" alt="%s"></picture></a></div>',
+                        h($cat), h($src), h($thumb), h($thumbJpg), h($alt));
+                } else {
+                    $rows[] = sprintf(
+                        '    <div class="tile" data-cat="%s"><a href="%s">'
+                        . '<img loading="lazy" decoding="async" width="%d" height="%d" src="%s" alt="%s"></a></div>',
+                        h($cat), h($src), (int)$t['w'], (int)$t['h'], h($src), h($alt));
+                }
             }
         }
         // Keep the data-room-info attribute: the English pages need it because
@@ -163,16 +178,75 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'setup
     }
 }
 
+
+/* ---------------------------------------------------------------- throttling
+
+   Το login δεν είχε όριο προσπαθειών: ένα script μπορούσε να δοκιμάζει
+   κωδικούς απεριόριστα. Κρατάμε τις αποτυχίες σε ένα αρχείο δίπλα στα
+   credentials (ίδια άδεια, 0600) και κλειδώνουμε προσωρινά.
+
+   Μετά από MAX_ATTEMPTS αποτυχίες μέσα σε WINDOW δευτερόλεπτα, το login
+   απορρίπτεται για LOCKOUT δευτερόλεπτα. Το διάστημα διπλασιάζεται σε κάθε
+   νέο κύκλο αποτυχιών, ώστε μια παρατεταμένη επίθεση να γίνεται ασύμφορη. */
+const THROTTLE_FILE = __DIR__ . '/.login-attempts.json';
+const MAX_ATTEMPTS  = 5;
+const WINDOW        = 900;   // 15 λεπτά
+const LOCKOUT       = 900;   // 15 λεπτά αρχικό κλείδωμα
+
+function throttle_state(): array {
+    if (!is_file(THROTTLE_FILE)) return ['fails' => [], 'until' => 0, 'cycles' => 0];
+    $d = json_decode((string)@file_get_contents(THROTTLE_FILE), true);
+    return is_array($d) ? $d + ['fails' => [], 'until' => 0, 'cycles' => 0]
+                        : ['fails' => [], 'until' => 0, 'cycles' => 0];
+}
+
+function throttle_save(array $d): void {
+    @file_put_contents(THROTTLE_FILE, json_encode($d), LOCK_EX);
+    @chmod(THROTTLE_FILE, 0600);
+}
+
+/** Πόσα δευτερόλεπτα απομένουν μέχρι να επιτραπεί νέα προσπάθεια (0 = ελεύθερο). */
+function throttle_wait(): int {
+    $d = throttle_state();
+    $left = (int)$d['until'] - time();
+    return $left > 0 ? $left : 0;
+}
+
+function throttle_fail(): void {
+    $now = time();
+    $d = throttle_state();
+    // Κρατάμε μόνο τις αποτυχίες μέσα στο παράθυρο
+    $d['fails'] = array_values(array_filter((array)$d['fails'], fn($t) => $now - (int)$t < WINDOW));
+    $d['fails'][] = $now;
+    if (count($d['fails']) >= MAX_ATTEMPTS) {
+        $d['cycles'] = (int)($d['cycles'] ?? 0) + 1;
+        $d['until']  = $now + LOCKOUT * (2 ** min($d['cycles'] - 1, 4));
+        $d['fails']  = [];
+    }
+    throttle_save($d);
+}
+
+function throttle_clear(): void {
+    @unlink(THROTTLE_FILE);
+}
+
 $creds = $needs_setup ? null : (is_file(CRED_FILE) ? (include CRED_FILE) : null);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'login') {
-    $pw = (string)($_POST['password'] ?? '');
-    if (is_array($creds) && isset($creds['hash']) && password_verify($pw, (string)$creds['hash'])) {
-        session_regenerate_id(true);
-        $_SESSION['ok'] = true;
-        header('Location: index.php'); exit;
+    $wait = throttle_wait();
+    if ($wait > 0) {
+        $login_error = 'Too many attempts. Try again in ' . (int)ceil($wait / 60) . ' minute(s).';
+    } else {
+        $pw = (string)($_POST['password'] ?? '');
+        if (is_array($creds) && isset($creds['hash']) && password_verify($pw, (string)$creds['hash'])) {
+            throttle_clear();
+            session_regenerate_id(true);
+            $_SESSION['ok'] = true;
+            header('Location: index.php'); exit;
+        }
+        throttle_fail();
+        $login_error = 'Wrong password.';
     }
-    $login_error = 'Wrong password.';
 }
 if (($_GET['logout'] ?? '') === '1') {
     $_SESSION = []; session_destroy();
@@ -217,13 +291,17 @@ if (logged_in() && $_SERVER['REQUEST_METHOD'] === 'POST') {
 
             // GdImage cannot be cloned in PHP 8, so build the grid version by
             // re-reading the file we just wrote.
+            $thumbRel = '';
             if ($okSave) {
                 $again = @imagecreatefromjpeg($abs);
                 if ($again) {
                     $thumb = resize_to($again, THUMB_EDGE);
                     imagejpeg($thumb, preg_replace('/\.jpg$/', '-thumb.jpg', $abs), JPEG_Q);
+                    // WebP is what the grid actually serves; the JPEG is the fallback.
+                    imagewebp($thumb, preg_replace('/\.jpg$/', '-thumb.webp', $abs), WEBP_Q);
                     imagedestroy($thumb);
                     imagedestroy($again);
+                    $thumbRel = preg_replace('/\.jpg$/', '-thumb.webp', $rel);
                 }
             }
 
@@ -240,7 +318,8 @@ if (logged_in() && $_SERVER['REQUEST_METHOD'] === 'POST') {
                     'alt_en' => ROOMS[$cat]['en'] . ' - photo ' . $n,
                     'title_key' => in_array($cat, ['room3','room4','room5','room6'], true)
                                    ? $cat . 'Title' : null,
-                    'thumb'  => preg_replace('/\.jpg$/', '-thumb.jpg', $rel),
+                    'thumb'     => $thumbRel,
+                    'thumb_jpg' => preg_replace('/\.jpg$/', '-thumb.jpg', $rel),
                 ];
                 $added++;
             } else { $skipped++; }
@@ -260,6 +339,7 @@ if (logged_in() && $_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($abs && $rootReal && strpos($abs, $rootReal) === 0 && is_file($abs)) {
             @unlink($abs);
             @unlink(preg_replace('/\.jpg$/', '-thumb.jpg', $abs));
+            @unlink(preg_replace('/\.jpg$/', '-thumb.webp', $abs));
         }
         $tiles = array_values(array_filter(load_tiles(), fn($t) => ($t['src'] ?? '') !== $src));
         save_tiles($tiles);
