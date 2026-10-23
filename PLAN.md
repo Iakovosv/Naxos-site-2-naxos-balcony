@@ -189,9 +189,10 @@ from `gallery-tiles.json` and keep one appearance per image.
 
 ## 6. Open questions for the owner
 
-1. **Duplicate photos:** room3 == room5 and room4 == room6 entirely (22 groups,
-   only 60 unique of 83). Is that intentional (rooms look alike) or an upload
-   mistake? Should I de-duplicate or leave as-is?
+1. **Duplicate photos:** see §5b for the measured numbers (26 groups, 56 unique
+   images of 83 tiles; room4↔room6 share 17, room3↔room5 share 5, each room's
+   last tile is also in `exterior`; Room 4 lists `room4_12.jpg` twice). All 26
+   groups already exist on the live site. Keep as-is, or show each image once?
 2. **`geo` coordinates** — exact latitude/longitude of the property?
 3. **`priceRange`** — e.g. "€70–€150" per night in high season?
 4. **Check-in / check-out times?**
