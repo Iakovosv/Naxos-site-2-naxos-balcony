@@ -1,0 +1,69 @@
+<section class="page-hero">
+  <div class="container page-hero-inner">
+    <h1 data-i18n="weatherTitle">Ο Καιρός στο Γλινάδο Νάξου – Live Μετεωρολογικός Σταθμός</h1>
+    <p data-i18n="weatherSubtitle">Δείτε τις καιρικές συνθήκες στο Γλινάδο σε πραγματικό χρόνο, απευθείας από τον ιδιωτικό μετεωρολογικό σταθμό του Naxos Balcony Apartments.</p>
+  </div>
+</section>
+
+<main class="wrap">
+  <section class="card">
+    <div class="card-header-flex">
+      <h2 data-i18n="weatherSectionTitle">Ο καιρός στο κατάλυμά μας</h2>
+      <a href="forecast-pro.html" class="btn-pro">WEATHER PRO 📊</a>
+    </div>
+
+    <p class="note" style="margin-bottom:20px;" data-i18n="weatherDesc">Ακριβή δεδομένα για τη θερμοκρασία, τον άνεμο και την υγρασία.</p>
+
+    <div class="kpis">
+      <div class="kpi">
+        <div class="label" data-i18n="weatherTemp">Θερμοκρασία</div>
+        <div class="value" id="w_temp">—</div>
+        <div class="sub">°C</div>
+      </div>
+      <div class="kpi">
+        <div class="label" data-i18n="weatherHumidity">Υγρασία</div>
+        <div class="value" id="w_hum">—</div>
+        <div class="sub">%</div>
+      </div>
+      <div class="kpi">
+        <div class="label" data-i18n="weatherWindSpeed">Ταχύτητα Ανέμου</div>
+        <div class="value" id="w_wind">—</div>
+        <div class="sub">km/h</div>
+      </div>
+      <div class="kpi">
+        <div class="label" data-i18n="weatherWindDir">Κατεύθυνση Ανέμου</div>
+        <div class="value" id="w_dir">—</div>
+        <div class="sub">Προσανατολισμός</div>
+      </div>
+      <div class="kpi">
+        <div class="label" data-i18n="weatherPressure">Ατμοσφαιρική Πίεση</div>
+        <div class="value" id="w_press">—</div>
+        <div class="sub">hPa</div>
+      </div>
+      <div class="kpi">
+        <div class="label" data-i18n="weatherUV">Δείκτης UV</div>
+        <div class="value" id="w_uv">—</div>
+        <div class="sub">0–11+</div>
+      </div>
+    </div>
+
+    <div class="status-row">
+      <span><span class="dot" id="w_dot"></span><strong data-i18n="weatherStationLabel">Σταθμός:</strong> <span id="w_status" data-i18n="weatherStatusOn">Σε λειτουργία (Live)</span></span>
+      <span><strong data-i18n="weatherLastLabel">Τελευταία μέτρηση:</strong> <span id="w_updated">—</span></span>
+    </div>
+
+    <div style="margin-top:25px;padding-top:20px;border-top:1px solid var(--line);">
+      <h3 style="margin-bottom:12px;font-size:1rem;" data-i18n="weatherTipsTitle">Χρήσιμες συμβουλές για τις παραλίες μας</h3>
+      <div class="tips">
+        <div class="tip">
+          <strong data-i18n="weatherTipsWindTitle">💨 Οδηγός Ανέμων Νάξου</strong><br>
+          <span data-i18n="weatherTipsWindContent">Βόρειοι Άνεμοι (Μελτέμια): Ο Άγιος Προκόπιος και η Αγία Άννα παραμένουν απάνεμες.</span>
+        </div>
+        <div class="tip warm">
+          <strong data-i18n="weatherTipsSunTitle">☀️ Προστασία από τον Ήλιο:</strong><br>
+          <span data-i18n="weatherTipsSunContent">Όταν ο δείκτης UV είναι πάνω από 6, απαιτείται υψηλή προστασία.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>

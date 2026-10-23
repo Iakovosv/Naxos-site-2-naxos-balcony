@@ -1,0 +1,31 @@
+const PORT=9222;
+const t=await (await fetch(`http://127.0.0.1:${PORT}/json/new?${encodeURIComponent('http://127.0.0.1:12000/forecast-pro.html')}`,{method:'PUT'})).json();
+const ws=new WebSocket(t.webSocketDebuggerUrl); let id=0; const p=new Map();
+const send=(m,q={})=>new Promise((res,rej)=>{const i=++id;p.set(i,{res,rej});ws.send(JSON.stringify({id:i,method:m,params:q}));});
+ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id&&p.has(m.id)){const q=p.get(m.id);p.delete(m.id);m.error?q.rej(new Error(JSON.stringify(m.error))):q.res(m.result);}};
+await new Promise(r=>ws.onopen=r);
+await send('Page.enable');
+await send('Emulation.setDeviceMetricsOverride',{width:1280,height:900,deviceScaleFactor:1,mobile:false});
+await send('Page.navigate',{url:'http://127.0.0.1:12000/forecast-pro.html'});
+await new Promise(r=>setTimeout(r,3000));
+const probe = async (solar,rain,label,expected)=>{
+  const {result}=await send('Runtime.evaluate',{expression:`(async()=>{
+    document.getElementById('bgFix').dataset.bg='';
+    updateDynamicBackground(${solar}, ${rain});
+    await new Promise(r=>setTimeout(r,700));
+    const url=document.getElementById('bgFix').style.backgroundImage.replace(/^url\\(["']?/,'').replace(/["']?\\)$/,'');
+    return url.split('/').pop();
+  })()`,awaitPromise:true,returnByValue:true});
+  const got=result.value;
+  return {label, got, expected, ok: got===expected};
+};
+const out=[];
+out.push(await probe(0,0,'νύχτα, χωρίς βροχή','naxos-balcony-exterior-night.jpg'));
+out.push(await probe(200,0,'μέρα, χωρίς βροχή','ai-exterior.jpg'));
+out.push(await probe(200,5,'μέρα, βροχή','naxos-balcony-exterior-rain.jpg'));
+out.push(await probe(0,5,'νύχτα, βροχή','naxos-balcony-exterior-night-rain.jpg'));
+out.push(await probe(14.9,0,'όριο 14.9 → νύχτα','naxos-balcony-exterior-night.jpg'));
+out.push(await probe(15,0,'όριο 15.0 → μέρα','ai-exterior.jpg'));
+out.forEach(r=>console.log((r.ok?'  ✅ ':'  ❌ ')+r.label.padEnd(22)+r.got));
+console.log('\nΟΛΑ ΣΩΣΤΑ:', out.every(r=>r.ok)?'✅':'❌');
+ws.close(); process.exit(0);

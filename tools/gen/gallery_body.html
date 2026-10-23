@@ -1,0 +1,29 @@
+<section class="page-hero">
+  <div class="container page-hero-inner">
+    <h1 data-i18n="galleryTitle">Φωτογραφίες</h1>
+    <p data-i18n="gallerySubtitle">Room 3 • Room 4 • Room 5 • Room 6 • Εξωτερικοί χώροι • Ηλιοβασίλεμα</p>
+  </div>
+</section>
+
+<main class="wrap">
+  <div class="tabs" id="tabs">
+    <button class="tab-btn active" data-filter="all" data-i18n="galleryAll">Όλες</button>
+    <button class="tab-btn" data-filter="room3" data-i18n="galleryRoom3">Room 3</button>
+    <button class="tab-btn" data-filter="room4" data-i18n="galleryRoom4">Room 4</button>
+    <button class="tab-btn" data-filter="room5" data-i18n="galleryRoom5">Room 5</button>
+    <button class="tab-btn" data-filter="room6" data-i18n="galleryRoom6">Room 6</button>
+    <button class="tab-btn" data-filter="exterior" data-i18n="galleryExterior">Εξωτερικοί χώροι</button>
+    <button class="tab-btn" data-filter="sunset" data-i18n="gallerySunset">Ηλιοβασίλεμα</button>
+  </div>
+
+  <p class="room-info" id="room-info"></p>
+
+  <section class="grid" id="grid"></section>
+</main>
+
+<div class="lightbox" id="lightbox" aria-hidden="true">
+  <button class="lb-btn lb-close" id="lbClose" aria-label="Close">&times;</button>
+  <button class="lb-btn lb-prev" id="lbPrev" aria-label="Previous">&#8249;</button>
+  <img id="lbImg" alt="">
+  <button class="lb-btn lb-next" id="lbNext" aria-label="Next">&#8250;</button>
+</div>

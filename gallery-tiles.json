@@ -8,7 +8,9 @@
     "idx": "1",
     "title_key": "room3Title",
     "thumb": "images/gallery/room3/naxos-apartment-bedroom-sea-view-1-thumb.webp",
-    "thumb_jpg": "images/gallery/room3/naxos-apartment-bedroom-sea-view-1-thumb.jpg"
+    "thumb_jpg": "images/gallery/room3/naxos-apartment-bedroom-sea-view-1-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room3",
@@ -19,7 +21,9 @@
     "idx": "2",
     "title_key": "room3Title",
     "thumb": "images/gallery/room3/naxos-studio-apartment-kitchen-2-thumb.webp",
-    "thumb_jpg": "images/gallery/room3/naxos-studio-apartment-kitchen-2-thumb.jpg"
+    "thumb_jpg": "images/gallery/room3/naxos-studio-apartment-kitchen-2-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room3",
@@ -30,7 +34,9 @@
     "idx": "3",
     "title_key": "room3Title",
     "thumb": "images/gallery/room3/naxos-studio-apartment-kitchen-3-thumb.webp",
-    "thumb_jpg": "images/gallery/room3/naxos-studio-apartment-kitchen-3-thumb.jpg"
+    "thumb_jpg": "images/gallery/room3/naxos-studio-apartment-kitchen-3-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room3",
@@ -41,7 +47,9 @@
     "idx": "4",
     "title_key": "room3Title",
     "thumb": "images/gallery/room3/naxos-studio-apartment-bedroom-4-thumb.webp",
-    "thumb_jpg": "images/gallery/room3/naxos-studio-apartment-bedroom-4-thumb.jpg"
+    "thumb_jpg": "images/gallery/room3/naxos-studio-apartment-bedroom-4-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room3",
@@ -52,7 +60,9 @@
     "idx": "5",
     "title_key": "room3Title",
     "thumb": "images/gallery/room3/naxos-studio-with-kitchen-5-thumb.webp",
-    "thumb_jpg": "images/gallery/room3/naxos-studio-with-kitchen-5-thumb.jpg"
+    "thumb_jpg": "images/gallery/room3/naxos-studio-with-kitchen-5-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room3",
@@ -63,7 +73,9 @@
     "idx": "6",
     "title_key": "room3Title",
     "thumb": "images/gallery/room3/naxos-studio-apartment-inside-6-thumb.webp",
-    "thumb_jpg": "images/gallery/room3/naxos-studio-apartment-inside-6-thumb.jpg"
+    "thumb_jpg": "images/gallery/room3/naxos-studio-apartment-inside-6-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room3",
@@ -74,7 +86,9 @@
     "idx": "7",
     "title_key": "room3Title",
     "thumb": "images/gallery/room3/naxos-balcony-studio-room3-interior-7-thumb.webp",
-    "thumb_jpg": "images/gallery/room3/naxos-balcony-studio-room3-interior-7-thumb.jpg"
+    "thumb_jpg": "images/gallery/room3/naxos-balcony-studio-room3-interior-7-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room3",
@@ -85,7 +99,9 @@
     "idx": "8",
     "title_key": "room3Title",
     "thumb": "images/gallery/room3/naxos-studio-apartment-kitchen-equipme-8-thumb.webp",
-    "thumb_jpg": "images/gallery/room3/naxos-studio-apartment-kitchen-equipme-8-thumb.jpg"
+    "thumb_jpg": "images/gallery/room3/naxos-studio-apartment-kitchen-equipme-8-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room3",
@@ -96,7 +112,9 @@
     "idx": "9",
     "title_key": "room3Title",
     "thumb": "images/gallery/room3/naxos-studio-apartment-kitchen-equipme-9-thumb.webp",
-    "thumb_jpg": "images/gallery/room3/naxos-studio-apartment-kitchen-equipme-9-thumb.jpg"
+    "thumb_jpg": "images/gallery/room3/naxos-studio-apartment-kitchen-equipme-9-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room3",
@@ -107,7 +125,9 @@
     "idx": "10",
     "title_key": "room3Title",
     "thumb": "images/gallery/room3/naxos-studio-apartment-kitchen-equipm-10-thumb.webp",
-    "thumb_jpg": "images/gallery/room3/naxos-studio-apartment-kitchen-equipm-10-thumb.jpg"
+    "thumb_jpg": "images/gallery/room3/naxos-studio-apartment-kitchen-equipm-10-thumb.jpg",
+    "thumb_w": 467,
+    "thumb_h": 700
   },
   {
     "cat": "room3",
@@ -118,7 +138,9 @@
     "idx": "11",
     "title_key": "room3Title",
     "thumb": "images/gallery/room3/naxos-balcony-studio-room3-interior-11-thumb.webp",
-    "thumb_jpg": "images/gallery/room3/naxos-balcony-studio-room3-interior-11-thumb.jpg"
+    "thumb_jpg": "images/gallery/room3/naxos-balcony-studio-room3-interior-11-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room3",
@@ -129,7 +151,9 @@
     "idx": "12",
     "title_key": "room3Title",
     "thumb": "images/gallery/room3/glinado-panoramic-view-naxos-balcony-12-thumb.webp",
-    "thumb_jpg": "images/gallery/room3/glinado-panoramic-view-naxos-balcony-12-thumb.jpg"
+    "thumb_jpg": "images/gallery/room3/glinado-panoramic-view-naxos-balcony-12-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room3",
@@ -140,7 +164,9 @@
     "idx": "13",
     "title_key": "room3Title",
     "thumb": "images/gallery/room3/glinado-panoramic-view-naxos-balcony-13-thumb.webp",
-    "thumb_jpg": "images/gallery/room3/glinado-panoramic-view-naxos-balcony-13-thumb.jpg"
+    "thumb_jpg": "images/gallery/room3/glinado-panoramic-view-naxos-balcony-13-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room3",
@@ -151,7 +177,9 @@
     "idx": "14",
     "title_key": "room3Title",
     "thumb": "images/gallery/room3/glinado-panoramic-view-naxos-balcony-14-thumb.webp",
-    "thumb_jpg": "images/gallery/room3/glinado-panoramic-view-naxos-balcony-14-thumb.jpg"
+    "thumb_jpg": "images/gallery/room3/glinado-panoramic-view-naxos-balcony-14-thumb.jpg",
+    "thumb_w": 467,
+    "thumb_h": 700
   },
   {
     "cat": "room3",
@@ -162,7 +190,9 @@
     "idx": "6",
     "title_key": "room3Title",
     "thumb": "images/gallery/exterior/naxos-balcony-apartments-exterior-6-thumb.webp",
-    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-6-thumb.jpg"
+    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-6-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room4",
@@ -173,7 +203,9 @@
     "idx": "1",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/naxos-apartment-bedroom-sea-view-1-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/naxos-apartment-bedroom-sea-view-1-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/naxos-apartment-bedroom-sea-view-1-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room4",
@@ -184,7 +216,9 @@
     "idx": "2",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/naxos-apartment-bedroom-sea-view-2-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/naxos-apartment-bedroom-sea-view-2-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/naxos-apartment-bedroom-sea-view-2-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room4",
@@ -195,7 +229,9 @@
     "idx": "3",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/naxos-apartment-bedroom-sea-view-3-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/naxos-apartment-bedroom-sea-view-3-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/naxos-apartment-bedroom-sea-view-3-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room4",
@@ -206,7 +242,9 @@
     "idx": "4",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/naxos-apartment-bedroom-sea-view-4-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/naxos-apartment-bedroom-sea-view-4-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/naxos-apartment-bedroom-sea-view-4-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room4",
@@ -217,7 +255,9 @@
     "idx": "5",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/naxos-apartment-bedroom-sea-view-5-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/naxos-apartment-bedroom-sea-view-5-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/naxos-apartment-bedroom-sea-view-5-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room4",
@@ -228,7 +268,9 @@
     "idx": "6",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/naxos-apartment-bedroom-sea-view-6-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/naxos-apartment-bedroom-sea-view-6-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/naxos-apartment-bedroom-sea-view-6-thumb.jpg",
+    "thumb_w": 467,
+    "thumb_h": 700
   },
   {
     "cat": "room4",
@@ -239,7 +281,9 @@
     "idx": "7",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/room4_7-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/room4_7-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/room4_7-thumb.jpg",
+    "thumb_w": 467,
+    "thumb_h": 700
   },
   {
     "cat": "room4",
@@ -250,7 +294,9 @@
     "idx": "8",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/room4_8-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/room4_8-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/room4_8-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room4",
@@ -261,7 +307,9 @@
     "idx": "9",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/room4_9-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/room4_9-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/room4_9-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room4",
@@ -272,7 +320,9 @@
     "idx": "10",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/room4_10-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/room4_10-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/room4_10-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room4",
@@ -283,7 +333,9 @@
     "idx": "11",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/room4_11-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/room4_11-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/room4_11-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room4",
@@ -294,7 +346,9 @@
     "idx": "12",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/room4_12-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/room4_12-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/room4_12-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room4",
@@ -305,7 +359,9 @@
     "idx": "13",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/room4_13-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/room4_13-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/room4_13-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room4",
@@ -316,7 +372,9 @@
     "idx": "14",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/room4_14-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/room4_14-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/room4_14-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room4",
@@ -327,7 +385,9 @@
     "idx": "15",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/room4_15-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/room4_15-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/room4_15-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room4",
@@ -338,7 +398,9 @@
     "idx": "16",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/room4_16-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/room4_16-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/room4_16-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room4",
@@ -349,7 +411,9 @@
     "idx": "17",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/room4_17-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/room4_17-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/room4_17-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room4",
@@ -360,7 +424,9 @@
     "idx": "18",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/room4_18-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/room4_18-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/room4_18-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room4",
@@ -371,7 +437,9 @@
     "idx": "19",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/room4_19-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/room4_19-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/room4_19-thumb.jpg",
+    "thumb_w": 467,
+    "thumb_h": 700
   },
   {
     "cat": "room4",
@@ -382,7 +450,9 @@
     "idx": "20",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/room4_20-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/room4_20-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/room4_20-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room4",
@@ -393,7 +463,9 @@
     "idx": "21",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/room4_21-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/room4_21-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/room4_21-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room4",
@@ -404,7 +476,9 @@
     "idx": "22",
     "title_key": "room4Title",
     "thumb": "images/gallery/room4/room4_22-thumb.webp",
-    "thumb_jpg": "images/gallery/room4/room4_22-thumb.jpg"
+    "thumb_jpg": "images/gallery/room4/room4_22-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room4",
@@ -415,7 +489,9 @@
     "idx": "7",
     "title_key": "room4Title",
     "thumb": "images/gallery/exterior/naxos-balcony-apartments-exterior-7-thumb.webp",
-    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-7-thumb.jpg"
+    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-7-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room5",
@@ -426,7 +502,9 @@
     "idx": "1",
     "title_key": "room5Title",
     "thumb": "images/gallery/room5/naxos-balcony-apartment-accommodation-1-thumb.webp",
-    "thumb_jpg": "images/gallery/room5/naxos-balcony-apartment-accommodation-1-thumb.jpg"
+    "thumb_jpg": "images/gallery/room5/naxos-balcony-apartment-accommodation-1-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room5",
@@ -437,7 +515,9 @@
     "idx": "2",
     "title_key": "room5Title",
     "thumb": "images/gallery/room5/naxos-balcony-apartment-accommodation-2-thumb.webp",
-    "thumb_jpg": "images/gallery/room5/naxos-balcony-apartment-accommodation-2-thumb.jpg"
+    "thumb_jpg": "images/gallery/room5/naxos-balcony-apartment-accommodation-2-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room5",
@@ -448,7 +528,9 @@
     "idx": "3",
     "title_key": "room5Title",
     "thumb": "images/gallery/room5/naxos-balcony-apartment-accommodation-3-thumb.webp",
-    "thumb_jpg": "images/gallery/room5/naxos-balcony-apartment-accommodation-3-thumb.jpg"
+    "thumb_jpg": "images/gallery/room5/naxos-balcony-apartment-accommodation-3-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room5",
@@ -459,7 +541,9 @@
     "idx": "4",
     "title_key": "room5Title",
     "thumb": "images/gallery/room5/naxos-balcony-apartment-accommodation-4-thumb.webp",
-    "thumb_jpg": "images/gallery/room5/naxos-balcony-apartment-accommodation-4-thumb.jpg"
+    "thumb_jpg": "images/gallery/room5/naxos-balcony-apartment-accommodation-4-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room5",
@@ -470,7 +554,9 @@
     "idx": "5",
     "title_key": "room5Title",
     "thumb": "images/gallery/room5/naxos-balcony-apartment-accommodation-5-thumb.webp",
-    "thumb_jpg": "images/gallery/room5/naxos-balcony-apartment-accommodation-5-thumb.jpg"
+    "thumb_jpg": "images/gallery/room5/naxos-balcony-apartment-accommodation-5-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room5",
@@ -481,7 +567,9 @@
     "idx": "6",
     "title_key": "room5Title",
     "thumb": "images/gallery/room5/naxos-balcony-apartment-accommodation-6-thumb.webp",
-    "thumb_jpg": "images/gallery/room5/naxos-balcony-apartment-accommodation-6-thumb.jpg"
+    "thumb_jpg": "images/gallery/room5/naxos-balcony-apartment-accommodation-6-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room5",
@@ -492,7 +580,9 @@
     "idx": "7",
     "title_key": "room5Title",
     "thumb": "images/gallery/room5/room5_7-thumb.webp",
-    "thumb_jpg": "images/gallery/room5/room5_7-thumb.jpg"
+    "thumb_jpg": "images/gallery/room5/room5_7-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room5",
@@ -503,7 +593,9 @@
     "idx": "8",
     "title_key": "room5Title",
     "thumb": "images/gallery/room5/room5_8-thumb.webp",
-    "thumb_jpg": "images/gallery/room5/room5_8-thumb.jpg"
+    "thumb_jpg": "images/gallery/room5/room5_8-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room5",
@@ -514,7 +606,9 @@
     "idx": "9",
     "title_key": "room5Title",
     "thumb": "images/gallery/room5/room5_9-thumb.webp",
-    "thumb_jpg": "images/gallery/room5/room5_9-thumb.jpg"
+    "thumb_jpg": "images/gallery/room5/room5_9-thumb.jpg",
+    "thumb_w": 467,
+    "thumb_h": 700
   },
   {
     "cat": "room5",
@@ -525,7 +619,9 @@
     "idx": "8",
     "title_key": "room5Title",
     "thumb": "images/gallery/exterior/naxos-balcony-apartments-exterior-8-thumb.webp",
-    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-8-thumb.jpg"
+    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-8-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room6",
@@ -536,7 +632,9 @@
     "idx": "1",
     "title_key": "room6Title",
     "thumb": "images/gallery/room6/naxos-luxury-studio-glinado-1-thumb.webp",
-    "thumb_jpg": "images/gallery/room6/naxos-luxury-studio-glinado-1-thumb.jpg"
+    "thumb_jpg": "images/gallery/room6/naxos-luxury-studio-glinado-1-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room6",
@@ -547,7 +645,9 @@
     "idx": "2",
     "title_key": "room6Title",
     "thumb": "images/gallery/room6/naxos-luxury-studio-glinado-2-thumb.webp",
-    "thumb_jpg": "images/gallery/room6/naxos-luxury-studio-glinado-2-thumb.jpg"
+    "thumb_jpg": "images/gallery/room6/naxos-luxury-studio-glinado-2-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room6",
@@ -558,7 +658,9 @@
     "idx": "3",
     "title_key": "room6Title",
     "thumb": "images/gallery/room6/naxos-luxury-studio-glinado-3-thumb.webp",
-    "thumb_jpg": "images/gallery/room6/naxos-luxury-studio-glinado-3-thumb.jpg"
+    "thumb_jpg": "images/gallery/room6/naxos-luxury-studio-glinado-3-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room6",
@@ -569,7 +671,9 @@
     "idx": "4",
     "title_key": "room6Title",
     "thumb": "images/gallery/room6/naxos-luxury-studio-glinado-4-thumb.webp",
-    "thumb_jpg": "images/gallery/room6/naxos-luxury-studio-glinado-4-thumb.jpg"
+    "thumb_jpg": "images/gallery/room6/naxos-luxury-studio-glinado-4-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room6",
@@ -580,7 +684,9 @@
     "idx": "5",
     "title_key": "room6Title",
     "thumb": "images/gallery/room6/naxos-luxury-studio-glinado-5-thumb.webp",
-    "thumb_jpg": "images/gallery/room6/naxos-luxury-studio-glinado-5-thumb.jpg"
+    "thumb_jpg": "images/gallery/room6/naxos-luxury-studio-glinado-5-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room6",
@@ -591,7 +697,9 @@
     "idx": "6",
     "title_key": "room6Title",
     "thumb": "images/gallery/room6/naxos-luxury-studio-glinado-6-thumb.webp",
-    "thumb_jpg": "images/gallery/room6/naxos-luxury-studio-glinado-6-thumb.jpg"
+    "thumb_jpg": "images/gallery/room6/naxos-luxury-studio-glinado-6-thumb.jpg",
+    "thumb_w": 467,
+    "thumb_h": 700
   },
   {
     "cat": "room6",
@@ -602,7 +710,9 @@
     "idx": "7",
     "title_key": "room6Title",
     "thumb": "images/gallery/room6/room6_7-thumb.webp",
-    "thumb_jpg": "images/gallery/room6/room6_7-thumb.jpg"
+    "thumb_jpg": "images/gallery/room6/room6_7-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room6",
@@ -613,7 +723,9 @@
     "idx": "8",
     "title_key": "room6Title",
     "thumb": "images/gallery/room6/naxos-studio-apartment-kitchen-equipme-8-thumb.webp",
-    "thumb_jpg": "images/gallery/room6/naxos-studio-apartment-kitchen-equipme-8-thumb.jpg"
+    "thumb_jpg": "images/gallery/room6/naxos-studio-apartment-kitchen-equipme-8-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room6",
@@ -624,7 +736,9 @@
     "idx": "9",
     "title_key": "room6Title",
     "thumb": "images/gallery/room6/naxos-studio-apartment-kitchen-equipme-9-thumb.webp",
-    "thumb_jpg": "images/gallery/room6/naxos-studio-apartment-kitchen-equipme-9-thumb.jpg"
+    "thumb_jpg": "images/gallery/room6/naxos-studio-apartment-kitchen-equipme-9-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room6",
@@ -635,7 +749,9 @@
     "idx": "10",
     "title_key": "room6Title",
     "thumb": "images/gallery/room6/naxos-studio-apartment-kitchen-equipm-10-thumb.webp",
-    "thumb_jpg": "images/gallery/room6/naxos-studio-apartment-kitchen-equipm-10-thumb.jpg"
+    "thumb_jpg": "images/gallery/room6/naxos-studio-apartment-kitchen-equipm-10-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room6",
@@ -646,7 +762,9 @@
     "idx": "11",
     "title_key": "room6Title",
     "thumb": "images/gallery/room6/naxos-studio-apartment-kitchen-11-thumb.webp",
-    "thumb_jpg": "images/gallery/room6/naxos-studio-apartment-kitchen-11-thumb.jpg"
+    "thumb_jpg": "images/gallery/room6/naxos-studio-apartment-kitchen-11-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room6",
@@ -657,7 +775,9 @@
     "idx": "12",
     "title_key": "room6Title",
     "thumb": "images/gallery/room6/naxos-studio-apartment-kitchen-12-thumb.webp",
-    "thumb_jpg": "images/gallery/room6/naxos-studio-apartment-kitchen-12-thumb.jpg"
+    "thumb_jpg": "images/gallery/room6/naxos-studio-apartment-kitchen-12-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room6",
@@ -668,7 +788,9 @@
     "idx": "13",
     "title_key": "room6Title",
     "thumb": "images/gallery/room6/naxos-studio-apartment-kitchen-13-thumb.webp",
-    "thumb_jpg": "images/gallery/room6/naxos-studio-apartment-kitchen-13-thumb.jpg"
+    "thumb_jpg": "images/gallery/room6/naxos-studio-apartment-kitchen-13-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room6",
@@ -679,7 +801,9 @@
     "idx": "14",
     "title_key": "room6Title",
     "thumb": "images/gallery/room6/naxos-studio-apartment-kitchen-14-thumb.webp",
-    "thumb_jpg": "images/gallery/room6/naxos-studio-apartment-kitchen-14-thumb.jpg"
+    "thumb_jpg": "images/gallery/room6/naxos-studio-apartment-kitchen-14-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room6",
@@ -690,7 +814,9 @@
     "idx": "15",
     "title_key": "room6Title",
     "thumb": "images/gallery/room6/room6_15-thumb.webp",
-    "thumb_jpg": "images/gallery/room6/room6_15-thumb.jpg"
+    "thumb_jpg": "images/gallery/room6/room6_15-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room6",
@@ -701,7 +827,9 @@
     "idx": "16",
     "title_key": "room6Title",
     "thumb": "images/gallery/room6/room6_16-thumb.webp",
-    "thumb_jpg": "images/gallery/room6/room6_16-thumb.jpg"
+    "thumb_jpg": "images/gallery/room6/room6_16-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room6",
@@ -712,7 +840,9 @@
     "idx": "17",
     "title_key": "room6Title",
     "thumb": "images/gallery/room6/room6_17-thumb.webp",
-    "thumb_jpg": "images/gallery/room6/room6_17-thumb.jpg"
+    "thumb_jpg": "images/gallery/room6/room6_17-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room6",
@@ -723,7 +853,9 @@
     "idx": "18",
     "title_key": "room6Title",
     "thumb": "images/gallery/room6/room6_18-thumb.webp",
-    "thumb_jpg": "images/gallery/room6/room6_18-thumb.jpg"
+    "thumb_jpg": "images/gallery/room6/room6_18-thumb.jpg",
+    "thumb_w": 467,
+    "thumb_h": 700
   },
   {
     "cat": "room6",
@@ -734,7 +866,9 @@
     "idx": "19",
     "title_key": "room6Title",
     "thumb": "images/gallery/room6/room6_19-thumb.webp",
-    "thumb_jpg": "images/gallery/room6/room6_19-thumb.jpg"
+    "thumb_jpg": "images/gallery/room6/room6_19-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "room6",
@@ -745,7 +879,9 @@
     "idx": "9",
     "title_key": "room6Title",
     "thumb": "images/gallery/exterior/naxos-balcony-apartments-exterior-9-thumb.webp",
-    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-9-thumb.jpg"
+    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-9-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "exterior",
@@ -756,7 +892,9 @@
     "idx": "1",
     "title_key": null,
     "thumb": "images/gallery/exterior/naxos-balcony-apartments-exterior-1-thumb.webp",
-    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-1-thumb.jpg"
+    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-1-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "exterior",
@@ -767,7 +905,9 @@
     "idx": "2",
     "title_key": null,
     "thumb": "images/gallery/exterior/naxos-balcony-apartments-exterior-2-thumb.webp",
-    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-2-thumb.jpg"
+    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-2-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "exterior",
@@ -778,7 +918,9 @@
     "idx": "3",
     "title_key": null,
     "thumb": "images/gallery/exterior/naxos-balcony-apartments-exterior-3-thumb.webp",
-    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-3-thumb.jpg"
+    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-3-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "exterior",
@@ -789,7 +931,9 @@
     "idx": "4",
     "title_key": null,
     "thumb": "images/gallery/exterior/naxos-balcony-apartments-exterior-4-thumb.webp",
-    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-4-thumb.jpg"
+    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-4-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "exterior",
@@ -800,7 +944,9 @@
     "idx": "5",
     "title_key": null,
     "thumb": "images/gallery/exterior/naxos-balcony-apartments-exterior-5-thumb.webp",
-    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-5-thumb.jpg"
+    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-5-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "exterior",
@@ -811,7 +957,9 @@
     "idx": "6",
     "title_key": null,
     "thumb": "images/gallery/exterior/naxos-balcony-apartments-exterior-6-thumb.webp",
-    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-6-thumb.jpg"
+    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-6-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "exterior",
@@ -822,7 +970,9 @@
     "idx": "7",
     "title_key": null,
     "thumb": "images/gallery/exterior/naxos-balcony-apartments-exterior-7-thumb.webp",
-    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-7-thumb.jpg"
+    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-7-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "exterior",
@@ -833,7 +983,9 @@
     "idx": "8",
     "title_key": null,
     "thumb": "images/gallery/exterior/naxos-balcony-apartments-exterior-8-thumb.webp",
-    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-8-thumb.jpg"
+    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-8-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "exterior",
@@ -844,7 +996,9 @@
     "idx": "9",
     "title_key": null,
     "thumb": "images/gallery/exterior/naxos-balcony-apartments-exterior-9-thumb.webp",
-    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-9-thumb.jpg"
+    "thumb_jpg": "images/gallery/exterior/naxos-balcony-apartments-exterior-9-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "sunset",
@@ -855,7 +1009,9 @@
     "idx": "1",
     "title_key": null,
     "thumb": "images/gallery/sunset/naxos-glinado-sunset-aegean-sea-1-thumb.webp",
-    "thumb_jpg": "images/gallery/sunset/naxos-glinado-sunset-aegean-sea-1-thumb.jpg"
+    "thumb_jpg": "images/gallery/sunset/naxos-glinado-sunset-aegean-sea-1-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "sunset",
@@ -866,7 +1022,9 @@
     "idx": "2",
     "title_key": null,
     "thumb": "images/gallery/sunset/naxos-glinado-sunset-aegean-sea-2-thumb.webp",
-    "thumb_jpg": "images/gallery/sunset/naxos-glinado-sunset-aegean-sea-2-thumb.jpg"
+    "thumb_jpg": "images/gallery/sunset/naxos-glinado-sunset-aegean-sea-2-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "sunset",
@@ -877,7 +1035,9 @@
     "idx": "3",
     "title_key": null,
     "thumb": "images/gallery/sunset/naxos-glinado-sunset-aegean-sea-3-thumb.webp",
-    "thumb_jpg": "images/gallery/sunset/naxos-glinado-sunset-aegean-sea-3-thumb.jpg"
+    "thumb_jpg": "images/gallery/sunset/naxos-glinado-sunset-aegean-sea-3-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "sunset",
@@ -888,7 +1048,9 @@
     "idx": "4",
     "title_key": null,
     "thumb": "images/gallery/sunset/naxos-glinado-sunset-aegean-sea-4-thumb.webp",
-    "thumb_jpg": "images/gallery/sunset/naxos-glinado-sunset-aegean-sea-4-thumb.jpg"
+    "thumb_jpg": "images/gallery/sunset/naxos-glinado-sunset-aegean-sea-4-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "sunset",
@@ -899,7 +1061,9 @@
     "idx": "5",
     "title_key": null,
     "thumb": "images/gallery/sunset/naxos-glinado-sunset-aegean-sea-5-thumb.webp",
-    "thumb_jpg": "images/gallery/sunset/naxos-glinado-sunset-aegean-sea-5-thumb.jpg"
+    "thumb_jpg": "images/gallery/sunset/naxos-glinado-sunset-aegean-sea-5-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   },
   {
     "cat": "sunset",
@@ -910,6 +1074,8 @@
     "idx": "6",
     "title_key": null,
     "thumb": "images/gallery/sunset/naxos-glinado-sunset-aegean-sea-6-thumb.webp",
-    "thumb_jpg": "images/gallery/sunset/naxos-glinado-sunset-aegean-sea-6-thumb.jpg"
+    "thumb_jpg": "images/gallery/sunset/naxos-glinado-sunset-aegean-sea-6-thumb.jpg",
+    "thumb_w": 700,
+    "thumb_h": 467
   }
 ]
