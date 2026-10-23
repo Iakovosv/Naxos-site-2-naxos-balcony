@@ -34,8 +34,8 @@
       });
     }
   }
-  function hide() { if (banner) banner.hidden = true; }
-  function show() { if (banner) banner.hidden = false; }
+  function hide() { if (banner) banner.hidden = true; placeFab(); }
+  function show() { if (banner) banner.hidden = false; placeFab(); }
 
   var saved = read();
   if (saved === 'granted' || saved === 'denied') {
@@ -57,5 +57,24 @@
   }
   if (reopen) {
     reopen.addEventListener('click', function () { show(); });
+  }
+
+  /* The floating booking button sits in the same bottom-right corner as the
+     cookie banner. While the banner is on screen we lift the button above it
+     by the banner's measured height, so the two never cover each other. When
+     the banner is gone the button returns to its normal offset. */
+  var fab = document.getElementById('bookFab');
+  function placeFab() {
+    if (!fab) return;
+    if (banner && !banner.hidden) {
+      fab.style.setProperty('--fab-bottom', (banner.offsetHeight + 16) + 'px');
+    } else {
+      fab.style.removeProperty('--fab-bottom');
+    }
+  }
+  if (fab) {
+    if (window.ResizeObserver && banner) new ResizeObserver(placeFab).observe(banner);
+    else window.addEventListener('resize', placeFab);
+    placeFab();
   }
 })();

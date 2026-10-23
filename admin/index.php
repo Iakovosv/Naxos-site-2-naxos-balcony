@@ -367,6 +367,34 @@ if (logged_in() && $_SERVER['REQUEST_METHOD'] === 'POST') {
         ok('Photo moved.');
         header('Location: index.php'); exit;
     }
+
+    if ($action === 'change_pw') {
+        $cur   = (string)($_POST['current'] ?? '');
+        $new   = (string)($_POST['new'] ?? '');
+        $again = (string)($_POST['new2'] ?? '');
+        $creds = is_file(CRED_FILE) ? (include CRED_FILE) : null;
+        if (!is_array($creds) || !isset($creds['hash'])
+            || !password_verify($cur, (string)$creds['hash'])) {
+            fail('The current password is not correct.');
+        } elseif (strlen($new) < 8) {
+            fail('The new password needs at least 8 characters.');
+        } elseif ($new !== $again) {
+            fail('The two new passwords do not match.');
+        } else {
+            $php = "<?php\n// Created by the gallery admin on " . date('c') . "\n"
+                 . "return ['hash' => " . var_export(password_hash($new, PASSWORD_DEFAULT), true) . "];\n";
+            if (@file_put_contents(CRED_FILE, $php, LOCK_EX) === false) {
+                fail('Could not write admin/credentials.php. Check folder permissions (755).');
+            }
+            @chmod(CRED_FILE, 0600);
+            // A password change is a good moment to hand out a fresh session id,
+            // so anything that copied the old one stops working.
+            session_regenerate_id(true);
+            throttle_clear();
+            ok('Password changed.');
+            header('Location: index.php'); exit;
+        }
+    }
 }
 
 $tiles = load_tiles();
@@ -535,6 +563,24 @@ a.signout{text-decoration:none;padding:10px 18px;border:1px solid var(--line);bo
     <?php endforeach; ?>
   </div>
   <?php if (!$counts[$sel]): ?><p class="hint">No photos in this room yet.</p><?php endif; ?>
+
+  <div class="card" style="margin-top:28px">
+    <h2 style="margin-top:0">Change password</h2>
+    <form method="post" style="max-width:420px">
+      <input type="hidden" name="action" value="change_pw">
+      <input type="hidden" name="csrf" value="<?= h(csrf()) ?>">
+      <label for="cur">Current password</label>
+      <input id="cur" type="password" name="current" required autocomplete="current-password">
+      <label for="np" style="margin-top:12px">New password (min 8 characters)</label>
+      <input id="np" type="password" name="new" required minlength="8" autocomplete="new-password">
+      <label for="np2" style="margin-top:12px">Repeat new password</label>
+      <input id="np2" type="password" name="new2" required minlength="8" autocomplete="new-password">
+      <p style="margin-top:16px"><button type="submit">Change password</button></p>
+      <p class="hint" style="margin-bottom:0">If you ever forget it: delete <code>admin/credentials.php</code>
+        through your host's file manager (or FTP) and open this page again. You will be asked to
+        choose a new password. Nothing else is lost — your photos stay where they are.</p>
+    </form>
+  </div>
 
 <?php endif; ?>
 </div>

@@ -217,6 +217,9 @@ section{padding:clamp(46px,7vw,84px) 0;}
 
 /* ================= FOOTER ================= */
 footer{background:#0f1720;color:#e8eef4;padding:48px 0 26px;}
+/* The floating booking button is fixed to the bottom-right, so the last rows
+   of the footer would sit underneath it. Reserve that corner. */
+footer{padding-bottom:calc(26px + var(--fab-clearance,84px));}
 .footer-inner{display:flex;flex-wrap:wrap;gap:28px;justify-content:space-between;align-items:flex-start;}
 footer p{margin:4px 0;}
 footer a{color:#fff;text-decoration:none;}
@@ -366,3 +369,82 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
   object-fit:cover;object-position:center;z-index:0;
 }
 .page-hero-bg{object-position:center 35%;}
+
+/* ---------------------------------------------------------- booking button
+   Floating, bottom-right, direct contact only (no Booking.com / Airbnb).
+   Built on <details> so it opens with JavaScript disabled: the browser
+   toggles it natively and every entry inside is a plain link.
+
+   It sits above the cookie banner's z-index while the banner is visible, so
+   the two never fight; cookie-consent.js adds .fab-lifted once the visitor
+   has answered, which clears the banner's space. */
+.book-fab{
+  position:fixed;right:20px;bottom:var(--fab-bottom,20px);z-index:1300;
+  font-size:1rem;line-height:1;
+}
+.book-fab[hidden]{display:none;}
+
+.book-fab>summary{
+  list-style:none;cursor:pointer;
+  display:flex;align-items:center;gap:9px;
+  min-height:52px;padding:0 22px;
+  border-radius:999px;
+  background:var(--accent-dark);color:#fff;font-weight:700;
+  letter-spacing:.4px;
+  box-shadow:0 10px 26px rgba(168,92,48,.45);
+  transition:transform .18s ease,box-shadow .18s ease;
+}
+.book-fab>summary::-webkit-details-marker{display:none;}
+.book-fab>summary:hover{transform:translateY(-2px);box-shadow:0 14px 32px rgba(168,92,48,.52);}
+.book-fab>summary:focus-visible{outline:3px solid #fff;outline-offset:3px;}
+.book-fab-ico{font-size:1.15rem;}
+
+/* The menu opens upwards, out of the bottom-right corner. */
+.book-fab-menu{
+  position:absolute;right:0;bottom:calc(100% + 10px);
+  min-width:210px;
+  background:#fff;border:1px solid var(--line);border-radius:14px;
+  box-shadow:var(--shadow-lg);padding:8px;
+  display:flex;flex-direction:column;gap:2px;
+}
+.book-fab-item{
+  display:flex;align-items:center;gap:10px;
+  min-height:48px;padding:0 14px;border-radius:10px;
+  color:var(--ink);text-decoration:none;font-weight:600;font-size:.95rem;
+}
+.book-fab-item:hover{background:var(--soft);}
+.book-fab-item:focus-visible{outline:2px solid var(--accent-dark);outline-offset:-2px;}
+
+/* Keep clear of the cookie banner. cookie-consent.js measures the banner and
+   raises --fab-bottom; if the script never runs, the plain 20px above applies. */
+.book-fab.fab-lifted{--fab-bottom:20px;}
+@media (max-width:600px){
+  .book-fab{right:14px;--fab-bottom:14px;}
+  .book-fab>summary{min-height:48px;padding:0 18px;gap:0;}
+  .book-fab-txt{display:none;}      /* icon only on narrow phones */
+  .book-fab-ico{font-size:1.35rem;}
+  .book-fab>summary{min-width:48px;justify-content:center;}
+}
+@media (prefers-reduced-motion:reduce){
+  .book-fab>summary{transition:none;}
+  .book-fab>summary:hover{transform:none;}
+}
+
+/* ------------------------------------------------------- touch target sizes
+   Small text links measured under the minimum hit area. Each one gets real
+   padding for the thumb, cancelled by an equal negative margin, so the hit area
+   grows while the layout stays pixel-identical. Touch screens get 44px; a mouse
+   is more precise, so desktop only needs WCAG 2.2 AA's 24px. */
+.socials a,.footer-legal a,.linklike,.row a,.social a{
+  display:inline-flex;align-items:center;min-height:24px;
+  padding:1px 2px;margin:-1px -2px;
+}
+@media (pointer:coarse),(max-width:900px){
+  .nav-toggle{padding:12px;margin:-4px;}
+  .socials a,.footer-legal a,.linklike,.row a,.social a{
+    min-height:44px;padding:0 2px;margin:-11px -2px;
+  }
+  .call-btn{padding:12px 18px !important;}
+  .btn-pro{padding:12px 14px;}
+  .tab-btn{min-height:46px;}
+}
