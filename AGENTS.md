@@ -8,15 +8,18 @@
 > local `preview/`: all 18 site pages, the 9 `en/` pages, `styles.css`, the full
 > `admin/` + `welcome/` system, and the complete SEO layer. Nothing is missing.
 >
-> **The LIVE site is 5 commits BEHIND and has NOT been deployed.** www.naxosbalcony.gr
-> still serves the old design: the 2 MB 1536x1024 logo, the white-on-white "ΚΑΛΕΣΤΕ ΜΑΣ"
-> (class `call`, no background), a single `@media` rule, no `styles.css` (404), no `en/`,
-> no GDPR banner, no `admin/` (404). Deploying is the ONE remaining task; it needs the
-> owner's FTP/cPanel credentials. See `README-DEPLOY.md`.
+> **The LIVE site is BEHIND and has NOT been deployed.** Re-verified 2026-10-23:
+> www.naxosbalcony.gr still serves the old design — no `styles.css` (404), no `en/`
+> (404), no `robots.txt` (404), the white-on-white "ΚΑΛΕΣΤΕ ΜΑΣ" (class `call`),
+> a 404 `favicon-naxos-balcony.png`, and the old licence label. `lang-system.js`
+> *does* exist (33 KB), which is why the live site looks passable.
+> Deploying is the ONE remaining task; it needs the owner's FTP/cPanel credentials,
+> which are not in this workspace. See `README-DEPLOY.md` and `STATUS.md` §3.1.
 >
-> **This file is NOT on GitHub.** Only `WELCOME-SYSTEM.md` is. `AGENTS.md`, `PLAN.md`
-> and `README-DEPLOY.md` exist only in this workspace, so a fresh clone will not have
-> the project memory.
+> **The docs are now on GitHub.** `AGENTS.md`, `PLAN.md`, `README-DEPLOY.md` and
+> `STATUS.md` were pushed 2026-10-23, so a fresh clone has the project memory.
+> NOTE: the repo is **public**; the default Wi-Fi password it documents
+> (`NAXOS2027`) was already public in `admin/_lib.php` beforehand.
 >
 > ### Done since the above (session 2026-10-23, part 2)
 > 1. **Footer licence label — DONE.** All 9 Greek pages + `lang-system.js` now say
@@ -212,11 +215,35 @@ hero (contact, privacy, cookies, 404) put white text on white. The logo is white
 width — verified with real screenshot pixels, not computed styles.
 
 **Push.** Done 2026-10-23 with a write-scoped classic PAT supplied by the owner
-(`ghp_…`, revoked by him afterwards). The system `GITHUB_TOKEN` is read-only for
+(`ghp_…`, to be revoked by him afterwards). The system `GITHUB_TOKEN` is read-only for
 contents and returns 403, so a fresh write token must be requested per push session.
-The URL carrying it was never written to any config: the token went inline on the
-`git push` command line only, and every temporary clone had its remote reset to the
-plain https form afterwards.
+
+**The correct push recipe** (this replaces the older one in §7 — that one used
+`git reset --soft`, which populates the index but NOT the working tree, so the clone
+ends up empty):
+
+```bash
+# 1. clone the real repo (so the root layout is right) into a scratch dir
+git clone "https://$TOK@github.com/Iakovosv/Naxos-site-2-naxos-balcony.git" /tmp/push
+cd /tmp/push
+# 2. overlay preview/ onto the root, EXCLUDING secrets. There is no rsync on this
+#    image — use the python copy loop, or an explicit exclusion list.
+#    Never copy: admin/credentials.php, admin/*-data.php, admin/staff.json, api/
+# 3. verify: git status --short must show no deletions and no secret paths
+git add -A && git commit && git push origin main
+# 4. reset the remote URL to the plain https form, then rm -rf /tmp/push
+```
+
+Two traps that cost time: the repo root layout differs from this workspace's
+`preview/` layout (a push from here would move the site into a subdirectory), and
+`git reset --soft origin/main` leaves no files on disk.
+
+**Do not run `tools/gen/build.py` casually.** `OUT` is hardcoded to
+`/workspace/project/preview`, so it overwrites the live preview in place, and until
+the 2026-10-23 fix `translations.json` still held the old licence label — a build
+would have silently reverted the correction on all 18 pages. The generator is now in
+sync (a build produces byte-identical output); keep it that way, since the pages are
+generated and hand edits are lost.
 
 ## 7. Verification commands (run before every push)
 
@@ -246,18 +273,9 @@ def kv(f):
 
 Note: if the port changes, `sed -i 's/12005/12000/g' *.mjs` — the scripts have hardcoded ports.
 
-**Push recipe** (root-level files, preserve remote history):
-```bash
-rm -rf /tmp/site-upload && mkdir /tmp/site-upload
-cp -r /workspace/project/preview/. /tmp/site-upload/
-cd /tmp/site-upload && git init -q -b main && git config user.name openhands \
-  && git config user.email openhands@all-hands.dev && git add -A && git commit -q -m "..."
-git remote add origin "https://${TOKEN}@github.com/Iakovosv/Naxos-site-2-naxos-balcony.git"
-git fetch -q origin main && git reset --soft origin/main && git commit -q -m "..."   # rebase onto remote
-git push -q origin main
-git remote set-url origin "https://github.com/Iakovosv/Naxos-site-2-naxos-balcony.git"  # strip token
-```
-Then verify with the GitHub API tree endpoint and `grep -rl <token>` to prove no leakage.
+**Push recipe** — superseded. See the corrected recipe in §6 above. The old one
+used `git reset --soft origin/main`, which populates the index but leaves the working
+tree empty, so the resulting commit deleted the whole site.
 
 > ### ⚠️ Layout pitfall — read before pushing
 > The GitHub repo keeps the site at its **root** (`index.html` next to `admin/`).
