@@ -128,11 +128,17 @@ section{padding:clamp(46px,7vw,84px) 0;}
 .pill{border:1px solid var(--line);background:var(--soft);border-radius:999px;padding:8px 14px;font-size:.86rem;color:#33414e;}
 
 .rooms{background:var(--soft);}
-.room{background:#fff;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);transition:transform .25s ease,box-shadow .25s ease;}
+.room{position:relative;background:#fff;border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);transition:transform .25s ease,box-shadow .25s ease;}
 .room:hover{transform:translateY(-6px);box-shadow:var(--shadow-lg);}
 .room img{width:100%;height:190px;object-fit:cover;}
 .room h3{padding:16px 18px 6px;margin:0;font-size:1.05rem;color:var(--accent-2);}
 .room p{padding:0 18px 18px;margin:0;color:var(--muted);font-size:.92rem;}
+
+/* Room title links to that room's photos. The ::after overlay makes the whole
+   card clickable while the accessible name stays just the room title. */
+.room-link{text-decoration:none;color:inherit;}
+.room-link::after{content:"";position:absolute;inset:0;border-radius:inherit;}
+.room-link:hover{text-decoration:underline;}
 
 /* ================= BUTTONS ================= */
 .btn{
@@ -149,7 +155,9 @@ section{padding:clamp(46px,7vw,84px) 0;}
 
 /* ================= GALLERY ================= */
 .wrap{max-width:1140px;margin:0 auto;padding:28px 20px 64px;}
-.tabs{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;}
+/* scroll-margin keeps the tabs clear of the sticky navbar when the room cards
+   deep-link to #tabs. */
+.tabs{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:18px;scroll-margin-top:calc(var(--nav-h) + 16px);}
 .tab-btn{
   font:inherit;font-size:.9rem;font-weight:500;cursor:pointer;
   padding:9px 16px;border-radius:999px;border:1px solid var(--line);

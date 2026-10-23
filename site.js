@@ -76,20 +76,34 @@
   const allTiles = Array.from(grid.querySelectorAll('.tile'));
   const tabs = document.getElementById('tabs');
 
+  function applyFilter(filter, btn) {
+    if (info) info.textContent = details[filter] || '';
+    if (tabs) {
+      tabs.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
+      if (btn) btn.classList.add('active');
+    }
+    allTiles.forEach(function (t) {
+      t.style.display = (filter === 'all' || t.dataset.cat === filter) ? '' : 'none';
+    });
+  }
+
   if (tabs) {
     tabs.addEventListener('click', function (e) {
       const btn = e.target.closest('.tab-btn');
       if (!btn) return;
-      const filter = btn.getAttribute('data-filter');
-      if (info) info.textContent = details[filter] || '';
-      tabs.querySelectorAll('.tab-btn').forEach(function (b) { b.classList.remove('active'); });
-      btn.classList.add('active');
-      allTiles.forEach(function (t) {
-        t.style.display = (filter === 'all' || t.dataset.cat === filter) ? '' : 'none';
-      });
+      applyFilter(btn.getAttribute('data-filter'), btn);
     });
   }
   if (info) info.textContent = details.all;
+
+  // The room cards on the home page link here as gallery.html?room=room3#tabs.
+  // Only accept a key that the tabs already know, so a stray query string can
+  // never produce an empty gallery.
+  const wanted = new URLSearchParams(location.search).get('room');
+  if (wanted && tabs && Object.prototype.hasOwnProperty.call(details, wanted)) {
+    const btn = tabs.querySelector('.tab-btn[data-filter="' + wanted + '"]');
+    if (btn) applyFilter(wanted, btn);
+  }
 
   // Lightbox
   const lb = document.getElementById('lightbox');
