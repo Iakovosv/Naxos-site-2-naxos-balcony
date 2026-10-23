@@ -415,6 +415,16 @@ Priority order agreed:
   the accessible name: `aria-label="EL — Ελληνικά"`, not `aria-label="Ελληνικά"`.
 
 
+## 10b. The two admin logins share one password
+
+`admin/index.php` (the gallery) keeps its **own** session flag and does not include
+`_lib.php`. The pages that do include it — `guests.php`, `calendar.php`, `stats.php`,
+`staff.php` — gate on `require_login('admin')`, which reads `$_SESSION['role']`.
+So the gallery login must set `$_SESSION['role'] = 'admin'` as well as
+`$_SESSION['ok']`. When it set only `ok`, an owner signing in at `/admin/` was
+redirected from `guests.php` back to `guests.php` forever (measured: 50 hops) and
+never reached the booking page. Keep the two in step.
+
 ## 11. Push status and the preview link
 
 ### Push — DONE

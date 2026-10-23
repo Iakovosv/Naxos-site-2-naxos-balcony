@@ -298,3 +298,14 @@ git add -A && git commit -F /tmp/msg.txt
 git push --no-verify "https://${PAT}@github.com/Iakovosv/Naxos-site-2-naxos-balcony.git" fixes:main
 cd /workspace/project && git worktree remove --force /tmp/ghm
 ```
+
+## Διορθώθηκε: ατέρμονος βρόχος στον admin
+
+Η σύνδεση στη **γκαλερί** (`admin/index.php`) έθετε `$_SESSION['ok']` αλλά ποτέ
+`$_SESSION['role']`, ενώ οι σελίδες του `_lib.php` (`guests.php`, `calendar.php`,
+`stats.php`, `staff.php`) απαιτούν `require_login('admin')`. Ο ιδιοκτήτης που
+συνδεόταν στο `/admin/` και μετά πήγαινε στις κρατήσεις έπεφτε σε **ατέρμονο
+βρόχο** (μετρήθηκαν 50 ανακατευθύνσεις) και δεν έβλεπε ποτέ τη σελίδα.
+
+Διορθώθηκε: η σύνδεση ορίζει πλέον `role = 'admin'`, και το μενού της γκαλερί
+απέκτησε συνδέσμους προς Κρατήσεις / Ημερολόγιο / Στατιστικά.

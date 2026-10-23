@@ -194,6 +194,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'setup
         } else {
             @chmod(CRED_FILE, 0600);
             $_SESSION['ok'] = true;
+            // The _lib.php pages gate on the role, so the gallery login has to set
+            // it too. Without it guests.php sees an empty role and bounces back here.
+            $_SESSION['role'] = 'admin';
             header('Location: index.php'); exit;
         }
     }
@@ -263,6 +266,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'login
             throttle_clear();
             session_regenerate_id(true);
             $_SESSION['ok'] = true;
+            $_SESSION['role'] = 'admin';
             header('Location: index.php'); exit;
         }
         throttle_fail();
@@ -467,6 +471,7 @@ button.danger{background:#b23b3b}
 .tabs a.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .hint{color:var(--muted);font-size:.85rem}
 .top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.acts{display:flex;gap:6px;flex-wrap:wrap}
 a.signout{text-decoration:none;padding:10px 18px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font-weight:600;font-size:.9rem}
 </style>
 </head>
@@ -506,7 +511,12 @@ a.signout{text-decoration:none;padding:10px 18px;border:1px solid var(--line);bo
       <h1>Gallery admin</h1>
       <p class="hint">Uploads go live immediately. The gallery pages are rebuilt automatically.</p>
     </div>
-    <a class="signout" href="?logout=1">Sign out</a>
+    <div class="acts">
+      <a class="signout" href="guests.php">Bookings</a>
+      <a class="signout" href="calendar.php">Calendar</a>
+      <a class="signout" href="stats.php">Statistics</a>
+      <a class="signout" href="?logout=1">Sign out</a>
+    </div>
   </div>
 
   <?php foreach ($flash as [$kind, $msg]): ?>
