@@ -409,8 +409,13 @@ Priority order agreed:
 ## 11. Push status and the preview link
 
 ### Push — DONE
-Latest: `510e721` on `main` (2026-10-23, late) — the guest-banner and
-credentials-lockout fixes, section 14. Before it, `42df35b`.
+Latest: `3e38dbc` on `main` (2026-10-23) — room-card WebP + CLS dimensions,
+contrast fixes (Lighthouse a11y 96 -> 100), BreadcrumbList on forecast-pro and
+the legal pages, and `tools/audit/linkcheck.mjs`. Before it, `510e721` (the
+guest-banner and credentials-lockout fixes, section 14), then `42df35b`.
+
+`tools/` is now tracked in the repo. It was local-only before, so the
+verification scripts could not be reproduced from a fresh clone.
 Commit `b19af95` is on `origin/main` of `Iakovosv/Naxos-site-2-naxos-balcony`.
 Verified via the API: 38 entries at the repo root, 9 files in `en/`, and
 `admin/` contains only `index.php` — `credentials.php` is NOT there (404).
