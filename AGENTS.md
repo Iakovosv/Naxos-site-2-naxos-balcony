@@ -409,6 +409,8 @@ Priority order agreed:
 ## 11. Push status and the preview link
 
 ### Push — DONE
+Latest: `510e721` on `main` (2026-10-23, late) — the guest-banner and
+credentials-lockout fixes, section 14. Before it, `42df35b`.
 Commit `b19af95` is on `origin/main` of `Iakovosv/Naxos-site-2-naxos-balcony`.
 Verified via the API: 38 entries at the repo root, 9 files in `en/`, and
 `admin/` contains only `index.php` — `credentials.php` is NOT there (404).
