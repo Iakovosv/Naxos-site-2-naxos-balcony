@@ -130,9 +130,25 @@ function throttle_clear(): void { @unlink(THROTTLE_F); }
  *
  *  Η σύγκριση γίνεται πάντα με password_verify, ακόμη κι αν ο χρήστης δεν
  *  υπάρχει, ώστε ο χρόνος απάντησης να μη δείχνει ποιοι κωδικοί ισχύουν. */
+function cred_hash(): string {
+    if (!is_file(CRED_FILE)) return '';
+    $creds = @include CRED_FILE;
+    if (!is_array($creds)) return '';
+    // Δεκτό και το παλιό κλειδί 'pass': αρχεία από παλιότερες εκδόσεις το χρησιμοποιούν.
+    foreach (['hash', 'pass'] as $k) {
+        $h = (string)($creds[$k] ?? '');
+        if ($h !== '') return $h;
+    }
+    return '';
+}
+
+/** Το admin έχει στηθεί; Κρίνουμε από το περιεχόμενο, όχι από την ύπαρξη του
+ *  αρχείου: ένα αρχείο χωρίς έγκυρο κλειδί θα έκλεινε την σελίδα ρύθμισης και θα
+ *  άφηνε τον ιδιοκτήτη χωρίς κανέναν τρόπο να το διορθώσει. */
+function admin_configured(): bool { return cred_hash() !== ''; }
+
 function verify_login(string $pw): ?string {
-    $creds = is_file(CRED_FILE) ? (include CRED_FILE) : null;
-    $adminHash = is_array($creds) && isset($creds['hash']) ? (string)$creds['hash'] : '';
+    $adminHash = cred_hash();
     $staff = staff_load();
 
     $hit = $adminHash !== '' && password_verify($pw, $adminHash) ? 'admin' : null;

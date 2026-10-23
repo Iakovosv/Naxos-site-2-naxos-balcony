@@ -328,7 +328,7 @@ details.help div{margin-top:10px;font-size:.88rem;color:var(--muted)}
 <body>
 <div class="wrap">
 
-<?php if (!is_file(CRED_FILE)): ?>
+<?php if (!admin_configured()): ?>
 
   <h1>Links επισκεπτών</h1>
   <div class="warn">

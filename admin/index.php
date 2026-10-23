@@ -157,9 +157,30 @@ function slugify(string $s): string {
     return trim($s, '-') ?: 'photo';
 }
 
+/* ------------------------------------------------------------------ credentials
+
+   Κρίνουμε από το περιεχόμενο του αρχείου, όχι από την ύπαρξή του: αρχείο χωρίς
+   έγκυρο κλειδί θα έκλεινε τη σελίδα ρύθμισης και θα άφηνε τον ιδιοκτήτη χωρίς κανέναν
+   τρόπο να το διορθώσει. Η σελίδα είναι αυτόνομη, γι' αυτό τα δύο βοηθήματα υπάρχουν
+   και εδώ, όπως και στο admin/_lib.php. */
+
+function cred_hash(): string {
+    if (!is_file(CRED_FILE)) return '';
+    $creds = @include CRED_FILE;
+    if (!is_array($creds)) return '';
+    // Δεκτό και το παλιό κλειδί 'pass'.
+    foreach (['hash', 'pass'] as $k) {
+        $h = (string)($creds[$k] ?? '');
+        if ($h !== '') return $h;
+    }
+    return '';
+}
+
+function admin_configured(): bool { return cred_hash() !== ''; }
+
 /* --------------------------------------------------------------- bootstrap */
 
-$needs_setup = !is_file(CRED_FILE);
+$needs_setup = !admin_configured();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'setup' && $needs_setup) {
     $pw = (string)($_POST['password'] ?? '');
@@ -230,7 +251,7 @@ function throttle_clear(): void {
     @unlink(THROTTLE_FILE);
 }
 
-$creds = $needs_setup ? null : (is_file(CRED_FILE) ? (include CRED_FILE) : null);
+$creds = $needs_setup ? null : ['hash' => cred_hash()];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'login') {
     $wait = throttle_wait();
@@ -372,7 +393,7 @@ if (logged_in() && $_SERVER['REQUEST_METHOD'] === 'POST') {
         $cur   = (string)($_POST['current'] ?? '');
         $new   = (string)($_POST['new'] ?? '');
         $again = (string)($_POST['new2'] ?? '');
-        $creds = is_file(CRED_FILE) ? (include CRED_FILE) : null;
+        $creds = ['hash' => cred_hash()];
         if (!is_array($creds) || !isset($creds['hash'])
             || !password_verify($cur, (string)$creds['hash'])) {
             fail('The current password is not correct.');

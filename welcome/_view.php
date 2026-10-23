@@ -229,12 +229,15 @@ $otherLang = ($guest !== null && $status === 'active')
 
 <main class="w-main">
 
+<?php /* Υπενθύμιση για τον ιδιοκτήτη, όχι για τον επισκέπτη. */ ?>
+<?php if (is_admin()): ?>
 <div class="w-draft">
   <strong><?= h($t['draft']) ?></strong> —
   <?= $lang === 'en'
       ? 'the wording below is a placeholder and will be replaced with your own text.'
       : 'τα κείμενα παρακάτω είναι προσωρινά και θα αντικατασταθούν με τα δικά σου.' ?>
 </div>
+<?php endif; ?>
 
 <?php if ($status === 'active' && $guest !== null): ?>
 

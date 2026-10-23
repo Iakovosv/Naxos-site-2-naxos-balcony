@@ -641,3 +641,75 @@ are only as private as the link. When changing this code, keep in mind:
 - Codes must never reach the accountant or cleaner pages. `cleaning.php` and
   `accountant.php` contain zero references to `['wifi']` / `['doorCode']` — keep it
   that way, and re-grep after edits.
+
+---
+
+## 14. Session 4 — two real bugs in the welcome/admin system (2026-10-23, late)
+
+The owner asked whether the admin (calendar, booking fields, statistics, staff
+accounts) was really built. It was — but auditing it end-to-end with a live test
+server turned up two real defects and one deployment trap. All three are fixed.
+
+### 14.1 The "ΠΡΟΧΕΙΡΟ ΚΕΙΜΕΝΟ" banner was shown to the GUEST
+
+`welcome/_view.php` rendered a yellow box on every guest page reading
+**"ΠΡΟΧΕΙΡΟ ΚΕΙΜΕΝΟ — τα κείμενα παρακάτω είναι προσωρινά…"**. It was a note to
+the owner, but it was never hidden, so a paying guest saw it.
+
+Fixed by wrapping it in `<?php if (is_admin()): ?>`. `_lib.php` starts the session,
+so `is_admin()` is available. Verified both ways: guests see nothing, a logged-in
+admin still sees the reminder.
+
+⚠️ **When the real welcome copy is written, remove the block entirely** — it is
+scaffolding, not content.
+
+### 14.2 The setup check looked at file EXISTENCE, not file CONTENT
+
+`guests.php` and `index.php` decided whether the admin was configured with
+`!is_file(CRED_FILE)`. So a `credentials.php` that *exists* but holds no key the
+code recognises (e.g. written under an older key name) made both pages show a
+**login form** — while the setup form, the only way to fix it, never appeared.
+The owner would be locked out with no in-site recovery.
+
+Fixed: `cred_hash()` reads the file and accepts `hash` **or** the legacy `pass`;
+`admin_configured()` is `cred_hash() !== ''`. Both `guests.php` and `index.php` now
+use it, so a bad file re-offers the setup form instead of locking the owner out.
+
+⚠️ **`admin/index.php` is standalone — it does NOT require `_lib.php`.** It carries
+its own copy of these two helpers. If you change one, change both, or you get a
+`Cannot redeclare` fatal. Verified they never load together.
+
+### 14.3 Deleted a stale dev `credentials.php`
+
+`preview/admin/credentials.php` held `password_hash('test123')`. It was never
+committed (gitignored) and is not in the repo, but it sat in the working tree and
+would have handed out a known password if uploaded. Deleted.
+
+### 14.4 End-to-end verification recipe (reuse this)
+
+```
+rm -rf /tmp/e2e && mkdir -p /tmp/e2e && cp -r preview/. /tmp/e2e/ && cd /tmp/e2e
+rm -f admin/staff-data.php admin/guests-data.php
+php -r 'require "admin/_lib.php";
+  file_put_contents("admin/credentials.php",
+    "<?php\nreturn [\"hash\" => ".var_export(password_hash("AdminPass123",PASSWORD_DEFAULT),true)."];\n");
+  foreach ([["accountant","LogistisPass1"],["cleaner1","CleanPass111"],["cleaner2","CleanPass222"]] as $s)
+    staff_set($s[0],$s[1]);'
+php -S 127.0.0.1:PORT -t .
+```
+
+Then drive it over HTTP. Traps that cost time:
+
+- **Login needs no CSRF token** — `check_csrf()` runs for every POST, but the login
+  form deliberately omits the field and `require_login()` handles `action=login`
+  *before* `check_csrf()`. Do not "fix" this: adding CSRF to the login form would
+  break login on an expired session.
+- **`guests.php` action is `add`**, not `save`. Wrong action = silent no-op, no error.
+- **Room keys are `room3`…`room6`**, not "Studio 1". A bad room fails validation
+  silently in a script.
+- **`calendar.php` takes `?m=YYYY-MM`** (not `y`/`mo`). `accountant.php` takes
+  `?y=`&`mo=` — the two pages differ.
+- **Role checks redirect** (302) to the role's own home. Assert on the **final URL**,
+  not on response text, or every role looks like it can see everything.
+- **`cleaning.php` prints no guest PII.** Assert on the *visible* text (strip
+  `<script>`/`<style>` first) — a raw `'@' in html` test matches CSS `@media`.
