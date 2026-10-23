@@ -404,12 +404,24 @@ Priority order agreed:
 - Text parity is verified word-by-word against `/tmp/naxos` (the LIVE copy). The only
   expected differences are the footer's `Αρ. Γνωστοποίησης` (JS rewrites
   `Αριθμός άδειας` on LIVE too) and the intentional additions.
+- **Compare against the LIVE originals, not against `HEAD`.** A `git diff HEAD` only
+  proves the files have not changed since the last commit; it cannot prove they match
+  what visitors see. Re-download the six originals first:
+  `curl -sS https://www.naxosbalcony.gr/<page>.html -o /tmp/live/<page>.html`.
+- **A Lighthouse a11y score of 100 does not mean zero findings.** Three WCAG 2.5.3
+  label-in-name failures sat on all 18 pages while the score read 100, because
+  Lighthouse weights that audit at 0. Check `audits[*].score < 1` over
+  `categories.accessibility.auditRefs`, not just the score. The visible text must lead
+  the accessible name: `aria-label="EL — Ελληνικά"`, not `aria-label="Ελληνικά"`.
 
 
 ## 11. Push status and the preview link
 
 ### Push — DONE
-Latest: `3e38dbc` on `main` (2026-10-23) — room-card WebP + CLS dimensions,
+Latest: `11e5c6d` on `main` — WCAG 2.5.3 label-in-name on the EL/EN links and the
+booking button (aria-label only, no visible text change; Lighthouse weight 0, so the
+a11y score stayed 100 while the findings were real). Before it `dd0c5c5` (deploy guide),
+then `3e38dbc` — room-card WebP + CLS dimensions,
 contrast fixes (Lighthouse a11y 96 -> 100), BreadcrumbList on forecast-pro and
 the legal pages, and `tools/audit/linkcheck.mjs`. Before it, `510e721` (the
 guest-banner and credentials-lockout fixes, section 14), then `42df35b`.
