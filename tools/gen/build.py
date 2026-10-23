@@ -97,7 +97,7 @@ EXTRA = {
     # Floating booking button. Direct contact only: the owner does not want
     # visitors sent to Booking.com or Airbnb.
     "bookFab": ("ΚΡΑΤΗΣΗ", "BOOK"),
-    "bookFabLabel": ("Κράτηση — τρόποι επικοινωνίας", "Book — ways to contact us"),
+    "bookFabLabel": ("ΚΡΑΤΗΣΗ — τρόποι επικοινωνίας", "BOOK — ways to contact us"),
     "bookWaText": ("Γεια σας! Ενδιαφέρομαι για διαμονή στο Naxos Balcony Apartments.\n"
                    "Ημερομηνίες: \nΆτομα: ",
                    "Hello! I would like to book a stay at Naxos Balcony Apartments.\n"
@@ -339,9 +339,9 @@ def nav(active, lang, cur_file):
     el_cls = " active" if lang == "el" else ""
     en_cls = " active" if lang == "en" else ""
     li.append('        <li class="lang-group">\n'
-              '          <a id="langEl" class="lang-link%s" href="%s" hreflang="el" lang="el" aria-label="Ελληνικά">EL</a>\n'
+              '          <a id="langEl" class="lang-link%s" href="%s" hreflang="el" lang="el" aria-label="EL — Ελληνικά">EL</a>\n'
               '          <span class="sep" aria-hidden="true">|</span>\n'
-              '          <a id="langEn" class="lang-link%s" href="%s" hreflang="en" lang="en" aria-label="English">EN</a>\n'
+              '          <a id="langEn" class="lang-link%s" href="%s" hreflang="en" lang="en" aria-label="EN — English">EN</a>\n'
               '        </li>' % (el_cls, el_href, en_cls, en_href))
     call_text = t(lang, "callUs") if lang == "en" else "ΚΑΛΕΣΤΕ ΜΑΣ"
     call_i18n = "" if lang == "en" else ' data-i18n="callUs"'
