@@ -233,6 +233,7 @@ tr.today-row td{background:var(--cleanbg);font-weight:700}
 </head>
 <body>
 <div class="wrap">
+<?php render_notice(); ?>
 
   <?php $flash = $_SESSION['flash'] ?? []; unset($_SESSION['flash']); ?>
   <?php foreach ($flash as [$kind, $msg]): ?>

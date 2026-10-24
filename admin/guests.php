@@ -371,6 +371,7 @@ details.help div{margin-top:10px;font-size:.88rem;color:var(--muted)}
 </head>
 <body>
 <div class="wrap">
+<?php render_notice(); ?>
 
 <?php /* Η σύνδεση γίνεται στο require_login(): ο ασύνδετος βλέπει εκεί τη φόρμα
          και δεν φτάνει ποτέ σε αυτό το σημείο. */ ?>

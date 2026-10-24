@@ -155,6 +155,7 @@ button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:11px 18p
 </head>
 <body>
 <div class="wrap">
+<?php render_notice(); ?>
 
   <div class="top">
     <div>

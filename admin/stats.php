@@ -152,6 +152,7 @@ tr.zero td{color:#b6c0c9}
 </head>
 <body>
 <div class="wrap">
+<?php render_notice(); ?>
 
   <div class="top">
     <div>

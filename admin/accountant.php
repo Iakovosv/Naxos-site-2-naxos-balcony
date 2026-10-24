@@ -176,6 +176,7 @@ tr.total td{font-weight:800;background:#fafcfd;border-top:2px solid var(--line)}
 </head>
 <body>
 <div class="wrap">
+<?php render_notice(); ?>
 
   <?php if (viewing_as()): ?>
     <div class="card noprint" style="border-left:4px solid var(--accent);margin:0 0 16px">

@@ -218,13 +218,18 @@ function render_login_page(string|array|null $need = null): void {
         $who = role_label($need);
     }
 
+    /* Ένα χρώμα ανά ρόλο. Οι σελίδες σύνδεσης ήταν πανομοιότυπες — ίδιος τίτλος,
+       ίδια εμφάνιση — οπότε δεν φαινόταν σε ποιανού τη σελίδα βρίσκεσαι. */
+    $tone = str_starts_with($who, 'Λογιστ') ? '#2f6f4f'
+          : (str_starts_with($who, 'Καθαρίστρ') ? '#2b5f8f' : '#c2703f');
+
     header('X-Robots-Tag: noindex, nofollow, noarchive');
     ?><!DOCTYPE html>
 <html lang="el">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Σύνδεση — Naxos Balcony Apartments</title>
+<title>Σύνδεση <?= h($who) ?> — Naxos Balcony</title>
 <meta name="robots" content="noindex,nofollow,noarchive">
 <meta name="theme-color" content="#0c1822">
 <link rel="icon" href="../favicon.ico" sizes="any">
@@ -248,13 +253,17 @@ button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:11px 20p
 .q{font-weight:700;font-size:1rem;background:#f6f8fa;border:1px solid var(--line);
    border-radius:10px;padding:10px 12px;margin:0 0 8px}
 .back{display:inline-block;margin-top:14px;color:var(--muted);font-size:.86rem}
+.brand{margin:0 0 6px;font-size:.76rem;font-weight:700;letter-spacing:.09em;
+       text-transform:uppercase;color:var(--muted)}
+h1{color:var(--tone)}
 </style>
 </head>
-<body>
+<body style="--tone:<?= h($tone) ?>">
 <div class="wrap">
-  <h1>Naxos Balcony</h1>
-  <p class="hint">Σύνδεση — <?= h($who) ?></p>
-  <div class="card">
+  <p class="brand">Naxos Balcony Apartments</p>
+  <h1><?= h($who) ?></h1>
+  <p class="hint">Σύνδεση προσωπικού</p>
+  <div class="card" style="border-top:5px solid var(--tone)">
     <?php if (!empty($_SESSION['login_error'])): ?>
       <div class="flash"><?= h((string)$_SESSION['login_error']) ?></div>
       <?php unset($_SESSION['login_error']); ?>
@@ -283,6 +292,21 @@ button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:11px 20p
 </div>
 </body>
 </html><?php
+}
+
+/** Μήνυμα που ταξιδεύει με τη συνεδρία ως την επόμενη σελίδα.
+ *
+ *  Χρησιμοποιείται όταν ένας συνδεδεμένος χρήστης ανοίξει σελίδα άλλου ρόλου:
+ *  αντί να πεταχτεί σιωπηλά πίσω στη δική του (και να νομίζει ότι «όλα τα link
+ *  δείχνουν το ίδιο»), φτάνει εκεί με εξήγηση. */
+function notice_set(string $m): void { $_SESSION['notice'] = $m; }
+
+function render_notice(): void {
+    if (empty($_SESSION['notice'])) return;
+    $m = (string)$_SESSION['notice'];
+    unset($_SESSION['notice']);
+    echo '<div class="card noprint" style="border-left:4px solid var(--accent);'
+       . 'margin:0 0 16px">' . h($m) . '</div>';
 }
 
 /** Πρέπει να κληθεί μετά το session_start() και πριν τυπωθεί οποιοδήποτε HTML.
@@ -371,6 +395,13 @@ function require_login(string|array|null $need = null, string $throttle = 'admin
             $role = 'admin';
         }
         if (!in_array($role, $allowed, true)) {
+            /* Ο χρήστης άνοιξε σελίδα άλλου ρόλου. Του το λέμε, αντί να τον
+               πετάξουμε σιωπηλά πίσω — αλλιώς μοιάζει με «όλα τα link δείχνουν
+               το ίδιο». */
+            $for = implode(' / ', array_map('role_label', $allowed));
+            notice_set('Είσαι συνδεδεμένος ως ' . role_label($role) . '. '
+                     . 'Η σελίδα που άνοιξες προορίζεται για: ' . $for . '. '
+                     . 'Σε πήγα στη δική σου σελίδα.');
             header('Location: ' . home_for_role($role)); exit;
         }
     }

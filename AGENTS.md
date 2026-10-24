@@ -911,5 +911,17 @@ Then drive it over HTTP. Traps that cost time:
   `?y=`&`mo=` — the two pages differ.
 - **Role checks redirect** (302) to the role's own home. Assert on the **final URL**,
   not on response text, or every role looks like it can see everything.
+  - **Every staff page shares one `$_SESSION`**, but `/admin/` (the gallery) does **not**:
+    it calls `session_start()` itself and sets `$_SESSION['ok']`/`['role']` only for the
+    gallery. Logging into the gallery does not open the staff pages, and vice versa.
+    Two logins are expected — do not "unify" them.
+  - **A wrong-role visit is a 302, not a 200 with a message.** `require_login($need)`
+    calls `notice_set()` and then redirects; the explanation is printed by
+    `render_notice()` on the *destination* page. A test that asserts on the 302 body
+    sees no message — follow the redirect (see `test_admin.py` §19).
+  - **`render_login_page()` is shared by all four roles.** It draws standalone HTML and
+    never includes the calling page's CSS. It sets the `<h1>` to the role name and a
+    per-role `--tone`. Hardcoding "Naxos Balcony" there makes every login page look
+    identical — the bug reported as "every link shows the same thing".
 - **`cleaning.php` prints no guest PII.** Assert on the *visible* text (strip
   `<script>`/`<style>` first) — a raw `'@' in html` test matches CSS `@media`.

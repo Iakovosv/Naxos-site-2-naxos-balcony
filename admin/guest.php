@@ -104,6 +104,7 @@ code.lnk{background:var(--soft);border:1px solid var(--line);border-radius:8px;p
 </head>
 <body>
 <div class="wrap">
+<?php render_notice(); ?>
 
   <div class="top">
     <div>

@@ -201,6 +201,7 @@ tfoot th{background:#fff;border-top:2px solid var(--line);font-size:.8rem;text-t
 </head>
 <body>
 <div class="wrap">
+<?php render_notice(); ?>
 
   <div class="top">
     <div>
