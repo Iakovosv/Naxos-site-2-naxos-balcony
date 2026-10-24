@@ -1000,6 +1000,51 @@ if (@mkdir($p['outside_dir'], 0755)) { @chmod($p['outside_dir'], 0755); return t
 
 ---
 
+## 0u. 🔄 ΠΟΙΟ ΑΡΧΕΙΟ ΤΡΟΦΟΔΟΤΕΙ ΠΟΙΑ ΣΕΛΙΔΑ — 2026-10-24
+
+**Ερώτηση ιδιοκτήτη:** «receiver και receiver-pro είναι για τη σελίδα weather
+και weather pro αντίστοιχα, έτσι;»
+
+**Όχι ακριβώς.** Τα `receiver*` **δεν** τα καλεί καμία σελίδα.
+
+| Σελίδα | Τι καλεί **πραγματικά** (έλεγχος δικτύου browser) |
+|---|---|
+| `weather.html` ΕΛ | `weather-latest.php` |
+| `en/weather.html` EN | `weather-latest.php` |
+| `forecast-pro.html` ΕΛ | `weather-latest-pro.php` + `weather-forecast.php` |
+| `en/forecast-pro.html` EN | `weather-latest-pro.php` + `weather-forecast.php` |
+
+**Τα `receiver*`** είναι **είσοδοι** για τον σταθμό (POST), όχι έξοδοι για τον
+browser. Καμία σελίδα δεν τα καλεί — επιβεβαιώθηκε με έλεγχο δικτύου.
+
+**ΕΝΑΣ σταθμός** (GW1200A) τροφοδοτεί και τα δύο: τα κοινά πεδία των
+`latest` / `latest-pro` είναι **ακριβώς ίδια**. Το `-pro` έχει 3 επιπλέον
+(`dew_point`, `solar_radiation`, `history`).
+
+### ✅ ΔΟΥΛΕΥΟΥΝ ΟΛΑ — δοκιμασμένο με πραγματικά δεδομένα
+
+| Σελίδα | Αποτέλεσμα |
+|---|---|
+| `weather.html` / `en/weather.html` | 18° (live: 17,6°) ✅ |
+| `forecast-pro.html` / `en/forecast-pro.html` | 7 πεδία + **3/3 charts** ✅ |
+
+**Και τα 4 αρχεία** (`latest`, `latest-pro`, `receiver`, `receiver-pro`) είναι
+σωστά. **Καμία αλλαγή δεν χρειάζεται.**
+
+### ⚠️ ΔΙΟΡΘΩΣΗ ΔΙΚΗΣ ΜΟΥ ΛΑΘΟΥΣ
+
+Είχα γράψει ότι τα `.json` είναι **«παγωμένα» (28 λεπτά πίσω)**.
+
+**ΔΕΝ ΙΣΧΥΕΙ.** Έβλεπα **παλιό αντίγραφο από cache**. Με ταυτόχρονη λήψη και
+cache-busting: το `weather-latest.php` είναι **byte-identical** με το
+`weather-latest.json` (483 bytes, ίδιο sha256). Ενημερώνονται **μαζί**, κάθε
+~2 λεπτά.
+
+Αναιρώ τη σύσταση «τα `.json` είναι παλιά υπολείμματα». **Δεν χρειάζεται να
+σβήσεις τίποτα.**
+
+---
+
 ## 0c. ΞΕΚΙΝΑ ΑΠΟ ΕΔΩ
 
 **Όλα ανεβασμένα.** Το `main` και το `gh/main` είναι **σύγχρονα** στο `8b5d83d`.

@@ -567,10 +567,71 @@ python3 tests/test_audit.py    # 238 έλεγχοι
 
 **Δεν χρειάζεται να αλλάξεις ΤΙΠΟΤΑ** στο `api/` για να δουλέψει το νέο site.
 
-> **Μικρή παρατήρηση:** τα `weather-latest.json` / `weather-latest-pro.json` είναι
-> **παγωμένα** (28 λεπτά πίσω), ενώ τα `.php` είναι φρέσκα (κάθε 2 λεπτά). Το νέο
-> site χρησιμοποιεί **μόνο τα `.php`**. Τα `.json` είναι παλιά υπολείμματα —
-> **αβλαβή**, δεν χρειάζεται να τα σβήσεις.
+> **Διόρθωση:** σε προηγούμενη έκδοση είχα γράψει ότι τα `.json` είναι «παγωμένα».
+> **Ήταν λάθος** — έβλεπα παλιό αντίγραφο από cache. Με ταυτόχρονη λήψη και
+> cache-busting, το `weather-latest.php` είναι **byte-identical** με το
+> `weather-latest.json`. Και τα δύο ενημερώνονται **μαζί**, κάθε ~2 λεπτά.
+> Δεν χρειάζεται να σβήσεις τίποτα.
+
+---
+
+### 🔄 ΠΟΙΟ ΑΡΧΕΙΟ ΤΡΟΦΟΔΟΤΕΙ ΠΟΙΑ ΣΕΛΙΔΑ — μετρημένο
+
+**Ερώτηση ιδιοκτήτη:** «receiver και receiver-pro είναι για τη σελίδα weather και
+weather pro αντίστοιχα, έτσι;»
+
+**Όχι ακριβώς — και η διαφορά έχει σημασία.** Τα `receiver*` **δεν** τα καλεί
+καμία σελίδα. Είναι **είσοδοι** για τον σταθμό, όχι έξοδοι για τον browser.
+
+| Σελίδα | Τι καλεί **πραγματικά** (έλεγχος δικτύου browser) |
+|---|---|
+| `weather.html` (ΕΛ) | `weather-latest.php` |
+| `en/weather.html` (EN) | `weather-latest.php` |
+| `forecast-pro.html` (ΕΛ) | `weather-latest-pro.php` + `weather-forecast.php` |
+| `en/forecast-pro.html` (EN) | `weather-latest-pro.php` + `weather-forecast.php` |
+
+**Τα `receiver*`: καμία σελίδα δεν τα καλεί.** Είναι endpoints που **στέλνει**
+ο σταθμός (POST), όχι που **διαβάζει** ο browser.
+
+### Η ροή
+
+```
+   ΣΤΑΘΜΟΣ (GW1200A)                    ο browser
+        │                                   │
+        │ POST                              │ GET
+        ▼                                   ▼
+  weather-receiver.php            weather-latest.php     → weather.html
+  weather-receiver-pro.php        weather-latest-pro.php → forecast-pro.html
+        │                         weather-forecast.php   → forecast-pro.html
+        │ γράφει
+        ▼
+  cache (.json) + βάση (weather_history.db)
+```
+
+**ΕΝΑΣ σταθμός τροφοδοτεί και τα δύο.** Αποδείχθηκε: το `weather-latest.php` και
+το `weather-latest-pro.php` δίνουν **ακριβώς τα ίδια** κοινά πεδία (θερμοκρασία,
+υγρασία, πίεση). Το CSV δείχνει **μόνο** αισθητήρες `gw1200a`. Το `-pro` έχει
+**3 επιπλέον** πεδία: `dew_point`, `solar_radiation`, `history`.
+
+> **Εικασία, όχι βεβαιότητα:** το `-pro` είναι η **πληρέστερη** έκδοση των ίδιων
+> δεδομένων (περισσότερα πεδία + ιστορικό), όχι δεύτερος σταθμός. Δεν μπορώ να
+> δω τον κώδικα των receiver για να το επιβεβαιώσω — ο server τους εκτελεί.
+
+### ✅ ΘΑ ΔΟΥΛΕΥΟΥΝ ΟΛΑ ΣΩΣΤΑ
+
+**Ναι.** Δοκιμασμένο με **πραγματικά δεδομένα** και στις **4** σελίδες:
+
+| | Αποτέλεσμα |
+|---|---|
+| `weather.html` / `en/weather.html` | 18° — ταιριάζει με το live ✅ |
+| `forecast-pro.html` / `en/forecast-pro.html` | 7 πεδία + **3/3 charts** ✅ |
+
+**Και τα 4 αρχεία που ρώτησες** — `latest`, `latest-pro`, `receiver`,
+`receiver-pro` — **είναι σωστά και δουλεύουν.** Δεν χρειάζεται καμία αλλαγή.
+
+> **Διόρθωση δικής μου λάθους:** είχα πει ότι τα `.json` είναι «παγωμένα». **Δεν
+> είναι** — έβλεπα παλιό αντίγραφο από cache. Με ταυτόχρονη λήψη, το
+> `weather-latest.php` είναι **byte-identical** με το `weather-latest.json`.
 
 ---
 
