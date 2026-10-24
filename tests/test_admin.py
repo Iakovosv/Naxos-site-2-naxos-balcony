@@ -318,5 +318,38 @@ for u, who, pw, land in ALIASES:
     leaked = [t for t in ["Παπαδόπουλος", "555666777", "ΑΦΜ"] if t in body]
     check(f"{u:26} → καμία διαρροή", not leaked, f"(διέρρευσε {leaked})")
 
+print("\n=== 22. Η ΓΚΑΛΕΡΙ ΕΙΝΑΙ ΜΟΝΟ ΓΙΑ ΤΟΝ ΔΙΑΧΕΙΡΙΣΤΗ ===")
+# Η Γκαλερί μοιράζεται τη συνεδρία με τις σελίδες του _lib.php (ίδια κλειδιά
+# ok/role). Παλιά αρκούνταν στο «είναι συνδεδεμένος κάποιος», οπότε ο λογιστής
+# και οι καθαρίστριες έμπαιναν και μπορούσαν να ανεβάσουν/διαγράψουν φωτογραφίες.
+GALLERY_MARK = 'type="file"'
+for pw, who, home in [("acc1234", "λογιστής", "/admin/accountant.php"),
+                      ("cln1234", "καθαρίστρια", "/admin/cleaning.php")]:
+    op = session(); login(op, "/admin/guests.php", pw)
+    st, body, _ = get(op, "/admin/")
+    check(f"{who:11} → δεν βλέπει φόρμα ανεβάσματος",
+          st != 200 or GALLERY_MARK not in body, f"(HTTP {st})")
+    check(f"{who:11} → δεν παίρνει CSRF token από τη Γκαλερί",
+          not re.search(r'name="csrf" value="[^"]+"', body))
+    # Η πύλη τρέχει πριν το check_csrf(), οπότε το POST δεν φτάνει ποτέ στον
+    # χειριστή: τον γυρίζει στη δική του σελίδα. Ελέγχουμε ότι δεν εκτελέστηκε.
+    st2, body2, hdr2 = post(op, "/admin/", {"action": "delete", "file": "denyparchei-9999.jpg"})
+    check(f"{who:11} → POST στη Γκαλερί δεν εκτελείται",
+          st2 in (301, 302, 303, 400), f"(HTTP {st2})")
+
+# Ο διαχειριστής δεν έχασε τίποτα.
+op = session(); login(op, "/admin/guests.php", "demo1234")
+st, body, _ = get(op, "/admin/")
+check("admin      → βλέπει τη Γκαλερί", st == 200 and GALLERY_MARK in body, f"(HTTP {st})")
+check("admin      → παίρνει CSRF token", bool(re.search(r'name="csrf" value="[^"]+"', body)))
+
+# Ο λόγος λέγεται, δεν είναι σιωπηλός (αλλιώς μοιάζει με «όλα τα link ίδια»).
+op = session(); login(op, "/admin/guests.php", "cln1234")
+st, _, hdr = get(op, "/admin/")
+loc = hdr.get("Location", "")
+st2, body2, _ = get(op, loc if loc.startswith("/admin/") else "/admin/cleaning.php")
+check("καθαρίστρια → εξηγείται γιατί έφυγε",
+      "μόνο για τον διαχειριστή" in body2, f"(HTTP {st2}, loc {loc!r})")
+
 print(f"\n{'='*60}\n  ΑΠΟΤΕΛΕΣΜΑ: {ok} πέρασαν, {fail} απέτυχαν\n{'='*60}")
 sys.exit(1 if fail else 0)

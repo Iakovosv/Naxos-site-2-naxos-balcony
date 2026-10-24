@@ -805,6 +805,10 @@ and revokes them; passwords are shown exactly once.
 | cleaner1 | `cleaning.php` | rooms 3 and 4: dates, headcount, cleaning days | nothing |
 | cleaner2 | `cleaning.php` | rooms 5 and 6: same | nothing |
 
+The photo gallery (`/admin/`) is **admin only** — staff passwords are rejected there,
+and a signed-in staff member who opens it is sent back to their own page with an
+explanation. See the second leak below.
+
 **The cleaners must never receive guest PII.** `cleaning.php` does not merely hide
 those fields in HTML — it never copies them out of the guest record into the
 structure it renders, so they cannot leak by accident. Verified by grepping the
@@ -816,6 +820,34 @@ zero hits. Re-run that check after any edit to `cleaning.php`.
 verbatim — `curl` fetched 434 bytes of hashed passwords. Fixed by routing through
 the same store as guest data. `staff_load()` migrates and deletes the legacy file on
 first read. Never reintroduce a plain `.json` inside `admin/`.
+
+**Second leak that was found (2026-10-24):** the gallery (`admin/index.php`) gated
+only on `logged_in()` — "somebody is signed in" — not on the role. Because `/admin/`
+shares one `$_SESSION` with the `_lib.php` pages (same `ok`/`role` keys), the
+accountant and the cleaners could open the gallery and **upload, delete and move
+photos**, and reach the change-password form. Proved by signing in as a cleaner,
+reading the CSRF token out of the upload form and POSTing a `delete`: it reached the
+handler and answered `Bad path.` — the handler's own message, not an access denial.
+
+Fixed with a role gate at the top of `admin/index.php`, right after the helpers and
+**before** any action handling:
+
+```php
+if (logged_in() && (string)($_SESSION['role'] ?? '') !== 'admin') { /* redirect home */ }
+```
+
+Three rules that matter here:
+
+- **The gate must come before `check_csrf()` and the action block.** If it runs after,
+  the POST has already been dispatched.
+- **Do not `require` `_lib.php` from the gallery.** It declares `h`, `csrf`,
+  `logged_in`, `ok` too — a `Cannot redeclare` fatal. The redirect map is duplicated
+  on purpose; keep the two in step.
+- **Do not send an unknown/empty role to a `_lib.php` page.** That page requires a
+  role, bounces the user back, and you get the 50-hop loop from §10b. Unknown role →
+  destroy the session and show the login form.
+- The sign-out is explained with `$_SESSION['notice']`, the key `render_notice()`
+  reads, so it never looks like "all the links show the same thing".
 
 ### PHP version floor: 8.0
 
