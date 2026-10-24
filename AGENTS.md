@@ -1146,6 +1146,46 @@ Order is now: room → stay → entry guide → property rules → gift → **th
 one thing a guest must read. `tests/test_audit.py` asserts the order explicitly,
 in both languages.
 
+### 18.3 Restoring the test environment after a runtime restart
+
+A container restart wipes `/tmp/demo`, the `php` binary and the Playwright
+browser. Nothing in the repo is lost, but the suites cannot run until they are
+back. Rebuild in this order:
+
+```bash
+# 1. PHP CLI (Debian trixie; package is php-cli, needs sudo)
+sudo apt-get update -qq && sudo apt-get install -y php-cli
+
+# 2. The demo tree — same layout the tests expect
+rm -rf /tmp/demo && mkdir -p /tmp/demo
+tar -cf - --exclude='./.git' --exclude='./preview' --exclude='./.agent_tmp' \
+    --exclude='./tests' --exclude='./tools' . | (cd /tmp/demo && tar -xf -)
+
+# 3. Playwright (layout tests skip silently without it — watch for the warning)
+pip install --quiet playwright && python3 -m playwright install chromium --with-deps
+
+# 4. Server
+cd /tmp/demo && nohup php -S 0.0.0.0:12000 -t /tmp/demo > /tmp/php.log 2>&1 &
+```
+
+⚠️ **The layout tests skip silently when Playwright is missing** — the suite
+still prints "0 απέτυχαν". Grep for the warning (`playwright λείπει`) before
+believing a green run.
+
+⚠️ **Seed the demo data with the admin's own functions, not hand-written JSON.**
+`credentials.php` (admin `demo1234`), `staff_set()` (accountant `acc1234`,
+cleaner1 `cln1234`, cleaner2 `cln2345` — note the **2345**, not 2234),
+`settings_save(['wifi' => ...])`, then `guests_save()` + `welcome_write_stub()`.
+
+Two traps in the seed data, both of which cost a debugging round:
+
+- **Exactly 8 guests.** `test_audit.py` §Β5 asserts the count is 8, and
+  `guests_raw()[0]` must be an active Παπαδόπουλος.
+- **Cover all four guest states** (active / expired / disabled / scheduled) and
+  use **`new DateTime('today')`**, never a hardcoded date. The cleaning-schedule
+  tests assert a specific day (`?pdate=<today>`); a frozen seed date makes them
+  fail the moment the real date moves on.
+
 ## 15. Session 5 — fixes from the four-link audit (2026-10-24)
 
 The audit (§0f in `STATUS.md`, 238 checks) left 5 findings. Four were ours and are
