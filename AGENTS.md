@@ -923,5 +923,9 @@ Then drive it over HTTP. Traps that cost time:
     never includes the calling page's CSS. It sets the `<h1>` to the role name and a
     per-role `--tone`. Hardcoding "Naxos Balcony" there makes every login page look
     identical — the bug reported as "every link shows the same thing".
+  - **Role alias entry points**: `logistis.php`, `katharistria.php`, `diaxiristis.php`
+    are three-line `require __DIR__ . '/<real>.php';` shims. They exist so each role
+    has a memorable URL. Never copy the real page into them — a copy would drift and
+    silently re-introduce the "identical login page" bug.
 - **`cleaning.php` prints no guest PII.** Assert on the *visible* text (strip
   `<script>`/`<style>` first) — a raw `'@' in html` test matches CSS `@media`.

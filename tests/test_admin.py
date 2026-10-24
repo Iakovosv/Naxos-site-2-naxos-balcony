@@ -217,6 +217,12 @@ st, body, url = post(op, "/admin/guests.php",
 check("6 αποτυχίες λογιστή ΔΕΝ κλειδώνουν την καθαρίστρια",
       url.endswith("cleaning.php"), f"(landed {url})")
 
+# Καθαρίζουμε το κλείδωμα που μόλις προκαλέσαμε, ώστε τα επόμενα τεστ να
+# μπορούν να συνδεθούν ως λογιστής. Το κλείδωμα είναι σκόπιμο, όχι σφάλμα.
+import glob as _glob, os as _os
+for _f in _glob.glob("/tmp/demo/admin/.login-attempts*"):
+    _os.remove(_f)
+
 print("\n=== 15. Ο ADMIN ΔΙΟΡΘΩΝΕΙ ΤΙΣ ΩΡΕΣ (απαίτηση 3) ===")
 op = session(); login(op, "/admin/guests.php", "demo1234")
 st, page, _ = get(op, "/admin/staff.php?mo=2026-10")
@@ -293,6 +299,24 @@ for f in ["admin/credentials.php", "admin/guests-data.php", "admin/staff-data.ph
           "admin/settings-data.php", "admin/hours-data.php", "admin/staff.json"]:
     r = sp.run(["git", "-C", "/workspace/project", "check-ignore", "-q", f])
     check(f"{f:28} → αγνοείται", r.returncode == 0)
+
+print("\n=== 21. ΞΕΧΩΡΙΣΤΟ ΣΥΝΤΟΜΟ ΛΙΝΚ ΑΝΑ ΡΟΛΟ ===")
+ALIASES = [("/admin/logistis.php", "Λογιστής", "acc1234", "accountant.php"),
+           ("/admin/katharistria.php", "Καθαρίστρια", "cln1234", "cleaning.php"),
+           ("/admin/diaxiristis.php", "Διαχειριστής", "demo1234", "guests.php")]
+for u, who, pw, land in ALIASES:
+    st, body, _ = get(session(), u)
+    h1 = re.search(r"<h1>([^<]+)</h1>", body)
+    got = h1.group(1).strip() if h1 else ""
+    check(f"{u:26} → φόρμα «{who}»", st == 200 and got.startswith(who), f"(είδε «{got}»)")
+for u, who, pw, land in ALIASES:
+    st, body, url = login(session(), u, pw)
+    check(f"{u:26} → μπαίνει στο {land}", url.endswith(land), f"(κατέληξε {url})")
+# Ο ασύνδετος δεν βλέπει δεδομένα ούτε από τα σύντομα λινκ.
+for u, who, pw, land in ALIASES:
+    st, body, _ = get(session(), u)
+    leaked = [t for t in ["Παπαδόπουλος", "555666777", "ΑΦΜ"] if t in body]
+    check(f"{u:26} → καμία διαρροή", not leaked, f"(διέρρευσε {leaked})")
 
 print(f"\n{'='*60}\n  ΑΠΟΤΕΛΕΣΜΑ: {ok} πέρασαν, {fail} απέτυχαν\n{'='*60}")
 sys.exit(1 if fail else 0)
