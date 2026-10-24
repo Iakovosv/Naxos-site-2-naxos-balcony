@@ -120,11 +120,79 @@ foreach ($tasks as $t) {
 ksort($upcoming);
 $upcoming = array_slice($upcoming, 0, 14, true);
 
+/* ------------------------------------------------- ΠΡΟΓΡΑΜΜΑ ΚΑΘΑΡΙΟΤΗΤΑΣ
+ *
+ * Πλήρες πρόγραμμα, όχι μόνο η επόμενη: φίλτρο δωματίου, εύρος (ημέρα/εβδομάδα/
+ * μήνας/όλα) και, δίπλα, το σύνολο ανά κράτηση — πόσες καθαριότητες και ποιες
+ * ημερομηνίες, για να προγραμματίζεται η δουλειά.
+ *
+ * ΤΟ ΦΙΛΤΡΟ ΔΩΜΑΤΙΟΥ ΕΠΙΤΡΕΠΕΙ ΜΟΝΟ ΤΑ ΔΩΜΑΤΙΑ ΤΗΣ ΚΑΘΑΡΙΣΤΡΙΑΣ. Ο κατάλογος
+ * χτίζεται από το $rooms (CLEANER_ROOMS), ποτέ από όλα τα δωμάτια: αλλιώς η μία
+ * καθαρίστρια θα έβλεπε τα δωμάτια της άλλης μέσα στο μενού.
+ */
 $dayNames = [1=>'Δευτέρα',2=>'Τρίτη',3=>'Τετάρτη',4=>'Πέμπτη',5=>'Παρασκευή',
              6=>'Σάββατο',7=>'Κυριακή'];
 
 $monthNames = [1=>'Ιανουάριος','Φεβρουάριος','Μάρτιος','Απρίλιος','Μάιος','Ιούνιος',
                'Ιούλιος','Αύγουστος','Σεπτέμβριος','Οκτώβριος','Νοέμβριος','Δεκέμβριος'];
+
+function d_el2(string $iso): string {
+    $ts = strtotime($iso);
+    if (!$ts) return $iso;
+    $dn = [1=>'Δευτέρα',2=>'Τρίτη',3=>'Τετάρτη',4=>'Πέμπτη',5=>'Παρασκευή',
+           6=>'Σάββατο',7=>'Κυριακή'];
+    return $dn[(int)date('N', $ts)] . ' ' . date('d/m/Y', $ts);
+}
+
+$prooms = array_values(array_filter((array)($_GET['proom'] ?? []), fn($r) => in_array($r, $rooms, true)));
+$scope  = (string)($_GET['pscope'] ?? 'all');
+if (!in_array($scope, ['day', 'week', 'month', 'all'], true)) $scope = 'all';
+$anchor = (string)($_GET['pdate'] ?? $today);
+if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $anchor)) $anchor = $today;
+
+$anchorTs = (int)strtotime($anchor);
+$weekFrom = date('Y-m-d', $anchorTs - (((int)date('N', $anchorTs)) - 1) * 86400);
+$weekTo   = date('Y-m-d', $anchorTs + (7 - (int)date('N', $anchorTs)) * 86400);
+[$from, $to] = match ($scope) {
+    'day'   => [$anchor, $anchor],
+    'week'  => [$weekFrom, $weekTo],
+    'month' => [date('Y-m-01', $anchorTs), date('Y-m-t', $anchorTs)],
+    default => ['', ''],
+};
+
+$schedule = [];
+foreach ($tasks as $t) {
+    if ($prooms && !in_array($t['room'], $prooms, true)) continue;
+    foreach ($t['cleaning'] as $cd) {
+        if ($from !== '' && ($cd < $from || $cd > $to)) continue;
+        $schedule[$cd][] = $t;
+    }
+}
+ksort($schedule);
+$scheduleTotal = 0;
+foreach ($schedule as $list) $scheduleTotal += count($list);
+
+/* Το σύνολο ανά κράτηση: ΜΟΝΟ τα δωμάτια της καθαρίστριας, και στο ίδιο εύρος
+   με το ημερολόγιο, ώστε οι δύο πίνακες να λένε την ίδια ιστορία. */
+$perStay = [];
+foreach ($tasks as $t) {
+    if (!in_array($t['room'], $rooms, true)) continue;
+    if ($prooms && !in_array($t['room'], $prooms, true)) continue;
+    $dates = array_values(array_filter($t['cleaning'],
+        fn($cd) => $from === '' || ($cd >= $from && $cd <= $to)));
+    if (!$dates) continue;
+    $perStay[] = ['roomName' => $t['roomName'], 'from' => $t['from'], 'to' => $t['to'],
+                  'dates' => $dates, 'n' => count($dates)];
+}
+usort($perStay, fn($a, $b) => strcmp($a['from'], $b['from']));
+$perStayTotal = array_sum(array_column($perStay, 'n'));
+
+$scopeLabel = match ($scope) {
+    'day'   => 'Ημέρα ' . d_el2($anchor),
+    'week'  => 'Εβδομάδα ' . date('d/m', strtotime($weekFrom)) . ' → ' . date('d/m/Y', strtotime($weekTo)),
+    'month' => ($monthNames[(int)date('n', $anchorTs)] ?? '') . ' ' . date('Y', $anchorTs),
+    default => 'Όλες οι ημερομηνίες',
+};
 
 /* ------------------------------------------------- ώρες: ημέρα και μήνας */
 
@@ -148,14 +216,6 @@ foreach ($hours_all as $e) {
     $d = (string)($e['date'] ?? '');
     if (!str_starts_with($d, sprintf('%04d-%02d-', $mYear, $mMonth))) continue;
     if ((float)($e['hours'] ?? 0) > 0) $monthDays[$d] = true;
-}
-
-function d_el2(string $iso): string {
-    $ts = strtotime($iso);
-    if (!$ts) return $iso;
-    $dn = [1=>'Δευτέρα',2=>'Τρίτη',3=>'Τετάρτη',4=>'Πέμπτη',5=>'Παρασκευή',
-           6=>'Σάββατο',7=>'Κυριακή'];
-    return $dn[(int)date('N', $ts)] . ' ' . date('d/m/Y', $ts);
 }
 ?>
 <!DOCTYPE html>
@@ -190,6 +250,8 @@ a.btn{text-decoration:none;padding:10px 16px;border:1px solid var(--line);border
       border-radius:99px;padding:4px 12px;font-size:.8rem;font-weight:700;color:var(--muted)}
 input[type=date]{padding:10px 12px;border:1px solid var(--line);border-radius:10px;
                  font-weight:600;font-size:.95rem;min-height:44px;font-family:inherit}
+select{padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;
+       font:inherit;font-weight:600;font-size:.95rem;min-height:44px}
 /* Κάρτα εργασίας: μεγάλη, για χέρια που δουλεύουν. */
 .job{display:flex;align-items:center;gap:14px;padding:14px;border:1px solid var(--line);
      border-left:5px solid var(--accent-dark);border-radius:12px;background:#fff;
@@ -221,6 +283,9 @@ tr.today-row td{background:var(--cleanbg);font-weight:700}
 .big div{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;text-align:center}
 .big .n{font-size:1.6rem;font-weight:800;line-height:1.1}
 .big .l{font-size:.76rem;color:var(--muted);margin-top:2px}
+/* Το ημερολόγιο και το σύνολο ανά κράτηση, δίπλα σε μεγάλη οθόνη. */
+.pair{display:grid;grid-template-columns:1fr;gap:0 16px}
+@media(min-width:900px){.pair{grid-template-columns:1.15fr .85fr;align-items:start}}
 @media(max-width:560px){
   .wrap{padding:16px 11px 48px}
   .job{flex-wrap:wrap;gap:8px}
@@ -449,6 +514,111 @@ tr.today-row td{background:var(--cleanbg);font-weight:700}
       </p>
     </div>
   <?php endif; ?>
+
+  <div class="pair">
+  <?php /* ------------------------------------------------ ΠΡΟΓΡΑΜΜΑ ΚΑΘΑΡΙΟΤΗΤΑΣ
+     Όλες οι καθαριότητες, όχι μόνο η επόμενη. Αριστερά το ημερολόγιο ανά ημέρα,
+     δεξιά το σύνολο ανά κράτηση: πόσες καθαριότητες και ποιες ημερομηνίες. */ ?>
+  <div class="card" id="programma">
+    <h2>Πρόγραμμα καθαριότητας</h2>
+
+    <form method="get" class="row" style="margin:0 0 14px">
+      <div>
+        <label for="pscope" style="font-weight:600;font-size:.9rem">Δείξε</label>
+        <select id="pscope" name="pscope">
+          <?php foreach (['all'=>'Όλες τις ημερομηνίες','day'=>'Ημέρα','week'=>'Εβδομάδα','month'=>'Μήνα'] as $k=>$lab): ?>
+            <option value="<?= h($k) ?>"<?= $scope === $k ? ' selected' : '' ?>><?= h($lab) ?></option>
+          <?php endforeach; ?>
+        </select>
+      </div>
+      <div>
+        <label for="pdate" style="font-weight:600;font-size:.9rem">Ημερομηνία αναφοράς</label>
+        <input id="pdate" type="date" name="pdate" value="<?= h($anchor) ?>">
+      </div>
+      <?php if (count($rooms) > 1): ?>
+        <div>
+          <label for="proom" style="font-weight:600;font-size:.9rem">Δωμάτιο</label>
+          <select id="proom" name="proom[]">
+            <option value="">Όλα τα δωμάτιά μου</option>
+            <?php foreach ($rooms as $r): ?>
+              <option value="<?= h($r) ?>"<?= in_array($r, $prooms, true) ? ' selected' : '' ?>>
+                <?= h((string)(ROOMS_G[$r]['el'] ?? $r)) ?>
+              </option>
+            <?php endforeach; ?>
+          </select>
+        </div>
+      <?php endif; ?>
+      <div><button type="submit">Δες</button></div>
+    </form>
+
+    <p class="hint" style="margin:0 0 14px">
+      Δείχνει: <strong><?= h($scopeLabel) ?></strong>
+      <?= $prooms ? '· ' . h(implode(', ', array_map(fn($r) => (string)(ROOMS_G[$r]['el'] ?? $r), $prooms))) : '· όλα τα δωμάτιά σου' ?>
+      · <strong><?= count($schedule) ?></strong> <?= count($schedule) === 1 ? 'ημέρα' : 'ημέρες' ?>
+      · <strong><?= $scheduleTotal ?></strong> <?= $scheduleTotal === 1 ? 'καθαριότητα' : 'καθαριότητες' ?>
+    </p>
+
+    <div style="overflow-x:auto">
+    <table>
+      <thead>
+        <tr><th>Ημέρα</th><th>Δωμάτιο</th><th>Διαμονή</th><th>Άτομα</th></tr>
+      </thead>
+      <tbody>
+        <?php foreach ($schedule as $cd => $list): ?>
+          <?php foreach ($list as $i => $t): ?>
+            <tr class="<?= $cd === $today ? 'today-row' : '' ?>">
+              <?php if ($i === 0): ?>
+                <td rowspan="<?= count($list) ?>">
+                  <?= h(d_el2($cd)) ?><?= $cd === $today ? ' (σήμερα)' : '' ?>
+                </td>
+              <?php endif; ?>
+              <td><strong><?= h($t['roomName']) ?></strong></td>
+              <td><?= h(date('d/m', strtotime($t['from']))) ?> → <?= h(date('d/m', strtotime($t['to']))) ?></td>
+              <td><?= $t['adults'] ?></td>
+            </tr>
+          <?php endforeach; ?>
+        <?php endforeach; ?>
+        <?php if (!$schedule): ?>
+          <tr><td colspan="4" class="empty">Καμία καθαριότητα σε αυτό το διάστημα.</td></tr>
+        <?php endif; ?>
+      </tbody>
+    </table>
+    </div>
+  </div>
+
+  <?php /* ------------------------------------------- ΣΥΝΟΛΟ ΑΝΑ ΚΡΑΤΗΣΗ
+     Πόσες καθαριότητες έχει κάθε κράτηση και σε ποιες ημερομηνίες. Έτσι
+     φαίνεται ο φόρτος της περιόδου, όχι μόνο η επόμενη καθαριότητα. */ ?>
+  <?php if ($perStay): ?>
+    <div class="card">
+      <h2>Καθαριότητες ανά κράτηση</h2>
+      <p class="hint" style="margin:0 0 14px">
+        <strong><?= count($perStay) ?></strong> <?= count($perStay) === 1 ? 'κράτηση' : 'κρατήσεις' ?>
+        · <strong><?= $perStayTotal ?></strong> <?= $perStayTotal === 1 ? 'καθαριότητα' : 'καθαριότητες' ?>
+        συνολικά στο διάστημα που διάλεξες.
+      </p>
+      <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>Δωμάτιο</th><th>Διαμονή</th><th>Πλήθος</th><th>Ημερομηνίες</th></tr>
+        </thead>
+        <tbody>
+          <?php foreach ($perStay as $s): ?>
+            <tr>
+              <td><strong><?= h($s['roomName']) ?></strong></td>
+              <td><?= h(date('d/m', strtotime($s['from']))) ?> → <?= h(date('d/m/Y', strtotime($s['to']))) ?></td>
+              <td><span class="tag" style="background:var(--cleanbg);color:var(--clean)"><?= $s['n'] ?></span></td>
+              <td style="color:var(--clean)">
+                <?= h(implode(', ', array_map(fn($c) => date('d/m', strtotime($c)), $s['dates']))) ?>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  <?php endif; ?>
+  </div>
 
   <div class="card noprint" style="border-left:4px solid var(--accent)">
     <p class="hint" style="margin:0">

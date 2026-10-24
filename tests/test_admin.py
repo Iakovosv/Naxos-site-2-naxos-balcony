@@ -351,5 +351,91 @@ st2, body2, _ = get(op, loc if loc.startswith("/admin/") else "/admin/cleaning.p
 check("καθαρίστρια → εξηγείται γιατί έφυγε",
       "μόνο για τον διαχειριστή" in body2, f"(HTTP {st2}, loc {loc!r})")
 
+print("\n=== 23. ΠΡΟΓΡΑΜΜΑ ΚΑΘΑΡΙΟΤΗΤΑΣ (όλες οι καθαριότητες, όχι μόνο η επόμενη) ===")
+
+def segment(html, marker, stop=None):
+    i = html.find(marker)
+    if i < 0:
+        return ""
+    if stop:
+        j = html.find(stop, i)
+        if j > 0:
+            return html[i:j]
+    return html[i:]
+
+def rows_of(seg):
+    m = re.search(r"<tbody>(.*?)</tbody>", seg, re.S)
+    return re.findall(r"<tr[^>]*>(.*?)</tr>", m.group(1), re.S) if m else []
+
+def cells_of(tr):
+    return [re.sub(r"\s+", " ", re.sub(r"<[^>]+>", " ", c)).strip()
+            for c in re.findall(r"<td[^>]*>(.*?)</td>", tr, re.S)]
+
+op = session(); login(op, "/admin/guests.php", "cln1234")
+st, page, _ = get(op, "/admin/cleaning.php")
+check("η κάρτα «Πρόγραμμα καθαριότητας» υπάρχει",
+      st == 200 and "Πρόγραμμα καθαριότητας" in page, f"(HTTP {st})")
+check("η κάρτα «Καθαριότητες ανά κράτηση» υπάρχει", "Καθαριότητες ανά κράτηση" in page)
+# Το μενού δωματίου χτίζεται από τα δικά της δωμάτια, ποτέ από όλα.
+check("το μενού δωματίου δεν έχει Room 5/6",
+      'value="room5"' not in page and 'value="room6"' not in page)
+check("ούτε τα δωμάτια της άλλης φαίνονται πουθενά",
+      "Room 5" not in page and "Room 6" not in page)
+
+SCHED = ("Καθαριότητες ανά κράτηση")
+seg = segment(page, 'id="programma"', SCHED)
+check("προεπιλογή → όλες οι ημερομηνίες, με γραμμές", len(rows_of(seg)) > 0)
+check("προεπιλογή → το λέει στη σύνοψη", "Όλες τις ημερομηνίες" in seg)
+
+# Φίλτρο μήνα: ό,τι δείχνει ανήκει στον μήνα.
+st, page, _ = get(op, "/admin/cleaning.php?pscope=month&pdate=2026-10-22")
+seg = segment(page, 'id="programma"', SCHED)
+ym = {yy + "-" + mm for tr in rows_of(seg) for c in cells_of(tr)
+      for _d, mm, yy in re.findall(r"(\d{2})/(\d{2})/(\d{4})", c)}
+check("φίλτρο μήνα → μόνο Οκτώβριος 2026", ym == {"2026-10"}, f"({ym})")
+
+# Φίλτρο ημέρας: μία μόνο ημέρα.
+st, page, _ = get(op, "/admin/cleaning.php?pscope=day&pdate=2026-10-24")
+seg = segment(page, 'id="programma"', SCHED)
+days = {yy + "-" + mm + "-" + dd for tr in rows_of(seg) for c in cells_of(tr)
+        for dd, mm, yy in re.findall(r"(\d{2})/(\d{2})/(\d{4})", c)}
+check("φίλτρο ημέρας → μόνο 2026-10-24", days == {"2026-10-24"}, f"({days})")
+
+# Φίλτρο δωματίου. Δύο παγίδες: (α) το μενού επιλογής δείχνει ΚΑΙ τα δύο
+# δωμάτια της (σωστά, για να μπορεί να αλλάξει), (β) το rowspan βάζει την
+# ημερομηνία στο πρώτο κελί της ομάδας. Ψάχνουμε λοιπόν κελιά που μοιάζουν με
+# δωμάτιο, σε όλα τα κελιά.
+st, page, _ = get(op, "/admin/cleaning.php?proom[]=room4")
+seg = segment(page, 'id="programma"', SCHED)
+all_cells = [c for tr in rows_of(seg) for c in cells_of(tr)]
+sched_rooms = {c for c in all_cells if re.fullmatch(r"Room \d+", c)}
+check("φίλτρο δωματίου → ο πίνακας έχει μόνο Room 4",
+      sched_rooms == {"Room 4"}, f"({sched_rooms})")
+check("φίλτρο δωματίου → το μενού κρατά και τα δύο (για αλλαγή)",
+      'value="room3"' in page and 'value="room4"' in page)
+
+# Άκυρα ορίσματα: δεν σκάνε και δεν δίνουν ξένα δωμάτια.
+st, page, _ = get(op, "/admin/cleaning.php?proom[]=room5")
+check("άκυρο δωμάτιο (room5) → αγνοείται", st == 200 and "Room 5" not in page, f"(HTTP {st})")
+st, page, _ = get(op, "/admin/cleaning.php?pscope=olokliro&pdate=den-einai-imerominia")
+check("άκυρες παράμετροι → χωρίς σφάλμα",
+      st == 200 and "Fatal" not in page and "Warning" not in page, f"(HTTP {st})")
+
+# Ανά κράτηση: το «Πλήθος» συμφωνεί με τις ημερομηνίες που τυπώνονται.
+st, page, _ = get(op, "/admin/cleaning.php")
+bad = []
+for tr in rows_of(segment(page, SCHED)):
+    c = cells_of(tr)
+    if len(c) < 4:
+        continue
+    n = re.sub(r"\D", "", c[2])
+    listed = len(re.findall(r"\d{2}/\d{2}", c[3]))
+    if n and int(n) != listed:
+        bad.append((c[0], n, listed))
+check("ανά κράτηση → πλήθος == αριθμός ημερομηνιών", not bad, f"({bad})")
+
+found = [t for t in ["Παπαδόπουλος", "555666777", "123456789", "ΑΦΜ"] if t in page]
+check("πρόγραμμα → καμία διαρροή προσωπικών", not found, f"({found})")
+
 print(f"\n{'='*60}\n  ΑΠΟΤΕΛΕΣΜΑ: {ok} πέρασαν, {fail} απέτυχαν\n{'='*60}")
 sys.exit(1 if fail else 0)

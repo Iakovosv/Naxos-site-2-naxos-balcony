@@ -1038,3 +1038,50 @@ now includes `deny all` for `tests/`, `tools/`, `preview/`, `*.md`, `*.py`, `*.m
 `welcome/`. The Apache `FilesMatch` denies were widened to match (added `mjs`,
 `*-data.php`, `staff.json`) so the two configs have no gap. **Keep them in step.**
 
+
+## 16. Session 6 — cleaning schedule for the cleaners (2026-10-24)
+
+`admin/cleaning.php` used to show only "the next cleanings" (14 days ahead, sliced
+at 14 entries). The owner asked for the full picture: every cleaning, filterable,
+so the work can be planned instead of reacted to.
+
+Two cards, **below** the existing "Οι επόμενες καθαριότητες" card:
+
+1. **Πρόγραμμα καθαριότητας** — every cleaning in a chosen range, grouped by day.
+   Filters: `pscope` = `all` | `day` | `week` | `month` (default `all`), `pdate`
+   (anchor date for day/week/month), `proom[]` (one or more rooms). On screens
+   ≥900px the two cards sit side by side (`.pair`), stacked on phones.
+2. **Καθαριότητες ανά κράτηση** — per stay: room, dates, **how many** cleanings,
+   and the actual dates. This is the "so we can plan" part.
+
+### The one rule that is easy to get wrong
+
+**The room filter must be built from `$rooms` (`CLEANER_ROOMS`), never from all
+rooms.** `$prooms` is filtered through `in_array($r, $rooms, true)` and the
+`<select>` iterates `$rooms`. If you ever build that dropdown from `ROOMS_G`,
+cleaner 1 sees Room 5 and Room 6 in the menu — a cross-room leak through a UI
+element, not through data. `tests/test_admin.py` §23 asserts both `value="room5"`
+and the string `Room 5` are absent from the whole page.
+
+Invalid input is ignored, never fatal: an unknown `pscope` falls back to `all`, a
+malformed `pdate` to today, and a room that is not hers is dropped. The schedule
+and the per-stay table use the *same* range and room filter, so the two cards
+never disagree.
+
+Verify the counts independently rather than trusting the page:
+
+```bash
+cd /tmp/demo && php -r 'require "admin/_lib.php"; $t=0;
+foreach(guests_load() as $g){ if(!in_array($g["room"]??"",["room3","room4"],true)) continue;
+  $t+=count(cleaning_dates($g)); } echo $t;'
+```
+
+### Rendering traps in the schedule table
+
+- `rowspan` on the day cell means the **first `<td>` of a group is a date, not a
+  room**. A test that reads cell 0 as the room will fail on multi-row days. Look
+  for cells matching `Room \d+` instead.
+- The room `<select>` legitimately contains every room she owns, so "does the
+  page mention Room 3" is the wrong assertion when filtering by Room 4. Assert on
+  the table rows.
+
