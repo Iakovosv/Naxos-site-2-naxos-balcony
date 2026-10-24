@@ -544,6 +544,25 @@ Writing "main is at <sha>" into `STATUS.md` goes stale the moment you push the
 file that contains it — the push itself creates a new head. Say what the state
 is and point at `git log -1 --oneline gh/main` instead.
 
+## 10e. A stale server on port 12000 serves the wrong directory
+
+Two sessions both started `php -S 0.0.0.0:12000`. The second one exits with
+"Address already in use", but if you background it with `nohup ... &` and only
+check the HTTP status afterwards, you never see that. The old process keeps the
+port and keeps serving whatever directory *it* was started in.
+
+Symptom that wastes the most time: the admin role tests return 200 for every
+role, including an anonymous request, which looks like a permissions hole. It is
+not. The old server was serving `preview/`, whose `admin/.login-attempts.json`
+was left locked, so every login came back throttled.
+
+Always confirm which directory the listener serves before trusting a result:
+
+    ps aux | grep '[p]hp -S'          # find the PID
+    ls -la /proc/<PID>/cwd            # what it actually serves
+
+If it is not the tree you meant to test, `kill <PID>` first, then start yours.
+
 ## 11. Push status and the preview link
 
 ### Push — DONE
