@@ -563,6 +563,39 @@ Always confirm which directory the listener serves before trusting a result:
 
 If it is not the tree you meant to test, `kill <PID>` first, then start yours.
 
+## 10f. Testing the admin over HTTP: three traps
+
+All three produce a wrong answer that looks like a real defect, so check them
+before you report a bug.
+
+**`curl -X POST -L` breaks on the redirect.** The admin pages answer a POST with
+`302 -> guests.php`. With `-X POST` curl keeps using POST on the redirect, so the
+follow-up request re-sends the form body without a valid token and `check_csrf()`
+returns `400 Bad request.`. Use plain `-d` (not `-X POST`): curl then switches to
+GET on the 302, exactly like a browser. The action did succeed — the `400` is only
+the second request.
+
+    curl -s -c jar -b jar -L -d "action=toggle&id=$ID&csrf=$CSRF" .../admin/guests.php
+
+**The CSRF token is not on the login page.** `/admin/` carries it only after you
+are signed in; `guests.php` has one per form (30 tokens, 12 forms). Read it from
+`guests.php` after logging in, and keep one cookie jar for the whole run.
+
+**Never hand-write `welcome/` stubs.** The guest link is `slug-code.php`, where
+`slug` comes from `guest_slug($surname)` and `code` from `guest_code()`. A record
+written by hand without those fields leaves the stub pointing at nothing, and the
+guest page shows "Ο σύνδεσμος δεν βρέθηκε" even though it returns 200. Seed test
+data through the app's own functions:
+
+    require 'admin/_lib.php';
+    $g = ['id'=>bin2hex(random_bytes(6)), 'surname'=>$s, 'slug'=>guest_slug($s),
+          'code'=>guest_code(), ... ];
+    welcome_write_stub($g); guests_save($guests);
+
+Also match the test dates to today. `guest_status()` compares against
+`date('Y-m-d')`, so bookings in a past month show up as `expired` and leave the
+calendar, the statistics and the cleaning sheet empty.
+
 ## 11. Push status and the preview link
 
 ### Push — DONE
