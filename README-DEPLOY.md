@@ -1,5 +1,28 @@
 # Οδηγίες ανάρτησης — Naxos Balcony Apartments
 
+## 0. Το πακέτο ανεβάσματος
+
+```bash
+python3 tools/gen/package.py     # φτιάχνει το naxos-deploy.zip
+```
+
+Βγάζει **311 αρχεία, ~20,7 MB**, έτοιμα για εξαγωγή μέσα στο `public_html`.
+Δουλεύει με **λίστα επιτρεπομένων**: μπαίνει μόνο ό,τι είναι ρητά μέσα στο
+`tools/gen/package.py`, και στο τέλος ελέγχει το τελικό zip — αν βρει αρχείο
+δεδομένων, κωδικό ή δοκιμή, σταματά με σφάλμα.
+
+**Τι ΔΕΝ μπαίνει ποτέ:** `credentials.php`, `*-data.php`, `.login-attempts*`,
+`staff.json`, τα `welcome/<όνομα>-<κωδικός>.php` (προσωπικά λινκ πελατών), τα
+`*.md`, τα `tests/`, τα `tools/` και το `preview/`.
+
+> **⚠️ Γιατί τα `*.md` και τα `tests/` μένουν έξω:** περιέχουν τους
+> δοκιμαστικούς κωδικούς (`demo1234`, `acc1234`, `cln1234`). Ο server είναι
+> **nginx**, που **δεν** διαβάζει το `.htaccess` — αν ανέβαιναν, θα ήταν
+> **δημόσια** σε όποιον μάντευε το όνομα.
+
+> **Για το ανέβασμα βήμα-βήμα, δες το `DEPLOY-CPANEL.md`.** Αυτό το αρχείο
+> κρατά τις τεχνικές λεπτομέρειες και το ιστορικό.
+
 ## 1. GitHub — έτοιμο
 
 **Ανέβηκε.** Το `Iakovosv/Naxos-site-2-naxos-balcony`, branch `main`, είναι τώρα στο
@@ -35,12 +58,13 @@ commit **`fd8fa4e`** και **περιέχει τα πάντα**: το responsiv
 
 ## 2. Ανέβασμα στον server
 
-Ανέβασε **τα περιεχόμενα** του φακέλου `preview/` στο `public_html`:
+Ανέβασε **τα περιεχόμενα** του `naxos-deploy.zip` (ή του repo, που έχει το site
+στη ρίζα) μέσα στο `public_html`:
 
 ```
 index.html  gallery.html  amenities.html  weather.html  contact.html
 forecast-pro.html  privacy.html  cookies.html  404.html
-en/  images/  admin/
+en/  images/gallery/  admin/  welcome/  fonts/
 styles.css  fonts.css  fonts/  site.js  consent.js  lang-nav.js  pro.js  lang-system.js
 gallery-data.js  gallery-tiles.json
 robots.txt  sitemap.xml  site.webmanifest  .htaccess  welcome/

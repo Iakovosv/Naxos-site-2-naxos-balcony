@@ -173,7 +173,15 @@ apartment rental) so it is:
 - **`lang-system.js` must not be modified.** It holds all EL/EN strings and swaps them
   via JS on `[data-i18n]` elements.
 - **Never push to the live site.** Deliverables go to GitHub only; the owner uploads to
-  cPanel manually.
+  cPanel manually. The step-by-step guide is `DEPLOY-CPANEL.md`.
+- **Build the deploy ZIP with `tools/gen/package.py`.** It uses an allow-list, so only
+  explicitly named files go in, and it re-checks the finished ZIP — aborting if it finds
+  a `*-data.php`, `credentials.php`, a `.md`, a test, or a per-guest `welcome/*.php`.
+  Never hand-roll the ZIP: the previous one silently shipped without `admin/_captcha.php`
+  (breaking login) and without the three role aliases.
+- **Never upload `*.md`, `tests/` or `tools/` to the site.** They contain the test
+  passwords (`demo1234`, `acc1234`, `cln1234`). The host is nginx, which ignores
+  `.htaccess`, so those files would be publicly readable.
 - **Never commit the owner's GitHub token.** Use it for the push, then confirm no remnants
   (`grep -rl <token>` across the work dirs) and reset the git remote URL to the plain
   https form.
