@@ -52,6 +52,8 @@ usort($rows, fn($a, $b) => strcmp((string)$a['stayFrom'], (string)$b['stayFrom']
 
 /* ---------------------------------------------------------------- CSV export */
 
+$rates = fee_rates();
+
 if (isset($_GET['csv'])) {
     header('Content-Type: text/csv; charset=UTF-8');
     header('Content-Disposition: attachment; filename="dianykterefseis-'
@@ -60,9 +62,12 @@ if (isset($_GET['csv'])) {
     // BOM: χωρίς αυτό το Excel δεν καταλαβαίνει τα ελληνικά.
     fwrite($out, "\xEF\xBB\xBF");
     fputcsv($out, ['Επώνυμο','Δωμάτιο','Άφιξη','Αναχώρηση','Διανυκτερεύσεις',
-                   'Άτομα','ΑΦΜ','Διεύθυνση','Ταυτότητα/Διαβατήριο','Τηλέφωνο',
-                   'Email','Κράτηση από','Σημειώσεις'], ';');
+                   'Άτομα','ΑΦΜ','Διεύθυνση','Τ.Κ.','Χώρα','Ταυτότητα/Διαβατήριο',
+                   'Τηλέφωνο','Email','Κράτηση από',
+                   'Συνολικό ποσό','Διαμονή με ΦΠΑ','Καθαρή αξία','ΦΠΑ',
+                   'ΤΑΚΚ','Τέλος παρεπιδημούντων','Σημειώσεις'], ';');
     foreach ($rows as $g) {
+        $c = booking_calc($g, $rates);
         fputcsv($out, [
             (string)($g['surname'] ?? ''),
             ROOMS_G[(string)($g['room'] ?? '')]['el'] ?? '',
@@ -72,10 +77,19 @@ if (isset($_GET['csv'])) {
             (int)($g['adults'] ?? 1),
             (string)($g['vat'] ?? ''),
             (string)($g['address'] ?? ''),
+            (string)($g['postalCode'] ?? ''),
+            (string)($g['country'] ?? ''),
             (string)($g['idDoc'] ?? ''),
             (string)($g['phone'] ?? ''),
             (string)($g['email'] ?? ''),
             source_label((string)($g['source'] ?? 'direct')),
+            // Κενό όταν δεν έχει καταχωρηθεί ποσό: το μηδέν θα φαινόταν σαν δωρεάν διαμονή.
+            $c['has'] ? number_format($c['total'], 2, ',', '') : '',
+            $c['has'] ? number_format($c['stay'], 2, ',', '') : '',
+            $c['has'] ? number_format($c['net'], 2, ',', '') : '',
+            $c['has'] ? number_format($c['vat'], 2, ',', '') : '',
+            $c['has'] ? number_format($c['takk'], 2, ',', '') : '',
+            $c['has'] ? number_format($c['municipal'], 2, ',', '') : '',
             (string)($g['notes'] ?? ''),
         ], ';');
     }
@@ -85,6 +99,16 @@ if (isset($_GET['csv'])) {
 
 $totalNights = 0; $totalGuests = 0;
 foreach ($rows as $g) { $totalNights += guest_nights($g); $totalGuests += (int)($g['adults'] ?? 1); }
+
+/* Σύνολα ποσών για την περίοδο που βλέπει ο λογιστής. */
+$sum = ['total' => 0.0, 'stay' => 0.0, 'net' => 0.0, 'vat' => 0.0,
+        'takk' => 0.0, 'municipal' => 0.0];
+$missing = 0;
+foreach ($rows as $g) {
+    $c = booking_calc($g, $rates);
+    if (!$c['has']) { $missing++; continue; }
+    foreach (array_keys($sum) as $k) $sum[$k] += $c[$k];
+}
 
 function d_el(string $iso): string {
     $ts = strtotime($iso);
@@ -127,6 +151,10 @@ th{font-size:.74rem;text-transform:uppercase;letter-spacing:.3px;color:var(--mut
    background:var(--soft);font-weight:700;white-space:nowrap}
 td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 tr.total td{font-weight:800;background:#fafcfd;border-top:2px solid var(--line)}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:0 0 16px}
+.kpi div{background:var(--soft);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.kpi .n{font-size:1.15rem;font-weight:800;line-height:1.2;font-variant-numeric:tabular-nums}
+.kpi .l{font-size:.78rem;color:var(--muted);margin-top:2px}
 .tbl-scroll{overflow-x:auto}
 .role{display:inline-block;background:var(--soft);border:1px solid var(--line);
       border-radius:99px;padding:4px 12px;font-size:.8rem;font-weight:700;color:var(--muted)}
@@ -187,6 +215,25 @@ tr.total td{font-weight:800;background:#fafcfd;border-top:2px solid var(--line)}
       <strong><?= $totalGuests ?></strong> άτομα.
       Οι διανυκτερεύσεις βγαίνουν αυτόματα από τις ημερομηνίες.
     </p>
+
+    <?php if ($sum['total'] > 0): ?>
+      <div class="kpi">
+        <div><div class="n"><?= h(money($sum['total'])) ?></div><div class="l">Συνολικό ποσό</div></div>
+        <div><div class="n"><?= h(money($sum['net'])) ?></div><div class="l">Καθαρή αξία</div></div>
+        <div><div class="n"><?= h(money($sum['vat'])) ?></div>
+             <div class="l">ΦΠΑ <?= h(number_format($rates['vatRate'] * 100, 0, ',', '.')) ?>%</div></div>
+        <div><div class="n"><?= h(money($sum['takk'])) ?></div><div class="l">ΤΑΚΚ</div></div>
+        <div><div class="n"><?= h(money($sum['municipal'])) ?></div><div class="l">Παρεπιδημούντων</div></div>
+      </div>
+    <?php endif; ?>
+
+    <?php if ($missing > 0): ?>
+      <p class="hint" style="margin:0 0 14px">
+        <strong><?= $missing ?></strong>
+        <?= $missing === 1 ? 'διαμονή δεν έχει' : 'διαμονές δεν έχουν' ?>
+        καταχωρημένο ποσό, γι' αυτό μένουν έξω από τα σύνολα.
+      </p>
+    <?php endif; ?>
     <div class="tbl-scroll">
     <table>
       <thead>
@@ -199,14 +246,21 @@ tr.total td{font-weight:800;background:#fafcfd;border-top:2px solid var(--line)}
           <th class="num">Άτομα</th>
           <th>ΑΦΜ</th>
           <th>Διεύθυνση</th>
+          <th>Τ.Κ.</th>
+          <th>Χώρα</th>
           <th>Ταυτ./Διαβ.</th>
           <th>Τηλέφωνο</th>
           <th>Πηγή</th>
+          <th class="num">Σύνολο</th>
+          <th class="num">Καθαρή</th>
+          <th class="num">ΦΠΑ</th>
+          <th class="num">ΤΑΚΚ</th>
+          <th class="num">Παρεπιδ.</th>
         </tr>
       </thead>
       <tbody>
         <?php if (!$rows): ?>
-          <tr><td colspan="11" style="text-align:center;color:var(--muted);padding:26px">
+          <tr><td colspan="18" style="text-align:center;color:var(--muted);padding:26px">
             Καμία διαμονή σε αυτή την περίοδο.
           </td></tr>
         <?php else: foreach ($rows as $g): ?>
@@ -219,9 +273,17 @@ tr.total td{font-weight:800;background:#fafcfd;border-top:2px solid var(--line)}
             <td class="num"><?= (int)($g['adults'] ?? 1) ?></td>
             <td><?= h((string)($g['vat'] ?? '')) ?: '<span style="color:#b6c0c9">—</span>' ?></td>
             <td><?= h((string)($g['address'] ?? '')) ?: '<span style="color:#b6c0c9">—</span>' ?></td>
+            <td><?= h((string)($g['postalCode'] ?? '')) ?: '<span style="color:#b6c0c9">—</span>' ?></td>
+            <td><?= h((string)($g['country'] ?? '')) ?: '<span style="color:#b6c0c9">—</span>' ?></td>
             <td><?= h((string)($g['idDoc'] ?? '')) ?: '<span style="color:#b6c0c9">—</span>' ?></td>
             <td><?= h((string)($g['phone'] ?? '')) ?: '<span style="color:#b6c0c9">—</span>' ?></td>
             <td><?= h(source_label((string)($g['source'] ?? 'direct'))) ?></td>
+            <?php $c = booking_calc($g, $rates); ?>
+            <td class="num"><strong><?= $c['has'] ? h(money($c['total'])) : '<span style="color:#b6c0c9">—</span>' ?></strong></td>
+            <td class="num"><?= $c['has'] ? h(money($c['net'])) : '' ?></td>
+            <td class="num"><?= $c['has'] ? h(money($c['vat'])) : '' ?></td>
+            <td class="num"><?= $c['has'] ? h(money($c['takk'])) : '' ?></td>
+            <td class="num"><?= $c['has'] ? h(money($c['municipal'])) : '' ?></td>
           </tr>
         <?php endforeach; endif; ?>
         <?php if ($rows): ?>
@@ -229,7 +291,12 @@ tr.total td{font-weight:800;background:#fafcfd;border-top:2px solid var(--line)}
             <td colspan="4">Σύνολο</td>
             <td class="num"><?= $totalNights ?></td>
             <td class="num"><?= $totalGuests ?></td>
-            <td colspan="5"></td>
+            <td colspan="7"></td>
+            <td class="num"><?= h(money($sum['total'])) ?></td>
+            <td class="num"><?= h(money($sum['net'])) ?></td>
+            <td class="num"><?= h(money($sum['vat'])) ?></td>
+            <td class="num"><?= h(money($sum['takk'])) ?></td>
+            <td class="num"><?= h(money($sum['municipal'])) ?></td>
           </tr>
         <?php endif; ?>
       </tbody>

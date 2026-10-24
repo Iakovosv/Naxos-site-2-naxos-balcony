@@ -590,6 +590,131 @@ function guest_wifi(array $g): string {
     return $w !== '' ? $w : wifi_default();
 }
 
+/* ================================================================ booking fees
+ *
+ * Τα δύο υποχρεωτικά τέλη διαμονής, όπως τα περιγράφει ο οδηγός του ιδιοκτήτη.
+ *
+ *   ΤΑΚΚ — Τέλος Ανθεκτικότητας στην Κλιματική Κρίση
+ *       Σταθερή χρέωση ανά δωμάτιο ανά νύχτα, ΧΩΡΙΣ ΦΠΑ. Δεν μπαίνει στο
+ *       τιμολόγιο διαμονής· εκδίδεται ξεχωριστό ειδικό στοιχείο.
+ *       Υψηλή περίοδος (Απρίλιος–Οκτώβριος): 2,00 € / νύχτα
+ *       Χαμηλή περίοδος (Νοέμβριος–Μάρτιος): 0,50 € / νύχτα
+ *
+ *   Τέλος Παρεπιδημούντων
+ *       0,5% της καθαρής αξίας (αφού αφαιρεθούν ΦΠΑ και ΤΑΚΚ).
+ *       Ο δήμος μπορεί να εφαρμόσει αυξημένο συντελεστή 0,75%.
+ *
+ * Σειρά υπολογισμού, με συνολικό ποσό T (ό,τι εισπράττεται από τον πελάτη):
+ *       ΤΑΚΚ     = άθροισμα νυχτών × συντελεστής περιόδου
+ *       Καθαρή S = (T − ΤΑΚΚ) / 1,13
+ *       ΦΠΑ      = (T − ΤΑΚΚ) − S
+ *       Παρεπ.   = S × 0,5%
+ *
+ * Το ΤΑΚΚ βγαίνει ανά ΝΥΧΤΑ, όχι ανά κράτηση: διαμονή που περνά από τον
+ * Οκτώβριο στον Νοέμβριο χρεώνεται με δύο συντελεστές. Για διαμονή μέσα στον
+ * ίδιο μήνα το αποτέλεσμα είναι πανομοιότυπο με τον τύπο του οδηγού.
+ *
+ * Οι συντελεστές είναι ΡΥΘΜΙΣΕΙΣ, όχι σταθερές: το ΤΑΚΚ αλλάζει με νόμο και ο
+ * δήμος μπορεί να αλλάξει το ποσοστό. Τα αλλάζει ο ιδιοκτήτης από το admin. */
+
+const DEFAULT_FEES = [
+    'vatRate'   => 0.13,    // ΦΠΑ διαμονής
+    'takkHigh'  => 2.00,    // €/νύχτα, υψηλή περίοδος
+    'takkLow'   => 0.50,    // €/νύχτα, χαμηλή περίοδος
+    'highFrom'  => 4,       // από Απρίλιο…
+    'highTo'    => 10,      // …έως Οκτώβριο
+    'municipal' => 0.005,   // 0,5% — 0,0075 αν ο δήμος έχει αυξημένο
+];
+
+/** Οι ισχύοντες συντελεστές: ρυθμίσεις πάνω από τις προεπιλογές. */
+function fee_rates(): array {
+    $s = settings_load();
+    $r = DEFAULT_FEES;
+    foreach (array_keys(DEFAULT_FEES) as $k) {
+        if (isset($s['fees'][$k]) && is_numeric($s['fees'][$k])) $r[$k] = (float)$s['fees'][$k];
+    }
+    // Συντελεστής ΦΠΑ ≤ −100% θα μηδένιζε ή θα ανέστρεφε τη διαίρεση.
+    if ($r['vatRate'] <= -1.0) $r['vatRate'] = DEFAULT_FEES['vatRate'];
+    if ($r['takkHigh'] < 0) $r['takkHigh'] = 0.0;
+    if ($r['takkLow']  < 0) $r['takkLow']  = 0.0;
+    if ($r['municipal'] < 0) $r['municipal'] = 0.0;
+    return $r;
+}
+
+/** Το ΤΑΚΚ μιας διαμονής, αθροισμένο ανά νύχτα. */
+function booking_takk(array $g, ?array $r = null): float {
+    $r    = $r ?? fee_rates();
+    $from = (string)($g['stayFrom'] ?? '');
+    $n    = guest_nights($g);
+    $ts   = strtotime($from);
+    if ($n <= 0 || !$ts) return 0.0;
+    $hi   = (int)$r['highFrom'];
+    $lo   = (int)$r['highTo'];
+    $sum  = 0.0;
+    for ($i = 0; $i < $n; $i++) {
+        $m    = (int)date('n', $ts + $i * 86400);
+        $sum += ($m >= $hi && $m <= $lo) ? $r['takkHigh'] : $r['takkLow'];
+    }
+    return round($sum, 2);
+}
+
+/** Όλα τα ποσά μιας κράτησης. «has» = false όταν δεν έχει καταχωρηθεί ποσό. */
+function booking_calc(array $g, ?array $r = null): array {
+    $r      = $r ?? fee_rates();
+    $nights = guest_nights($g);
+    $takk   = booking_takk($g, $r);
+    $total  = amount_value($g['total'] ?? '');
+    $zero   = ['nights' => $nights, 'total' => 0.0, 'stay' => 0.0, 'takk' => 0.0,
+               'net' => 0.0, 'vat' => 0.0, 'municipal' => 0.0, 'has' => false];
+    if ($total <= 0) return $zero;
+    $stay = round($total - $takk, 2);                    // διαμονή μαζί με ΦΠΑ
+    $net  = round($stay / (1 + $r['vatRate']), 2);       // καθαρή αξία
+    return [
+        'nights'    => $nights,
+        'total'     => $total,
+        'stay'      => $stay,
+        'takk'      => $takk,
+        'net'       => $net,
+        'vat'       => round($stay - $net, 2),
+        'municipal' => round($net * $r['municipal'], 2),
+        'has'       => true,
+    ];
+}
+
+/** Ποσό σε ελληνική γραφή: 1234.5 → «1.234,50 €». */
+function money(float $v): string {
+    return number_format($v, 2, ',', '.') . ' €';
+}
+
+/** Καθαρίζει ποσό που πληκτρολογήθηκε. Δέχεται κόμμα ή τελεία ως δεκαδικό.
+ *  Επιστρέφει «1234.50» ή '' αν δεν είναι αριθμός. */
+function amount_norm($v): string {
+    $v = trim((string)$v);
+    if ($v === '') return '';
+    $v = str_replace(['€', ' ', "\u{00A0}"], '', $v);
+    if (!preg_match('/^[\d.,]+$/', $v)) return '';
+    $lastC = strrpos($v, ',');
+    $lastD = strrpos($v, '.');
+    if ($lastC !== false && $lastD !== false) {
+        // Το τελευταίο από τα δύο είναι το δεκαδικό· το άλλο χωρίζει χιλιάδες.
+        $dec = $lastC > $lastD ? ',' : '.';
+        $v   = str_replace($dec === ',' ? '.' : ',', '', $v);
+        $v   = str_replace($dec, '.', $v);
+    } elseif ($lastC !== false) {
+        $v = str_replace(',', '.', $v);
+    } elseif ($lastD !== false && preg_match('/^\d{1,3}(\.\d{3})+$/', $v)) {
+        $v = str_replace('.', '', $v);   // «1.234» = χίλια διακόσια τριάντα τέσσερα
+    }
+    if (!preg_match('/^\d+(\.\d{1,2})?$/', $v)) return '';
+    return number_format((float)$v, 2, '.', '');
+}
+
+/** Το ποσό ως αριθμός· 0 αν λείπει ή είναι άκυρο. */
+function amount_value($v): float {
+    $n = amount_norm($v);
+    return $n === '' ? 0.0 : (float)$n;
+}
+
 /* ------------------------------------------------------------- guest records */
 
 /** Slug: μόνο πεζά λατινικά, ψηφία και παύλες. Ελληνικά → μεταγραμματισμός.

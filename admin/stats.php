@@ -75,6 +75,25 @@ foreach ($guests as $g) {
 }
 arsort($bySource);
 
+// Έσοδα. Μπαίνουν μόνο οι κρατήσεις με καταχωρημένο ποσό· οι υπόλοιπες μετριούνται
+// χωριστά, αλλιώς ο τζίρος θα φαινόταν μικρότερος χωρίς εξήγηση.
+$rates = fee_rates();
+$revMonth = array_fill(1, 12, ['total' => 0.0, 'net' => 0.0, 'vat' => 0.0,
+                               'takk' => 0.0, 'municipal' => 0.0]);
+$revYear  = ['total' => 0.0, 'net' => 0.0, 'vat' => 0.0, 'takk' => 0.0, 'municipal' => 0.0];
+$revMissing = 0;
+foreach ($guests as $g) {
+    $f = (string)($g['stayFrom'] ?? '');
+    if (!preg_match('/^(\d{4})-(\d{2})/', $f, $mm) || (int)$mm[1] !== $year) continue;
+    $c = booking_calc($g, $rates);
+    if (!$c['has']) { $revMissing++; continue; }
+    $m = (int)$mm[2];
+    foreach (['total', 'net', 'vat', 'takk', 'municipal'] as $k) {
+        $revMonth[$m][$k] += $c[$k];
+        $revYear[$k]      += $c[$k];
+    }
+}
+
 function pct(float $n): string { return number_format($n, 1, ',', '.') . '%'; }
 ?>
 <!DOCTYPE html>
@@ -173,7 +192,18 @@ tr.zero td{color:#b6c0c9}
     <div class="kpi"><div class="n"><?= $yearTotal['bookings'] ?></div><div class="l">Κρατήσεις</div></div>
     <div class="kpi"><div class="n"><?= $yearTotal['arrivals'] ?></div><div class="l">Αφίξεις</div></div>
     <div class="kpi"><div class="n"><?= pct($yearTotal['occupancy']) ?></div><div class="l">Πληρότητα</div></div>
+    <div class="kpi"><div class="n"><?= h(money($revYear['total'])) ?></div><div class="l">Έσοδα <?= $year ?></div></div>
+    <div class="kpi"><div class="n"><?= h(money($revYear['net'])) ?></div><div class="l">Καθαρή αξία</div></div>
+    <div class="kpi"><div class="n"><?= h(money($revYear['vat'])) ?></div><div class="l">ΦΠΑ</div></div>
   </div>
+
+  <?php if ($revMissing > 0): ?>
+    <p class="hint" style="margin:0 0 16px">
+      <strong><?= $revMissing ?></strong>
+      <?= $revMissing === 1 ? 'κράτηση δεν έχει' : 'κρατήσεις δεν έχουν' ?>
+      καταχωρημένο ποσό, γι' αυτό μένουν έξω από τα έσοδα.
+    </p>
+  <?php endif; ?>
 
   <div class="card">
     <h2>Ανά μήνα — όλα τα δωμάτια</h2>
@@ -187,6 +217,7 @@ tr.zero td{color:#b6c0c9}
           <th class="num">Αναχωρήσεις</th>
           <th class="num">Κρατήσεις</th>
           <th class="num">Πληρότητα</th>
+          <th class="num">Έσοδα</th>
           <th style="width:120px">Ποσοστό</th>
         </tr>
       </thead>
@@ -199,6 +230,7 @@ tr.zero td{color:#b6c0c9}
             <td class="num"><?= $st['total']['departures'] ?></td>
             <td class="num"><?= $st['total']['bookings'] ?></td>
             <td class="num"><?= pct($st['total']['occupancy']) ?></td>
+            <td class="num"><?= $revMonth[$m]['total'] > 0 ? h(money($revMonth[$m]['total'])) : '' ?></td>
             <td>
               <div class="bar"><i style="width:<?= min(100, $st['total']['occupancy']) ?>%"></i></div>
             </td>
@@ -211,6 +243,7 @@ tr.zero td{color:#b6c0c9}
           <td class="num"><?= $yearTotal['departures'] ?></td>
           <td class="num"><?= $yearTotal['bookings'] ?></td>
           <td class="num"><?= pct($yearTotal['occupancy']) ?></td>
+          <td class="num"><?= h(money($revYear['total'])) ?></td>
           <td></td>
         </tr>
       </tbody>

@@ -46,6 +46,10 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $email    = trim((string)($_POST['email'] ?? ''));
         $adults   = max(1, (int)($_POST['adults'] ?? 2));
         $notes    = trim((string)($_POST['notes'] ?? ''));
+        // Ποσό και στοιχεία διεύθυνσης — τα βλέπει ο λογιστής.
+        $total    = amount_norm($_POST['total'] ?? '');
+        $postal   = trim((string)($_POST['postalCode'] ?? ''));
+        $country  = trim((string)($_POST['country'] ?? ''));
         // Ο κωδικός WiFi έχει έτοιμη τιμή· ο κωδικός εισόδου μένει κενός μέχρι
         // να τον δώσει ο διαχειριστής, γιατί αλλάζει σε κάθε κράτηση.
         // Κενό σημαίνει «ακολούθησε τον προεπιλεγμένο κωδικό». Δεν αντιγράφουμε
@@ -93,6 +97,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                 'email'      => $email,
                 'adults'     => $adults,
                 'notes'      => $notes,
+                'total'      => $total,
+                'postalCode' => $postal,
+                'country'    => $country,
                 'wifi'       => $wifi,
                 'doorCode'   => $door,
             ];
@@ -144,8 +151,11 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $g['email']   = trim((string)($_POST['email'] ?? ''));
         $g['adults']  = max(1, (int)($_POST['adults'] ?? 2));
         $g['notes']   = trim((string)($_POST['notes'] ?? ''));
+        $g['total']      = amount_norm($_POST['total'] ?? '');
+        $g['postalCode'] = trim((string)($_POST['postalCode'] ?? ''));
+        $g['country']    = trim((string)($_POST['country'] ?? ''));
         // Κενό = ακολούθησε τον προεπιλεγμένο (δες guest_wifi() στο _lib.php).
-                $g['wifi']     = trim((string)($_POST['wifi'] ?? ''));
+        $g['wifi']     = trim((string)($_POST['wifi'] ?? ''));
         $g['doorCode'] = trim((string)($_POST['doorCode'] ?? ''));
 
         // Ημέρες καθαριότητας: το κενό πεδίο σημαίνει «αυτόματο».
@@ -194,6 +204,38 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
                 ? 'Ο προεπιλεγμένος κωδικός WiFi έμεινε ' . $now . '.'
                 : 'Ο προεπιλεγμένος κωδικός WiFi έγινε ' . $now . '.'
                   . ($moved > 0 ? ' Ενημερώθηκαν ' . $moved . ' κρατήσεις που ακολουθούσαν τον παλιό.' : ''));
+        }
+    }
+    elseif ($action === 'fees') {
+        // Συντελεστές τελών. Το ΤΑΚΚ αλλάζει με νόμο και ο δήμος μπορεί να αλλάξει
+        // το ποσοστό του τέλους παρεπιδημόντων, οπότε δεν είναι σταθερές του κώδικα.
+        $st   = settings_load();
+        $fees = $st['fees'] ?? [];
+        $def  = DEFAULT_FEES;
+        // [όνομα POST, ελάχιστο, μέγιστο, προεπιλογή, διαιρέτης για να βγει κλάσμα]
+        $in = [
+            'vatRate'   => [$_POST['feeVat']   ?? '', 0.0, 1.0,   $def['vatRate'],  100],
+            'takkHigh'  => [$_POST['feeTakkH'] ?? '', 0.0, 100.0, $def['takkHigh'], 1],
+            'takkLow'   => [$_POST['feeTakkL'] ?? '', 0.0, 100.0, $def['takkLow'],  1],
+            'municipal' => [$_POST['feeMun']   ?? '', 0.0, 0.5,   $def['municipal'], 100],
+        ];
+        $err = null;
+        foreach ($in as $k => [$raw, $lo, $hi, $fallback, $scale]) {
+            $raw = trim((string)$raw);
+            if ($raw === '') { unset($fees[$k]); continue; }   // κενό = προεπιλογή
+            $norm = amount_norm($raw);
+            if ($norm === '') { $err = 'Ένα από τα ποσά δεν είναι αριθμός.'; break; }
+            $val = (float)$norm / $scale;
+            if ($val < $lo || $val > $hi) { $err = 'Ένα από τα ποσά είναι εκτός ορίων.'; break; }
+            $fees[$k] = $val;
+        }
+        if ($err !== null) {
+            fail($err, 'guests.php#fees');
+        } else {
+            if ($fees === []) unset($st['fees']); else $st['fees'] = $fees;
+            settings_save($st);
+            ok('Οι συντελεστές αποθηκεύτηκαν.');
+            header('Location: guests.php#fees'); exit;
         }
     }
     elseif ($action === 'toggle' || $action === 'delete' || $action === 'regen') {
@@ -252,6 +294,8 @@ usort($guests, function ($a, $b) use ($order) {
     $d = ($order[guest_status($a)] ?? 9) <=> ($order[guest_status($b)] ?? 9);
     return $d !== 0 ? $d : strcmp((string)($a['stayFrom'] ?? ''), (string)($b['stayFrom'] ?? ''));
 });
+
+$feeRates = fee_rates();
 
 $today   = date('Y-m-d');
 $defFrom = date('Y-m-d', strtotime('+1 day'));
@@ -414,6 +458,47 @@ details.help div{margin-top:10px;font-size:.88rem;color:var(--muted)}
     </p>
   </div>
 
+  <div class="card" id="fees">
+    <h2>Συντελεστές τελών</h2>
+    <p class="hint" style="margin:0 0 12px">
+      Χρησιμοποιούνται στον αυτόματο υπολογισμό του λογιστηρίου. Άφησε ένα πεδίο
+      κενό για να επιστρέψει στην προεπιλεγμένη τιμή.
+    </p>
+    <form method="post">
+      <input type="hidden" name="action" value="fees">
+      <input type="hidden" name="csrf" value="<?= h(csrf()) ?>">
+      <div class="row">
+        <div>
+          <label for="feeVat">ΦΠΑ διαμονής (%)</label>
+          <input id="feeVat" type="text" name="feeVat" maxlength="6" inputmode="decimal"
+                 value="<?= h(number_format($feeRates['vatRate'] * 100, 2, ',', '.')) ?>">
+        </div>
+        <div>
+          <label for="feeTakkH">ΤΑΚΚ υψηλής περιόδου (€/νύχτα)</label>
+          <input id="feeTakkH" type="text" name="feeTakkH" maxlength="6" inputmode="decimal"
+                 value="<?= h(number_format($feeRates['takkHigh'], 2, ',', '.')) ?>">
+        </div>
+        <div>
+          <label for="feeTakkL">ΤΑΚΚ χαμηλής περιόδου (€/νύχτα)</label>
+          <input id="feeTakkL" type="text" name="feeTakkL" maxlength="6" inputmode="decimal"
+                 value="<?= h(number_format($feeRates['takkLow'], 2, ',', '.')) ?>">
+        </div>
+        <div>
+          <label for="feeMun">Τέλος παρεπιδημούντων (%)</label>
+          <input id="feeMun" type="text" name="feeMun" maxlength="6" inputmode="decimal"
+                 value="<?= h(number_format($feeRates['municipal'] * 100, 2, ',', '.')) ?>">
+        </div>
+      </div>
+      <p class="hint" style="margin:10px 0 0">
+        Υψηλή περίοδος: Απρίλιος–Οκτώβριος. Χαμηλή: Νοέμβριος–Μάρτιος.
+        Ο δήμος μπορεί να εφαρμόζει 0,75% αντί για 0,50%.
+      </p>
+      <div class="acts" style="margin-top:12px">
+        <button type="submit">Αποθήκευση συντελεστών</button>
+      </div>
+    </form>
+  </div>
+
   <div class="card">
     <h2>Νέο link</h2>
     <form method="post">
@@ -511,8 +596,25 @@ details.help div{margin-top:10px;font-size:.88rem;color:var(--muted)}
             <input id="idDoc" type="text" name="idDoc" maxlength="30" autocomplete="off">
           </div>
         </div>
+        <div class="row" style="margin-top:12px">
+          <div>
+            <label for="postalCode">Ταχυδρομικός κώδικας</label>
+            <input id="postalCode" type="text" name="postalCode" maxlength="12" autocomplete="off">
+          </div>
+          <div>
+            <label for="country">Χώρα</label>
+            <input id="country" type="text" name="country" maxlength="60"
+                   placeholder="π.χ. Ελλάδα" autocomplete="off">
+          </div>
+          <div>
+            <label for="total">Συνολικό ποσό κράτησης (€)</label>
+            <input id="total" type="text" name="total" maxlength="12" inputmode="decimal"
+                   placeholder="π.χ. 400,00" autocomplete="off">
+          </div>
+        </div>
         <p class="hint" style="margin:10px 0 0">
           Οι διανυκτερεύσεις υπολογίζονται αυτόματα από τις ημερομηνίες.
+          Από το συνολικό ποσό βγαίνουν αυτόματα ΦΠΑ, ΤΑΚΚ και τέλος παρεπιδημούντων.
           Τα στοιχεία αυτά τα βλέπεις εσύ και ο λογιστής — <strong>όχι</strong> οι καθαρίστριες.
         </p>
       </details>

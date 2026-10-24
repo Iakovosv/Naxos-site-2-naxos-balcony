@@ -38,6 +38,8 @@ a{color:#a85c30}</style></head>
 
 $g = $guests[$i];
 $nights = guest_nights($g);
+$calc   = booking_calc($g);
+$rates  = fee_rates();
 $auto   = default_cleaning_days($nights);
 $dates  = cleaning_dates($g);
 $hasCustom = array_key_exists('cleaningDays', $g) && is_array($g['cleaningDays']);
@@ -214,6 +216,18 @@ code.lnk{background:var(--soft);border:1px solid var(--line);border-radius:8px;p
       </div>
       <div class="row" style="margin-top:12px">
         <div>
+          <label for="postalCode">Ταχυδρομικός κώδικας</label>
+          <input id="postalCode" type="text" name="postalCode" maxlength="12"
+                 value="<?= h((string)($g['postalCode'] ?? '')) ?>">
+        </div>
+        <div>
+          <label for="country">Χώρα</label>
+          <input id="country" type="text" name="country" maxlength="60"
+                 value="<?= h((string)($g['country'] ?? '')) ?>">
+        </div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <div>
           <label for="idDoc">Ταυτότητα / Διαβατήριο</label>
           <input id="idDoc" type="text" name="idDoc" maxlength="30"
                  value="<?= h((string)($g['idDoc'] ?? '')) ?>">
@@ -229,6 +243,39 @@ code.lnk{background:var(--soft);border:1px solid var(--line);border-radius:8px;p
                  value="<?= h((string)($g['email'] ?? '')) ?>">
         </div>
       </div>
+    </div>
+
+    <div class="card">
+      <h2>Ποσό κράτησης</h2>
+      <div class="row">
+        <div>
+          <label for="total">Συνολικό ποσό (€)</label>
+          <input id="total" type="text" name="total" maxlength="12" inputmode="decimal"
+                 placeholder="π.χ. 400,00"
+                 value="<?= h((string)($g['total'] ?? '')) ?>">
+        </div>
+        <div style="flex:2 1 300px">
+          <label>Ανάλυση (αυτόματη)</label>
+          <?php if ($calc['has']): ?>
+            <table style="font-size:.86rem">
+              <tr><td>Διαμονή με ΦΠΑ</td><td class="num"><?= h(money($calc['stay'])) ?></td></tr>
+              <tr><td>Καθαρή αξία</td><td class="num"><?= h(money($calc['net'])) ?></td></tr>
+              <tr><td>ΦΠΑ <?= h(number_format($rates['vatRate'] * 100, 0, ',', '.')) ?>%</td>
+                  <td class="num"><?= h(money($calc['vat'])) ?></td></tr>
+              <tr><td>ΤΑΚΚ (<?= $calc['nights'] ?> νύχτες, χωρίς ΦΠΑ)</td>
+                  <td class="num"><?= h(money($calc['takk'])) ?></td></tr>
+              <tr><td>Τέλος παρεπιδημούντων <?= h(number_format($rates['municipal'] * 100, 2, ',', '.')) ?>%</td>
+                  <td class="num"><?= h(money($calc['municipal'])) ?></td></tr>
+            </table>
+          <?php else: ?>
+            <p class="hint" style="margin:0">Γράψε το συνολικό ποσό και η ανάλυση βγαίνει μόνη της.</p>
+          <?php endif; ?>
+        </div>
+      </div>
+      <p class="hint" style="margin:10px 0 0">
+        Το ΤΑΚΚ δεν έχει ΦΠΑ και εκδίδεται σε ξεχωριστό στοιχείο· το τέλος
+        παρεπιδημούντων υπολογίζεται πάνω στην καθαρή αξία.
+      </p>
     </div>
 
     <div class="card">

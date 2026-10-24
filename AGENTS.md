@@ -45,6 +45,45 @@
 >    - `admin/settings-data.php` is gitignored, like `guests-data.php`.
 > 3. **Deploy to the live host — STILL PENDING.** See `README-DEPLOY.md`.
 >
+> ### Done since the above (session 2026-10-24)
+> **Booking financials for the accountant — DONE.** The owner asked that the accountant
+> see, per booking, the amount, ΑΦΜ, address with postal code and country, and the ID
+> document, plus an automatic breakdown of net value, VAT and municipal fee.
+>
+> 1. **Fee engine in `admin/_lib.php`** (pure functions, no I/O):
+>    - `fee_rates()` — reads the `fees` sub-array of the settings store. Defaults:
+>      `vatRate=0.13`, `takkHigh=2.00`, `takkLow=0.50`, `municipal=0.005`. Each value is
+>      range-checked on read (VAT 0–30%, ΤΑΚΚ 0–20, municipal 0–5%), so a hand-edited
+>      settings file cannot produce nonsense.
+>    - `amount_norm()` — turns `"1.234,56"`, `"€ 400,50"`, `"400"` into `"1234.56"`;
+>      returns `""` for anything unparseable. Greek decimal comma is the expected input.
+>    - `booking_takk()` — **ΤΑΚΚ is charged per NIGHT, not per booking.** A stay that
+>      crosses 31 Oct → 1 Nov is split: high season is April–October (per the fee guide),
+>      low season November–March. Inside one month this equals the guide's flat formula.
+>    - `booking_calc($g, $rates = null)` — returns `has, total, stay, takk, net, vat,
+>      municipal`. `has=false` when no amount is stored; the UI then shows `—` and the CSV
+>      stays blank, because a stored `0` would look like a free stay. VAT is extracted
+>      from the accommodation part (`stay / (1+vatRate)`), which is what the guide does.
+>    - `money()` — `number_format` with `€`; kept in one place so the pages agree.
+> 2. **New guest fields**: `total`, `postalCode`, `country`. Added to both the `add` and
+>    `edit` actions of `guests.php`, to the add form, and to the `guest.php` detail form.
+> 3. **`guests.php`** also gained a **«Συντελεστές τελών»** card (`action=fees`) so the
+>    owner changes the rates without touching code — the law changes ΤΑΚΚ and a
+>    municipality may levy 0.75% instead of 0.50%.
+> 4. **`accountant.php`** gained amount columns, per-period totals, KPI tiles and **6 new
+>    CSV columns** (Τ.Κ., χώρα, and the five amounts). `$rates` is resolved BEFORE the CSV
+>    branch — the export needs it.
+> 5. **`stats.php`** gained revenue KPI tiles (total / net / VAT) and an «Έσοδα» column in
+>    the monthly table. Revenue is grouped by the arrival month, matching how the page
+>    already groups nights.
+> 6. **No leakage, verified.** Amounts and ID data are visible only to the `admin` and
+>    `accountant` roles. `cleaning.php` and `welcome/_view.php` do not reference any of the
+>    new fields. Role gating re-checked: accountant → `guests.php` 302, `accountant.php` 200.
+> 7. **Verified end-to-end** with a real server: login → create a 400 €/4-night July
+>    booking → it appears in the accountant view → CSV. All five formulas match the guide
+>    (ΤΑΚΚ 8.00, stay 392.00, net 346.90, VAT 45.10, municipal 1.73). Fee limits reject
+>    a 200% VAT and keep 13%.
+>
 > ### Known cosmetic gaps (low priority, none blocking)
 > - The hero image has `srcset` (480/800/1280/1600) but **no WebP variant**
 >   (`naxos-balcony-apartments-glinado-view*.webp` does not exist). The 84 gallery
