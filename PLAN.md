@@ -23,8 +23,9 @@ Where the phases stand:
 | — | **Deploy to the live server** | 🔴 **NOT DONE — the only large item left** |
 
 So every phase of the build is finished and pushed. What remains is publishing it,
-plus the owner decisions listed in `STATUS.md` §0c (duplicate photos, PAT
-revocation, test-data cleanup, how future pushes authenticate).
+plus the owner decisions still open in `STATUS.md` §0c (PAT revocation,
+test-data cleanup, how future pushes authenticate). The gallery-photo question is
+settled: the repetition is deliberate.
 
 ## 0. Corrections to earlier assumptions (verified 2026-10-22)
 
@@ -206,13 +207,13 @@ Recommended: PHP auto-scan + optional `captions.json`, static list as fallback.
 - Lighthouse on mobile + desktop for the 6 pages
 - Link check (no 404s, no absolute links pointing at the live site)
 
-## 5b. Open: duplicate gallery photos (needs an owner decision)
+## 5b. CLOSED: the repeated gallery photos are deliberate
 
 The gallery shows 83 tiles covering 56 unique images — 22 groups of distinct paths
-share content, exactly as the live site does today. Nothing was changed: deleting or swapping a tile is
-a content change, which the hard constraint forbids. Ask the owner whether to
-(a) keep as is, or (b) show each image once. If (b), drop the repeated entries
-from `gallery-tiles.json` and keep one appearance per image.
+share content. **Resolved 2026-10-24: this is not a defect.** Some apartments are
+identical to each other, so the owner uploaded the same photographs to each one on
+purpose. The repetition is intended content, not an error. Nothing to change, and
+no longer an open question.
 
 ## 5c. OPEN: the licence label is the only visible text change
 
@@ -232,11 +233,8 @@ lightbox captions), not a rewrite of existing copy.
 
 ## 6. Open questions for the owner
 
-1. **Duplicate photos:** see §5b for the measured numbers (83 tiles, 79 paths, 56
-   unique images, 22 content-sharing groups; room4↔room6 share 17 tiles,
-   room3↔room5 share 5, and no room tile is shared with `exterior`; within
-   `exterior` 4 photos appear twice, and Room 4 lists `room4_12.jpg` twice). All
-   of these already exist on the live site. Keep as-is, or show each image once?
+1. ~~**Duplicate photos**~~ — **CLOSED.** The owner confirmed that some apartments
+   are identical to each other, so the shared photographs are deliberate. See §5b.
 2. **`geo` coordinates** — exact latitude/longitude of the property?
 3. **`priceRange`** — e.g. "€70–€150" per night in high season?
 4. **Check-in / check-out times?**
