@@ -899,7 +899,91 @@ else:
                   _en["rows"] == 1 and not _en["over"] and not _en["hs"], f"({_en})")
             _pg3.close()
 
+            # 6. Κανένα κείμενο κομμένο σε ΚΑΝΕΝΑ πλάτος. Ο ιδιοκτήτης το
+            #    ζήτησε ρητά: «βασικό μην κόβεται τπτ». scrollWidth > clientWidth
+            #    σημαίνει ότι το κείμενο δεν χωράει στο κουτί του.
+            _clip = []
+            _pg4 = _b.new_page()
+            for _w in _WIDTHS:
+                _pg4.set_viewport_size({"width": _w, "height": 900})
+                _pg4.goto(_url, wait_until="load")
+                _bad2 = _pg4.evaluate("""() => {
+                    const out = [];
+                    const wrap = document.querySelector('main .w-access');
+                    if (!wrap) return ['λείπει το .w-access'];
+                    wrap.querySelectorAll('*').forEach(e => {
+                        if (e.scrollWidth > e.clientWidth + 1 ||
+                            e.scrollHeight > e.clientHeight + 1) {
+                            out.push(e.className || e.tagName); } });
+                    return out;
+                }""")
+                if _bad2:
+                    _clip.append(f"{_w}px: {_bad2}")
+            _pg4.close()
+            check("κανένα κείμενο κομμένο σε 19 πλάτη", not _clip, f"({_clip})")
+
+            # 7. Όταν τα τρία είναι δίπλα-δίπλα, η υπόδειξη του WiFi σπάει σε
+            #    2 γραμμές — ΑΥΤΟ είναι που κάνει τη διάταξη να χωράει.
+            _pg5 = _b.new_page()
+            _pg5.set_viewport_size({"width": 1280, "height": 900})
+            _pg5.goto(_url, wait_until="load")
+            _lines = _pg5.evaluate("""() => {
+                const e = document.querySelector('main .w-hint');
+                const lh = parseFloat(getComputedStyle(e).lineHeight);
+                return Math.round(e.getBoundingClientRect().height / lh);
+            }""")
+            check("όταν είναι δίπλα-δίπλα, η υπόδειξη σπάει σε 2 γραμμές",
+                  _lines == 2, f"({_lines} γραμμές)")
+            _pg5.close()
+
             _b.close()
+
+# ---------------------------------------------------------------------------
+# Η σειρά των καρτών. Ο ιδιοκτήτης θέλει το «Χρειάζεστε κάτι;» ΤΕΛΕΥΤΑΙΟ,
+# μετά το «Καλή διαμονή!» — η τελευταία εικόνα της σελίδας να είναι η
+# ευχή και μετά ένας τρόπος επικοινωνίας.
+# ---------------------------------------------------------------------------
+print("\n=== ΣΕΙΡΑ ΚΑΡΤΩΝ ΣΤΗ ΣΕΛΙΔΑ ΕΠΙΣΚΕΠΤΗ ===")
+
+_active = next((g for g in guests_raw()
+                if g.get("code") and g.get("enabled") and g.get("doorCode")), None)
+if not _active:
+    check("υπάρχει ενεργός επισκέπτης για έλεγχο σειράς", False)
+else:
+    _p = f"/welcome/{_active['slug']}-{_active['code']}.php"
+    _st, _body, _ = get(session(), _p)
+
+    def _pos(needle):
+        i = _body.find(needle)
+        return i if i >= 0 else None
+
+    _pos_guide = _pos("Οδηγίες Εισόδου")
+    _pos_final = _pos("Πώς να μπείτε και να βγείτε")
+    _pos_close = _pos("Καλή διαμονή")
+    _pos_help = _pos("Χρειάζεστε κάτι;")
+
+    check("υπάρχουν όλες οι κάρτες",
+          None not in (_pos_guide, _pos_final, _pos_close, _pos_help))
+    check("το «Χρειάζεστε κάτι;» είναι ΤΕΛΕΥΤΑΙΟ",
+          _pos_help > _pos_guide and _pos_help > _pos_final and _pos_help > _pos_close,
+          f"(guide={_pos_guide} final={_pos_final} close={_pos_close} help={_pos_help})")
+    check("το «Χρειάζεστε κάτι;» έρχεται μετά το «Καλή διαμονή»",
+          _pos_help > _pos_close)
+    check("το κρίσιμο «Πώς να μπείτε» μένει πριν το «Καλή διαμονή»",
+          _pos_final < _pos_close)
+    check("το «Χρειάζεστε κάτι;» εμφανίζεται μία φορά", _body.count("Χρειάζεστε κάτι;") == 1)
+
+    # Τα τρία κουμπιά επικοινωνίας δουλεύουν ακόμη μετά τη μετακίνηση.
+    _tail = _body[_pos_help:]
+    check("τα 3 κουμπιά είναι στην τελευταία κάρτα",
+          "wa.me/306942279665" in _tail and "tel:+306942279665" in _tail
+          and "mailto:naxosbalcony@gmail.com" in _tail)
+
+    # Ίδια σειρά και στα αγγλικά.
+    _st, _en, _ = get(session(), _p + "?lang=en")
+    check("αγγλικά → «Need anything?» τελευταίο",
+          _en.rfind("Need anything?") > _en.rfind("Have a great stay")
+          if "Have a great stay" in _en else _en.rfind("Need anything?") > 0)
 
 # =============================================================== ΤΕΛΟΣ
 print("\n" + "=" * 70)

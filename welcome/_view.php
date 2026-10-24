@@ -481,16 +481,6 @@ $otherLang = ($guest !== null && $status === 'active')
     <div class="w-note"><?= h($t['arrivalNote']) ?></div>
   <?php endif; ?>
 
-  <div class="w-card">
-    <h2 style="margin:0 0 14px;font-size:1.08rem"><?= h($t['needHelp']) ?></h2>
-    <div class="w-actions">
-      <a class="primary" href="https://wa.me/306942279665" target="_blank" rel="noopener">
-        <span aria-hidden="true">💬</span> <?= h($t['whatsapp']) ?></a>
-      <a href="tel:+306942279665"><span aria-hidden="true">📞</span> <?= h($t['call']) ?></a>
-      <a href="mailto:naxosbalcony@gmail.com"><span aria-hidden="true">✉️</span> <?= h($t['email']) ?></a>
-    </div>
-  </div>
-
   <?php /* ------------------------------------------------------ ΟΔΗΓΙΕΣ ΕΙΣΟΔΟΥ
      Τα κείμενα είναι ακριβώς όπως τα έδωσε ο ιδιοκτήτης. Δεν αλλάζουμε λέξη. */ ?>
   <div class="w-card w-guide">
@@ -588,6 +578,19 @@ $otherLang = ($guest !== null && $status === 'active')
   <div class="w-closing">
     <p><?= h($t['closing']) ?></p>
     <p class="w-good"><?= h($t['goodStay']) ?></p>
+  </div>
+
+  <?php /* Το «Χρειάζεστε κάτι;» μπαίνει ΤΕΛΕΥΤΑΙΟ, μετά το «Καλή διαμονή!» —
+     ο ιδιοκτήτης το θέλει εκεί, ώστε η τελευταία εικόνα της σελίδας να είναι
+     το «καλή διαμονή» και μετά ένας τρόπος επικοινωνίας, όχι στη μέση. */ ?>
+  <div class="w-card">
+    <h2 style="margin:0 0 14px;font-size:1.08rem"><?= h($t['needHelp']) ?></h2>
+    <div class="w-actions">
+      <a class="primary" href="https://wa.me/306942279665" target="_blank" rel="noopener">
+        <span aria-hidden="true">💬</span> <?= h($t['whatsapp']) ?></a>
+      <a href="tel:+306942279665"><span aria-hidden="true">📞</span> <?= h($t['call']) ?></a>
+      <a href="mailto:naxosbalcony@gmail.com"><span aria-hidden="true">✉️</span> <?= h($t['email']) ?></a>
+    </div>
   </div>
 
 <?php elseif ($status === 'scheduled' && $guest !== null): ?>

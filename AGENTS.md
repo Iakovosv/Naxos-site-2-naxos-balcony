@@ -1104,6 +1104,48 @@ including the 2-item case and the English text (longer, so it is the tighter fit
 **Do not "simplify" the breakpoint to a wider value.** 700px is where three
 columns stop squeezing the hint; below that, stacking is the honest answer.
 
+### 18.1 The WiFi hint: two lines, measured (2026-10-24)
+
+The owner asked whether forcing the WiFi hint onto two lines would let the three
+access items sit side by side. **It already does — the hint wraps to two lines by
+itself wherever the three share a row.** No change was needed.
+
+Measured minimum widths (Chromium, `white-space:normal`):
+
+| Text | 1 line | 2 lines | 3 lines |
+|---|---|---|---|
+
+| WiFi hint (EL) | **317px** | 162px | 129px |
+
+| Room label (EL) | 173px | 87px | 82px |
+
+| Door label (EL) | 147px | 20px | 20px |
+
+| "Room 3" pill | 77px | — | — |
+
+Three columns need ≥3 × 162 = 486px plus gaps, and the card is 632px wide — so
+two lines is exactly enough, and that is what happens at ≥700px. Forcing the hint
+to two lines *below* 700px would give 3 columns of ~100–140px at 420–640px, where
+the labels wrap to 5 lines and the pill is cramped. Not worth it.
+
+The owner's hard rule was "nothing may be cut off". Asserted: `scrollWidth <=
+clientWidth` and `scrollHeight <= clientHeight` on **every** element inside
+`.w-access`, at **19 widths** (320→1920px). All clean. See
+`tests/test_audit.py` §"ΔΙΑΤΑΞΗ ΚΑΡΤΑΣ ΠΡΟΣΒΑΣΗΣ".
+
+### 18.2 Card order: "Χρειάζεστε κάτι;" moved last
+
+The owner wanted the contact card (WhatsApp / Call / Email) after the closing
+card, so the page ends on "Καλή διαμονή!" and then a way to reach them.
+
+Order is now: room → stay → entry guide → property rules → gift → **the critical
+"Πώς να μπείτε και να βγείτε"** → closing ("Καλή διαμονή!") → **"Χρειάζεστε κάτι;"**.
+
+⚠️ The critical card stays **before** the closing, not after. It carries the
+"Διάβασα" checkbox and the door code; burying it below the farewell would hide the
+one thing a guest must read. `tests/test_audit.py` asserts the order explicitly,
+in both languages.
+
 ## 15. Session 5 — fixes from the four-link audit (2026-10-24)
 
 The audit (§0f in `STATUS.md`, 238 checks) left 5 findings. Four were ours and are
