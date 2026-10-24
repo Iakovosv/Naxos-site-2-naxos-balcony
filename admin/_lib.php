@@ -6,8 +6,10 @@
  *
  * Used by guests.php. index.php (the gallery admin) still carries its own copy
  * of the auth code; that is deliberate, so a change here cannot break a tool
- * that is already working. Both tools share credentials.php and the throttle
- * file, so a failed login on either page counts against the other.
+ * that is already working. Both share credentials.php, and the admin lockout
+ * file, so a failed login on either counts against the other. Staff logins have
+ * their own lockout file per role: the accountant running out of attempts must
+ * not lock the cleaners out.
  *
  * Deploy: upload to  <public_html>/admin/_lib.php
  * ========================================================================== */
@@ -22,6 +24,8 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
     ]);
     session_start();
 }
+
+require_once __DIR__ . '/_captcha.php';
 
 const ADMIN_DIR   = __DIR__;
 const CRED_FILE   = ADMIN_DIR . '/credentials.php';
@@ -47,7 +51,11 @@ function csrf(): string {
 }
 
 function check_csrf(): void {
-    if (!hash_equals($_SESSION['csrf'] ?? '', $_POST['csrf'] ?? '')) {
+    // Το κενό token απορρίπτεται ρητά: χωρίς αυτόν τον έλεγχο το hash_equals('','')
+    // επιστρέφει true, οπότε ένα POST χωρίς session ταίριαζε με άδειο session token.
+    $sent = (string)($_POST['csrf'] ?? '');
+    $have = (string)($_SESSION['csrf'] ?? '');
+    if ($sent === '' || $have === '' || !hash_equals($have, $sent)) {
         http_response_code(400);
         exit('Bad request.');
     }
@@ -57,6 +65,27 @@ function logged_in(): bool { return !empty($_SESSION['ok']); }
 
 function current_role(): string { return (string)($_SESSION['role'] ?? ''); }
 function is_admin(): bool { return current_role() === 'admin'; }
+
+/** Οι ρόλοι που ορίζει ο διαχειριστής από τη σελίδα staff.php. */
+const STAFF_ROLES = ['accountant', 'cleaner1', 'cleaner2'];
+
+/** Ο ρόλος που βλέπει ο χρήστης τώρα — ίσως «δανεικός» από τον διαχειριστή.
+ *
+ *  Ο διαχειριστής μπορεί να δει μια σελίδα όπως τη βλέπει ένας άλλος ρόλος
+ *  (απαίτηση 5). Δεν αγγίζουμε το $_SESSION['role']: κρατάμε τον πραγματικό ρόλο
+ *  και ένα ξεχωριστό πεδίο, ώστε ο πραγματικός ρόλος να μένει πάντα 'admin'.
+ *  Έτσι μια πειραγμένη τιμή στο URL δεν μπορεί να δώσει δικαιώματα, και ο
+ *  διαχειριστής μπορεί πάντα να γυρίσει πίσω. */
+function view_role(): string {
+    if (current_role() !== 'admin') return current_role();
+    $as = (string)($_SESSION['view_as'] ?? '');
+    return in_array($as, STAFF_ROLES, true) ? $as : 'admin';
+}
+
+/** Είμαστε σε λειτουργία «βλέπω ως»; */
+function viewing_as(): bool {
+    return current_role() === 'admin' && view_role() !== 'admin';
+}
 
 /** Πού πάει ο καθένας μετά τη σύνδεση. */
 function home_for_role(string $role): string {
@@ -85,30 +114,41 @@ function ok(string $m): void { $_SESSION['flash'][] = ['ok', $m]; }
  *
  * Ίδια λογική με το index.php: μετά από MAX_ATTEMPTS αποτυχίες μέσα σε WINDOW
  * δευτερόλεπτα, το login κλειδώνει για LOCKOUT δευτερόλεπτα, και το διάστημα
- * διπλασιάζεται σε κάθε νέο κύκλο. Μοιράζεται το ίδιο αρχείο με το gallery
- * admin, ώστε οι προσπάθειες να μετριούνται συνολικά. */
+ * διπλασιάζεται σε κάθε νέο κύκλο.
+ *
+ * ΤΟ ΚΛΕΙΔΩΜΑ ΕΙΝΑΙ ΞΕΧΩΡΙΣΤΟ ΑΝΑ ΡΟΛΟ. Το αρχείο του διαχειριστή μένει στο
+ * .login-attempts.json, που το μοιράζεται με το gallery admin (index.php) όπως
+ * πριν. Κάθε ρόλος προσωπικού παίρνει δικό του αρχείο: ο λογιστής που ξόδεψε τις
+ * προσπάθειές του δεν πρέπει να κλειδώσει την καθαρίστρια. */
 
-function throttle_state(): array {
-    if (!is_file(THROTTLE_F)) return ['fails' => [], 'until' => 0, 'cycles' => 0];
-    $d = json_decode((string)@file_get_contents(THROTTLE_F), true);
+function throttle_file(?string $role = null): string {
+    if ($role === null || $role === '' || $role === 'admin') return THROTTLE_F;
+    $safe = preg_replace('/[^a-z0-9]/', '', strtolower($role));
+    return ADMIN_DIR . '/.login-attempts-' . $safe . '.json';
+}
+
+function throttle_state(?string $role = null): array {
+    $f = throttle_file($role);
+    if (!is_file($f)) return ['fails' => [], 'until' => 0, 'cycles' => 0];
+    $d = json_decode((string)@file_get_contents($f), true);
     return is_array($d) ? $d + ['fails' => [], 'until' => 0, 'cycles' => 0]
                         : ['fails' => [], 'until' => 0, 'cycles' => 0];
 }
 
-function throttle_save(array $d): void {
-    @file_put_contents(THROTTLE_F, json_encode($d), LOCK_EX);
-    @chmod(THROTTLE_F, 0600);
+function throttle_save(array $d, ?string $role = null): void {
+    @file_put_contents(throttle_file($role), json_encode($d), LOCK_EX);
+    @chmod(throttle_file($role), 0600);
 }
 
-function throttle_wait(): int {
-    $d = throttle_state();
+function throttle_wait(?string $role = null): int {
+    $d = throttle_state($role);
     $left = (int)$d['until'] - time();
     return $left > 0 ? $left : 0;
 }
 
-function throttle_fail(): void {
+function throttle_fail(?string $role = null): void {
     $now = time();
-    $d = throttle_state();
+    $d = throttle_state($role);
     $d['fails'] = array_values(array_filter((array)$d['fails'], fn($t) => $now - (int)$t < WINDOW));
     $d['fails'][] = $now;
     if (count($d['fails']) >= MAX_ATTEMPTS) {
@@ -116,10 +156,10 @@ function throttle_fail(): void {
         $d['until']  = $now + LOCKOUT * (2 ** min($d['cycles'] - 1, 4));
         $d['fails']  = [];
     }
-    throttle_save($d);
+    throttle_save($d, $role);
 }
 
-function throttle_clear(): void { @unlink(THROTTLE_F); }
+function throttle_clear(?string $role = null): void { @unlink(throttle_file($role)); }
 
 /** Έλεγχος κωδικού και, αν ταιριάζει, επιστροφή του ρόλου.
  *
@@ -163,27 +203,141 @@ function verify_login(string $pw): ?string {
     return $hit !== '' ? $hit : null;
 }
 
+/** Σελίδα σύνδεσης, κοινή για κάθε σελίδα που τη χρειάζεται.
+ *
+ *  Ζωγραφίζει μια αυτόνομη σελίδα — δεν εξαρτάται από το CSS της σελίδας που τη
+ *  κάλεσε, ώστε ο λογιστής και η καθαρίστρια να βλέπουν δική τους φόρμα χωρίς να
+ *  ξαναγραφτεί το κάθε περιβάλλον. Δημιουργεί νέα πράξη κάθε φορά που τυπώνεται. */
+function render_login_page(string|array|null $need = null): void {
+    $c = captcha_new();
+
+    $who = 'Διαχειριστής';
+    if (is_array($need) && $need !== []) {
+        $who = implode(' / ', array_map('role_label', $need));
+    } elseif (is_string($need) && $need !== '') {
+        $who = role_label($need);
+    }
+
+    header('X-Robots-Tag: noindex, nofollow, noarchive');
+    ?><!DOCTYPE html>
+<html lang="el">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Σύνδεση — Naxos Balcony Apartments</title>
+<meta name="robots" content="noindex,nofollow,noarchive">
+<meta name="theme-color" content="#0c1822">
+<link rel="icon" href="../favicon.ico" sizes="any">
+<style>
+:root{--ink:#0c1822;--muted:#5d6b78;--line:#e2e8ee;--accent:#c2703f;--expbg:#fdecec}
+*{box-sizing:border-box}
+body{margin:0;background:#f2f5f8;color:var(--ink);
+     font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:420px;margin:0 auto;padding:48px 16px}
+h1{margin:0 0 4px;font-size:1.35rem}
+.hint{color:var(--muted);font-size:.86rem;margin:0 0 18px}
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px;
+      box-shadow:0 1px 3px rgba(12,24,34,.05)}
+label{display:block;font-weight:600;font-size:.86rem;margin:0 0 6px}
+input[type=password],input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--line);
+      border-radius:10px;font:inherit;background:#fff;min-height:44px}
+button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:11px 20px;
+       cursor:pointer;background:var(--accent);color:#fff;min-height:44px;width:100%;margin-top:14px}
+.flash{padding:12px 16px;border-radius:10px;margin:0 0 14px;font-size:.9rem;
+       background:var(--expbg);border:1px solid #f2c7c7}
+.q{font-weight:700;font-size:1rem;background:#f6f8fa;border:1px solid var(--line);
+   border-radius:10px;padding:10px 12px;margin:0 0 8px}
+.back{display:inline-block;margin-top:14px;color:var(--muted);font-size:.86rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Naxos Balcony</h1>
+  <p class="hint">Σύνδεση — <?= h($who) ?></p>
+  <div class="card">
+    <?php if (!empty($_SESSION['login_error'])): ?>
+      <div class="flash"><?= h((string)$_SESSION['login_error']) ?></div>
+      <?php unset($_SESSION['login_error']); ?>
+    <?php endif; ?>
+    <?php if (!admin_configured()): ?>
+      <div class="flash">
+        Δεν έχει οριστεί ακόμη κωδικός διαχειριστή. Άνοιξε το
+        <a href="index.php">gallery admin</a> και όρισε έναν.
+      </div>
+    <?php else: ?>
+      <form method="post">
+        <input type="hidden" name="action" value="login">
+        <input type="hidden" name="captcha_id" value="<?= h($c['id']) ?>">
+        <label for="p">Κωδικός</label>
+        <input id="p" type="password" name="password" required
+               autocomplete="current-password" autofocus>
+        <label for="cap" style="margin-top:14px">Πόσο κάνει;</label>
+        <div class="q"><?= h($c['q']) ?> = ?</div>
+        <input id="cap" type="text" name="captcha_answer" required inputmode="numeric"
+               autocomplete="off" placeholder="Γράψε τον αριθμό">
+        <button type="submit">Σύνδεση</button>
+      </form>
+    <?php endif; ?>
+  </div>
+  <a class="back" href="../index.html">← Πίσω στο site</a>
+</div>
+</body>
+</html><?php
+}
+
 /** Πρέπει να κληθεί μετά το session_start() και πριν τυπωθεί οποιοδήποτε HTML.
- *  $need: null = οποιοσδήποτε συνδεδεμένος· αλλιώς ένας ρόλος ή λίστα ρόλων. */
-function require_login(string|array|null $need = null): void {
+ *
+ *  $need    : null = οποιοσδήποτε συνδεδεμένος· αλλιώς ένας ρόλος ή λίστα ρόλων.
+ *  $throttle: ποιο αρχείο κλειδώματος μετράει τις αποτυχίες αυτής της φόρμας.
+ *             Ξεχωριστό ανά ομάδα σελίδων, ώστε οι αποτυχίες του λογιστή να μη
+ *             κλειδώνουν την καθαρίστρια. Οι σελίδες του διαχειριστή κρατούν το
+ *             κοινό αρχείο με το gallery admin, όπως πριν. */
+function require_login(string|array|null $need = null, string $throttle = 'admin'): void {
+    $self = (string)($_SERVER['PHP_SELF'] ?? '/admin/guests.php');
+
+    /* Καμία σελίδα προσωπικού δεν ανήκει στις μηχανές αναζήτησης (απαίτηση 6).
+       Η κεφαλίδα μπαίνει εδώ, οπότε ισχύει για κάθε σελίδα που καλεί τη
+       συνάρτηση — και για τη φόρμα σύνδεσης, που απαντά στον ασύνδετο. */
+    header('X-Robots-Tag: noindex, nofollow, noarchive');
+
+    /* «Βλέπω ως…» — μόνο ο διαχειριστής. Ο πραγματικός ρόλος δεν αλλάζει ποτέ. */
+    if (isset($_GET['as'])) {
+        if (is_admin()) {
+            $as = (string)$_GET['as'];
+            if (in_array($as, STAFF_ROLES, true)) {
+                $_SESSION['view_as'] = $as;
+                header('Location: ' . home_for_role($as)); exit;
+            }
+            // «?as=admin» ή άκυρη τιμή: γύρνα στον διαχειριστή.
+            unset($_SESSION['view_as']);
+            header('Location: ' . home_for_role('admin')); exit;
+        }
+        header('Location: ' . $self); exit;
+    }
+
     if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && ($_POST['action'] ?? '') === 'login') {
-        $wait = throttle_wait();
+        $wait = throttle_wait($throttle);
         if ($wait > 0) {
             $_SESSION['login_error'] = 'Πολλές προσπάθειες. Δοκίμασε σε ' . (int)ceil($wait / 60) . ' λεπτά.';
+        } elseif (!captcha_check((string)($_POST['captcha_answer'] ?? ''), (string)($_POST['captcha_id'] ?? ''))) {
+            // Λάθος πράξη: δεν μετράει ως αποτυχημένος κωδικός — δεν ξέρουμε καν
+            // ποιος ρόλος είναι. Απλώς δεν προχωράμε σε έλεγχο κωδικού.
+            $_SESSION['login_error'] = 'Λάθος απάντηση στην πράξη. Δοκίμασε ξανά.';
         } else {
             $role = verify_login((string)($_POST['password'] ?? ''));
             if ($role !== null) {
-                throttle_clear();
+                throttle_clear($throttle);
+                if ($role !== 'admin') throttle_clear($role);
                 session_regenerate_id(true);
                 $_SESSION['ok']   = true;
                 $_SESSION['role'] = $role;
-                unset($_SESSION['login_error']);
+                unset($_SESSION['view_as'], $_SESSION['login_error']);
                 header('Location: ' . home_for_role($role)); exit;
             }
-            throttle_fail();
+            throttle_fail($throttle);
             $_SESSION['login_error'] = 'Λάθος κωδικός.';
         }
-        header('Location: ' . (($_SERVER['PHP_SELF'] ?? '/admin/guests.php'))); exit;
+        header('Location: ' . $self); exit;
     }
 
     if (isset($_GET['logout'])) {
@@ -192,11 +346,30 @@ function require_login(string|array|null $need = null): void {
         header('Location: guests.php'); exit;
     }
 
+    /* Ο ΑΣΥΝΔΕΤΟΣ ΔΕΝ ΠΡΟΧΩΡΑΕΙ ΠΟΤΕ.
+       Εδώ ήταν το κενό: η παλιά έκδοση ήλεγχε μόνο μήπως ένας ΣΥΝΔΕΔΕΜΕΝΟΣ μπήκε
+       σε σελίδα άλλου ρόλου, και άφηνε τον ασύνδετο να δει τη σελίδα κανονικά.
+       Οι σελίδες που δεν τύπωναν φόρμα σύνδεσης (λογιστής, ημερολόγιο, στατιστικά)
+       έδειχναν τα δεδομένα των επισκεπτών σε οποιονδήποτε ήξερε τη διεύθυνση. */
+    if (!logged_in()) {
+        render_login_page($need);
+        exit;
+    }
+
     // Ένας συνδεδεμένος χρήστης δεν έχει δουλειά σε σελίδα άλλου ρόλου: τον
     // στέλνουμε εκεί που ανήκει, αντί να του δείξουμε σελίδα που δεν επιτρέπεται.
-    if (logged_in() && $need !== null) {
-        $role = current_role();
+    if ($need !== null) {
+        $role = view_role();
         $allowed = is_array($need) ? $need : [$need];
+        // ΕΞΑΙΡΕΣΗ — Ο ΔΙΑΧΕΙΡΙΣΤΗΣ ΣΕ «ΒΛΕΠΩ ΩΣ». Χωρίς αυτό, ο διαχειριστής
+        // παγιδεύεται: ανοίγει το ?as=cleaner1 και μετά κάθε σελίδα του διαχειριστή
+        // τον πετάει πίσω στη σελίδα της καθαρίστριας, χωρίς τρόπο να βγει. Μόλις
+        // βρεθεί σε σελίδα που δεν είναι του ρόλου που βλέπει, βγαίνει από τη
+        // λειτουργία και ξαναγίνεται διαχειριστής.
+        if (!in_array($role, $allowed, true) && is_admin()) {
+            unset($_SESSION['view_as']);
+            $role = 'admin';
+        }
         if (!in_array($role, $allowed, true)) {
             header('Location: ' . home_for_role($role)); exit;
         }
@@ -391,6 +564,145 @@ const CLEANER_ROOMS = [
     'cleaner1' => ['room3', 'room4'],
     'cleaner2' => ['room5', 'room6'],
 ];
+
+/* ========================================================== cleaning hours log
+ *
+ * Πόσες ώρες έκανε η καθαρίστρια κάθε φορά που πήγε (απαίτηση 3). Η ίδια γράφει
+ * τις ώρες της· ο διαχειριστής μπορεί να τις διορθώσει. Κανείς άλλος δεν γράφει.
+ *
+ * ΤΟ ΚΛΕΙΔΙ ΕΙΝΑΙ ΗΜΕΡΑ + ΔΩΜΑΤΙΟ. Έτσι μια καθαρίστρια με δύο δωμάτια γράφει
+ * χωριστά για το καθένα την ίδια μέρα, και το σύνολο του μήνα βγαίνει σωστά
+ * χωρίς να χρειάζεται να θυμάται τι είχε γράψει πριν.
+ *
+ * Φυλάσσεται με τον ίδιο μηχανισμό με τα άλλα δεδομένα: έξω από το site αν
+ * μπορεί να δημιουργηθεί ο φάκελος, αλλιώς σε αρχείο .php που η PHP εκτελεί και
+ * δεν τυπώνει τίποτα. Δεν είναι ευαίσθητο ως προς τα πρόσωπα, αλλά είναι
+ * εργατικό δεδομένο: δεν έχει λόγο να σερβίρεται. */
+
+const HOURS_OPEN  = "<<<'NAXOS_HOURS'\n";
+const HOURS_CLOSE = "\nNAXOS_HOURS;";
+
+/** Όριο ασφαλείας: μια βάρδια δεν είναι 99 ώρες. */
+const HOURS_MAX = 16.0;
+
+function hours_paths(): array {
+    $outside = dirname(dirname(ADMIN_DIR)) . '/naxos-data';
+    return [
+        'outside_dir'  => $outside,
+        'outside_file' => $outside . '/cleaning-hours.json',
+        'inside_file'  => ADMIN_DIR . '/hours-data.php',
+    ];
+}
+
+function hours_store_active(): array {
+    $p = hours_paths();
+    if (is_file($p['outside_file'])) return ['file' => $p['outside_file'], 'kind' => 'outside'];
+    if (is_dir($p['outside_dir']) && is_writable($p['outside_dir'])) {
+        return ['file' => $p['outside_file'], 'kind' => 'outside'];
+    }
+    return ['file' => $p['inside_file'], 'kind' => 'inside'];
+}
+
+/** Όλες οι εγγραφές ωρών. Κλειδί: «ημερομηνία|ρόλος|δωμάτιο». */
+function hours_load(): array {
+    $a = hours_store_active();
+    if (!is_file($a['file'])) return [];
+    $raw = (string)@file_get_contents($a['file']);
+    if ($a['kind'] === 'inside') {
+        $i = strpos($raw, HOURS_OPEN);
+        $j = strrpos($raw, HOURS_CLOSE);
+        if ($i === false || $j === false || $j < $i) return [];
+        $raw = substr($raw, $i + strlen(HOURS_OPEN), $j - $i - strlen(HOURS_OPEN));
+    }
+    $d = json_decode((string)$raw, true);
+    return is_array($d['hours'] ?? null) ? $d['hours'] : [];
+}
+
+function hours_save(array $hours): bool {
+    $a = hours_store_active();
+    $json = json_encode(['hours' => $hours],
+                        JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    $body = $a['kind'] === 'inside'
+        ? "<?php\n/* Ώρες καθαριότητας. Η PHP το εκτελεί και δεν τυπώνει τίποτα.\n"
+        . "   Μην το επεξεργαστείς με το χέρι: το διαχειρίζεται το admin/cleaning.php */\n"
+        . "return " . HOURS_OPEN . $json . HOURS_CLOSE . "\n"
+        : (string)$json;
+    $tmp = $a['file'] . '.tmp';
+    if (@file_put_contents($tmp, $body, LOCK_EX) === false) return false;
+    @chmod($tmp, 0600);
+    if (!@rename($tmp, $a['file'])) { @unlink($tmp); return false; }
+    @chmod($a['file'], 0600);
+    return true;
+}
+
+function hours_key(string $date, string $role, string $room): string {
+    return $date . '|' . $role . '|' . $room;
+}
+
+/** Οι ώρες μιας εγγραφής, ή 0 αν δεν έχει καταχωρηθεί. */
+function hours_get(array $hours, string $date, string $role, string $room): float {
+    $e = $hours[hours_key($date, $role, $room)] ?? null;
+    return is_array($e) ? (float)($e['hours'] ?? 0) : 0.0;
+}
+
+/** Γράφει ή σβήνει τις ώρες. Ποσό 0 ή κενό σημαίνει «δεν δούλεψα» — η εγγραφή
+ *  φεύγει, ώστε να μη γεμίζει το αρχείο με μηδενικά. */
+function hours_set(array $hours, string $date, string $role, string $room, float $h): array {
+    $k = hours_key($date, $role, $room);
+    if ($h <= 0) unset($hours[$k]);
+    else $hours[$k] = ['date' => $date, 'role' => $role, 'room' => $room, 'hours' => round($h, 2)];
+    return $hours;
+}
+
+/** Δέχεται «2», «2,5», «2.5» ή «2:30». Επιστρέφει ώρες ως float, ή null αν είναι άκυρο. */
+function hours_norm($v): ?float {
+    $v = trim((string)$v);
+    if ($v === '') return null;
+    $v = str_replace([' ', "\u{00A0}"], '', $v);
+    if (str_contains($v, ':')) {
+        // «2:30» = 2 ώρες και 30 λεπτά
+        if (!preg_match('/^(\d{1,2}):([0-5]?\d)$/', $v, $m)) return null;
+        $h = (int)$m[1] + ((int)$m[2]) / 60;
+    } else {
+        $v = str_replace(',', '.', $v);
+        if (!preg_match('/^\d{1,2}(\.\d{1,2})?$/', $v)) return null;
+        $h = (float)$v;
+    }
+    if ($h < 0 || $h > HOURS_MAX) return null;
+    return round($h, 2);
+}
+
+/** Σύνολο ωρών ενός μήνα, προαιρετικά για έναν ρόλο ή ένα δωμάτιο. */
+function hours_month_total(array $hours, int $year, int $month, ?string $role = null, ?string $room = null): float {
+    $sum = 0.0;
+    $prefix = sprintf('%04d-%02d-', $year, $month);
+    foreach ($hours as $e) {
+        if (!is_array($e)) continue;
+        if (!str_starts_with((string)($e['date'] ?? ''), $prefix)) continue;
+        if ($role !== null && (string)($e['role'] ?? '') !== $role) continue;
+        if ($room !== null && (string)($e['room'] ?? '') !== $room) continue;
+        $sum += (float)($e['hours'] ?? 0);
+    }
+    return round($sum, 2);
+}
+
+/** Οι ώρες μιας ημέρας για έναν ρόλο, ως [δωμάτιο => ώρες]. */
+function hours_day(array $hours, string $date, string $role): array {
+    $out = [];
+    foreach ($hours as $e) {
+        if (!is_array($e)) continue;
+        if ((string)($e['date'] ?? '') !== $date) continue;
+        if ((string)($e['role'] ?? '') !== $role) continue;
+        $out[(string)($e['room'] ?? '')] = (float)($e['hours'] ?? 0);
+    }
+    return $out;
+}
+
+/** Στρογγυλοποίηση σε μία ώρα για εμφάνιση: 7.5 -> «7,5». */
+function hours_fmt(float $h): string {
+    $s = number_format($h, 2, ',', '');
+    return rtrim(rtrim($s, '0'), ',');
+}
 
 /* ============================================================== statistics */
 

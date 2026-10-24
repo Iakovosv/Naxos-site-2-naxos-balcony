@@ -17,12 +17,18 @@
 
 declare(strict_types=1);
 
+// Η πράξη ασφαλείας στη σύνδεση είναι κοινή με τις σελίδες που φορτώνουν το _lib.php.
+require_once __DIR__ . '/_captcha.php';
+
 session_set_cookie_params([
     'httponly' => true,
     'samesite' => 'Lax',
     'secure'   => !empty($_SERVER['HTTPS']),
 ]);
 session_start();
+
+// Καμία σελίδα προσωπικού δεν ανήκει στις μηχανές αναζήτησης.
+header('X-Robots-Tag: noindex, nofollow, noarchive');
 
 const ROOT        = __DIR__ . '/..';
 const CRED_FILE   = __DIR__ . '/credentials.php';
@@ -52,7 +58,11 @@ function csrf(): string {
     return $_SESSION['csrf'];
 }
 function check_csrf(): void {
-    if (!hash_equals($_SESSION['csrf'] ?? '', $_POST['csrf'] ?? '')) {
+    // Ίδια διόρθωση με το _lib.php: το κενό token δεν περνάει. Χωρίς αυτό, το
+    // hash_equals('','') έδινε true και ένα POST χωρίς session γινόταν δεκτό.
+    $sent = (string)($_POST['csrf'] ?? '');
+    $have = (string)($_SESSION['csrf'] ?? '');
+    if ($sent === '' || $have === '' || !hash_equals($have, $sent)) {
         http_response_code(400); exit('Bad request token. Reload the page and try again.');
     }
 }
@@ -260,6 +270,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'login
     $wait = throttle_wait();
     if ($wait > 0) {
         $login_error = 'Too many attempts. Try again in ' . (int)ceil($wait / 60) . ' minute(s).';
+    } elseif (!captcha_check((string)($_POST['captcha_answer'] ?? ''), (string)($_POST['captcha_id'] ?? ''))) {
+        // Λάθος πράξη: δεν μετράει ως αποτυχημένος κωδικός.
+        $login_error = 'Wrong answer to the sum. Try again.';
     } else {
         $pw = (string)($_POST['password'] ?? '');
         if (is_array($creds) && isset($creds['hash']) && password_verify($pw, (string)$creds['hash'])) {
@@ -270,7 +283,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'login
             header('Location: index.php'); exit;
         }
         throttle_fail();
-        $login_error = 'Wrong password.';
+        // Οι κωδικοί προσωπικού ισχύουν σε άλλη σελίδα. Το λέμε καθαρά, αντί για
+        // ένα σκέτο «λάθος κωδικός» που έστελνε τον λογιστή να ξαναπροσπαθήσει εδώ.
+        $login_error = staff_password_elsewhere($pw)
+            ? 'This password belongs to the staff pages, not the photo gallery. Sign in at guests.php instead.'
+            : 'Wrong password.';
     }
 }
 if (($_GET['logout'] ?? '') === '1') {
@@ -494,14 +511,22 @@ a.signout{text-decoration:none;padding:10px 18px;border:1px solid var(--line);bo
   </div>
 
 <?php elseif (!logged_in()): ?>
+  <?php $cap = captcha_new(); ?>
   <h1>Gallery admin</h1>
   <?php if (!empty($login_error)): ?><div class="flash err"><?= h($login_error) ?></div><?php endif; ?>
   <div class="card" style="max-width:420px">
     <form method="post">
       <input type="hidden" name="action" value="login">
+      <input type="hidden" name="captcha_id" value="<?= h($cap['id']) ?>">
       <label for="p">Password</label>
       <input id="p" type="password" name="password" required autocomplete="current-password" autofocus>
+      <label for="cap" style="margin-top:14px">How much is <?= h($cap['q']) ?>?</label>
+      <input id="cap" type="text" name="captcha_answer" required inputmode="numeric"
+             autocomplete="off" placeholder="Answer">
       <p style="margin-top:16px"><button type="submit">Sign in</button></p>
+      <p class="hint" style="margin:12px 0 0">
+        Staff sign in at <a href="guests.php">guests.php</a>.
+      </p>
     </form>
   </div>
 

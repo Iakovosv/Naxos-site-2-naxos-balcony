@@ -4,6 +4,10 @@ admin/credentials.php
 # Local build artefacts
 *.orig
 *.bak
+# Packaging output and local preview copies: large, regenerable, never deployed
+naxos-deploy.zip
+preview/
+.agent_tmp/
 
 # Preview-only weather proxy. MUST NOT be deployed: the real host has its own
 # api/ with the live weather station. Overwriting it would break the site.
@@ -11,12 +15,17 @@ api/
 
 # Admin login throttle state (runtime, per-installation)
 admin/.login-attempts.json
+# Per-role lockouts: each staff role gets its own file, so one role's failures
+# cannot lock another out. Also runtime state.
+admin/.login-attempts-*.json
 
 # Guest records: real names, stay dates and link codes. Personal data, and it is
 # generated per installation by admin/guests.php. Never belongs in the repo.
 admin/guests-data.php
 admin/staff-data.php
 admin/settings-data.php
+# Cleaning hours: per-day work records, same store pattern as guests.
+admin/hours-data.php
 # Legacy position. Never commit: holds hashed staff passwords.
 admin/staff.json
 naxos-data/

@@ -17,10 +17,61 @@
 declare(strict_types=1);
 
 require __DIR__ . '/_lib.php';
-require_login(['cleaner1', 'cleaner2']);
+// Ξεχωριστό κλείδωμα: οι αποτυχίες του λογιστή δεν πρέπει να κλειδώνουν εδώ.
+require_login(['cleaner1', 'cleaner2'], 'cleaner');
 
-$role  = current_role();
+// view_role(): αν ο διαχειριστής βλέπει «ως» καθαρίστρια, παίρνει τα δωμάτιά της.
+$role  = view_role();
 $rooms = CLEANER_ROOMS[$role] ?? [];
+
+/* ------------------------------------------------------------ καταγραφή ωρών
+ *
+ * Η καθαρίστρια γράφει πόσες ώρες έκανε. Ο διαχειριστής που βλέπει «ως» αυτή
+ * (viewing_as) ΔΕΝ γράφει — βλέπει ό,τι βλέπει κι εκείνη, χωρίς να αλλάζει τίποτα.
+ * Η ίδια η καθαρίστρια δεν έχει κανένα άλλο δικαίωμα αλλαγής. */
+
+$hours_all = hours_load();
+
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && ($_POST['action'] ?? '') === 'hours') {
+    check_csrf();
+    if (viewing_as()) {
+        fail('Βλέπεις τη σελίδα ως διαχειριστής — δεν αλλάζεις στοιχεία.', 'cleaning.php');
+    }
+    $hDay = (string)($_POST['hDay'] ?? '');
+    if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $hDay)) {
+        fail('Λάθος ημερομηνία.', 'cleaning.php');
+    }
+
+    // Ένα πεδίο ανά δωμάτιο. Το κενό σημαίνει «σβήσε την καταχώρηση».
+    $vals  = is_array($_POST['hVal'] ?? null) ? $_POST['hVal'] : [];
+    $saved = 0; $cleared = 0; $bad = [];
+
+    foreach ($rooms as $r) {
+        if (!array_key_exists($r, $vals)) continue;          // δεν ανήκει στη φόρμα
+        $raw = trim((string)$vals[$r]);
+        if ($raw === '') {
+            $before = hours_get($hours_all, $hDay, $role, $r);
+            if ($before > 0) { $hours_all = hours_set($hours_all, $hDay, $role, $r, 0.0); $cleared++; }
+            continue;
+        }
+        $h = hours_norm($raw);
+        if ($h === null) { $bad[] = (string)(ROOMS_G[$r]['el'] ?? $r); continue; }
+        $hours_all = hours_set($hours_all, $hDay, $role, $r, $h);
+        $saved++;
+    }
+
+    if ($bad) {
+        fail('Λάθος ώρες για: ' . implode(', ', $bad)
+             . '. Γράψε π.χ. 2 ή 2,5 ή 2:30 (έως ' . hours_fmt(HOURS_MAX) . ' ώρες).', 'cleaning.php');
+    }
+    if (!hours_save($hours_all)) {
+        fail('Δεν μπόρεσα να αποθηκεύσω. Πες το στον διαχειριστή.', 'cleaning.php');
+    }
+    ok($saved > 0
+        ? 'Οι ώρες καταχωρήθηκαν.'
+        : ($cleared > 0 ? 'Οι ώρες διαγράφηκαν.' : 'Δεν άλλαξε κάτι.'));
+    header('Location: cleaning.php?d=' . urlencode($hDay)); exit;
+}
 
 /* Κρατάμε ΜΟΝΟ τα πεδία που επιτρέπεται να δει. Ό,τι δεν περνάει από εδώ δεν
    φτάνει ποτέ στο HTML, οπότε δεν μπορεί να διαρρεύσει ούτε κατά λάθος. */
@@ -71,6 +122,33 @@ $upcoming = array_slice($upcoming, 0, 14, true);
 
 $dayNames = [1=>'Δευτέρα',2=>'Τρίτη',3=>'Τετάρτη',4=>'Πέμπτη',5=>'Παρασκευή',
              6=>'Σάββατο',7=>'Κυριακή'];
+
+$monthNames = [1=>'Ιανουάριος','Φεβρουάριος','Μάρτιος','Απρίλιος','Μάιος','Ιούνιος',
+               'Ιούλιος','Αύγουστος','Σεπτέμβριος','Οκτώβριος','Νοέμβριος','Δεκέμβριος'];
+
+/* ------------------------------------------------- ώρες: ημέρα και μήνας */
+
+$dayHours  = hours_day($hours_all, $day, $role);
+$dayTotal  = array_sum($dayHours);
+
+// Ο μήνας που δείχνουμε: αυτός της ημέρας, ώστε «άλλη ημέρα» να αλλάζει και το σύνολο.
+$mYear  = (int)date('Y', strtotime($day));
+$mMonth = (int)date('n', strtotime($day));
+
+$monthTotal = hours_month_total($hours_all, $mYear, $mMonth, $role);
+$monthByRoom = [];
+foreach ($rooms as $r) {
+    $monthByRoom[$r] = hours_month_total($hours_all, $mYear, $mMonth, $role, $r);
+}
+// Πόσες ημέρες δούλεψε μέσα στον μήνα — για να μη φαίνεται μόνο ένα νούμερο.
+$monthDays = [];
+foreach ($hours_all as $e) {
+    if (!is_array($e)) continue;
+    if ((string)($e['role'] ?? '') !== $role) continue;
+    $d = (string)($e['date'] ?? '');
+    if (!str_starts_with($d, sprintf('%04d-%02d-', $mYear, $mMonth))) continue;
+    if ((float)($e['hours'] ?? 0) > 0) $monthDays[$d] = true;
+}
 
 function d_el2(string $iso): string {
     $ts = strtotime($iso);
@@ -125,6 +203,15 @@ input[type=date]{padding:10px 12px;border:1px solid var(--line);border-radius:10
 .job .tag{font-size:.75rem;font-weight:700;padding:4px 10px;border-radius:99px;
           background:var(--soft);color:var(--muted);white-space:nowrap}
 .empty{color:var(--muted);text-align:center;padding:22px;font-size:.95rem}
+.row{display:flex;gap:12px;flex-wrap:wrap;align-items:end}
+.row>div{flex:1 1 170px}
+input[type=text]{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:10px;
+                 font:inherit;background:#fff;min-height:44px}
+button{font:inherit;font-weight:600;border:0;border-radius:10px;padding:11px 20px;cursor:pointer;
+       background:var(--accent);color:#fff;min-height:44px}
+.flash{padding:12px 16px;border-radius:10px;margin:0 0 14px;font-size:.92rem}
+.flash.ok{background:#e8f6ec;border:1px solid #bfe3c9}
+.flash.err{background:#fdecec;border:1px solid #f2c7c7}
 table{width:100%;border-collapse:collapse;font-size:.9rem}
 th,td{padding:9px 10px;border-bottom:1px solid var(--line);text-align:left}
 th{font-size:.74rem;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);
@@ -147,6 +234,19 @@ tr.today-row td{background:var(--cleanbg);font-weight:700}
 <body>
 <div class="wrap">
 
+  <?php $flash = $_SESSION['flash'] ?? []; unset($_SESSION['flash']); ?>
+  <?php foreach ($flash as [$kind, $msg]): ?>
+    <div class="flash <?= h($kind) ?>"><?= h($msg) ?></div>
+  <?php endforeach; ?>
+
+  <?php if (viewing_as()): ?>
+    <div class="card noprint" style="border-left:4px solid var(--accent);margin:0 0 16px">
+      <strong>Βλέπεις τη σελίδα ως <?= h(role_label($role)) ?>.</strong>
+      Έτσι τη βλέπει η ίδια. Δεν μπορείς να αλλάξεις τίποτα από εδώ —
+      <a href="?as=admin">γύρνα στον διαχειριστή</a>.
+    </div>
+  <?php endif; ?>
+
   <div class="top">
     <div>
       <h1>Καθαριότητα</h1>
@@ -156,6 +256,9 @@ tr.today-row td{background:var(--cleanbg);font-weight:700}
     </div>
     <div class="acts">
       <span class="role"><?= h(role_label($role)) ?></span>
+      <?php if (current_role() === 'admin'): ?>
+        <a class="btn" href="guests.php">Πίνακας</a>
+      <?php endif; ?>
       <a class="btn" href="?logout=1">Αποσύνδεση</a>
     </div>
   </div>
@@ -175,6 +278,71 @@ tr.today-row td{background:var(--cleanbg);font-weight:700}
     <div><div class="n" style="color:var(--good)"><?= count($arrivals) ?></div><div class="l">Αφίξεις</div></div>
     <div><div class="n" style="color:var(--leave)"><?= count($departures) ?></div><div class="l">Αναχωρήσεις</div></div>
     <div><div class="n"><?= count($staying) ?></div><div class="l">Μένουν</div></div>
+  </div>
+
+  <?php /* ---------------------------------------------------- ώρες καθαριότητας
+     Η καθαρίστρια γράφει πόσες ώρες έκανε. Ένα πεδίο ανά δωμάτιο, για την ημέρα
+     που βλέπει. Από κάτω το σύνολο του μήνα, που ζήτησε ο ιδιοκτήτης. */ ?>
+  <div class="card noprint" style="border-left:5px solid var(--accent)">
+    <h2>Οι ώρες μου — <?= h(d_el2($day)) ?></h2>
+
+    <?php if (viewing_as()): ?>
+      <p class="hint" style="margin:0">
+        Οι ώρες που έχει καταχωρήσει η <?= h(role_label($role)) ?> αυτή την ημέρα:
+        <?php if ($dayTotal > 0): ?>
+          <strong><?= h(hours_fmt($dayTotal)) ?> ώρες</strong>
+          <?php foreach ($dayHours as $r => $hv): ?>
+            <?php if ($hv > 0): ?>
+              (<?= h((string)(ROOMS_G[$r]['el'] ?? $r)) ?>: <?= h(hours_fmt($hv)) ?>)
+            <?php endif; ?>
+          <?php endforeach; ?>
+        <?php else: ?>
+          καμία ακόμη.
+        <?php endif; ?>
+      </p>
+    <?php else: ?>
+      <p class="hint" style="margin:0 0 12px">
+        Γράψε πόσες ώρες σου πήρε. Δέχεται <strong>2</strong>, <strong>2,5</strong> ή
+        <strong>2:30</strong>. Άφησέ το κενό για να σβήσεις μια καταχώρηση.
+      </p>
+      <form method="post" class="row">
+        <input type="hidden" name="action" value="hours">
+        <input type="hidden" name="csrf" value="<?= h(csrf()) ?>">
+        <input type="hidden" name="hDay" value="<?= h($day) ?>">
+        <?php foreach ($rooms as $r): ?>
+          <div>
+            <label for="h_<?= h($r) ?>"><?= h((string)(ROOMS_G[$r]['el'] ?? $r)) ?></label>
+            <input id="h_<?= h($r) ?>" type="text" name="hVal[<?= h($r) ?>]" inputmode="decimal"
+                   placeholder="π.χ. 2,5"
+                   value="<?= isset($dayHours[$r]) && $dayHours[$r] > 0 ? h(hours_fmt($dayHours[$r])) : '' ?>">
+          </div>
+        <?php endforeach; ?>
+        <div><button type="submit">Καταχώρηση</button></div>
+      </form>
+    <?php endif; ?>
+
+    <div class="big" style="margin:14px 0 0">
+      <div>
+        <div class="n" style="color:var(--accent-dark)"><?= h(hours_fmt($monthTotal)) ?></div>
+        <div class="l">Ώρες τον μήνα</div>
+      </div>
+      <div>
+        <div class="n"><?= count($monthDays) ?></div>
+        <div class="l">Ημέρες δουλειάς</div>
+      </div>
+      <?php foreach ($monthByRoom as $r => $hv): ?>
+        <div>
+          <div class="n" style="font-size:1.25rem"><?= h(hours_fmt($hv)) ?></div>
+          <div class="l"><?= h((string)(ROOMS_G[$r]['el'] ?? $r)) ?></div>
+        </div>
+      <?php endforeach; ?>
+    </div>
+    <p class="hint" style="margin:12px 0 0">
+      Σύνολο <strong><?= h($monthNames[$mMonth] ?? '') ?> <?= $mYear ?></strong>.
+      <?php if ($monthTotal <= 0): ?>
+        Δεν έχεις καταχωρήσει ώρες για αυτόν τον μήνα.
+      <?php endif; ?>
+    </p>
   </div>
 
   <div class="card">

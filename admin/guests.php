@@ -372,33 +372,8 @@ details.help div{margin-top:10px;font-size:.88rem;color:var(--muted)}
 <body>
 <div class="wrap">
 
-<?php if (!admin_configured()): ?>
-
-  <h1>Links επισκεπτών</h1>
-  <div class="warn">
-    <strong>Πρώτα φτιάξε κωδικό στο gallery admin.</strong><br>
-    Το <code>admin/credentials.php</code> δεν υπάρχει ακόμη. Άνοιξε το
-    <a href="index.php">gallery admin</a> και όρισε κωδικό — ο ίδιος κωδικός
-    προστατεύει και αυτή τη σελίδα.
-  </div>
-
-<?php elseif (!logged_in()): ?>
-
-  <h1>Links επισκεπτών</h1>
-  <?php if (!empty($_SESSION['login_error'])): ?>
-    <div class="flash err"><?= h((string)$_SESSION['login_error']) ?></div>
-    <?php unset($_SESSION['login_error']); ?>
-  <?php endif; ?>
-  <div class="card" style="max-width:420px">
-    <form method="post">
-      <input type="hidden" name="action" value="login">
-      <label for="p">Κωδικός</label>
-      <input id="p" type="password" name="password" required autocomplete="current-password" autofocus>
-      <p style="margin-top:16px"><button type="submit">Σύνδεση</button></p>
-    </form>
-  </div>
-
-<?php else: ?>
+<?php /* Η σύνδεση γίνεται στο require_login(): ο ασύνδετος βλέπει εκεί τη φόρμα
+         και δεν φτάνει ποτέ σε αυτό το σημείο. */ ?>
 
   <div class="top">
     <div>
@@ -766,7 +741,6 @@ details.help div{margin-top:10px;font-size:.88rem;color:var(--muted)}
     </div>
   </details>
 
-<?php endif; ?>
 </div>
 
 <script>

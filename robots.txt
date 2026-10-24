@@ -1,9 +1,15 @@
 User-agent: *
 Allow: /
 
-# Keep crawlers out of the weather API. The gallery admin is protected by
-# authentication and is deliberately not named here: a Disallow entry would
-# advertise its location without actually keeping anyone out.
+# Keep crawlers out of the weather API.
 Disallow: /api/
+
+# Staff pages and guest welcome links. They also carry
+# "X-Robots-Tag: noindex, nofollow" and a robots meta tag, so a crawler that
+# reaches them anyway still will not index them. Naming them here is a small
+# trade-off: it tells a crawler where they are, but they are all behind a
+# password or an unguessable link, and the header is the real protection.
+Disallow: /admin/
+Disallow: /welcome/
 
 Sitemap: https://www.naxosbalcony.gr/sitemap.xml

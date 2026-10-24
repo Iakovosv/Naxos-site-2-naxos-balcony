@@ -67,10 +67,73 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         }
         header('Location: staff.php'); exit;
     }
+
+    /* Διόρθωση ωρών καθαριότητας (απαίτηση 3: ο διαχειριστής έχει δικαίωμα
+       τροποποίησης). Οι καθαρίστριες γράφουν τις ώρες τους στη σελίδα τους· εδώ
+       ο διαχειριστής διορθώνει, για οποιαδήποτε ημέρα και οποιοδήποτε δωμάτιο. */
+    if ($action === 'hours_edit') {
+        $hRole = (string)($_POST['hRole'] ?? '');
+        $hDate = (string)($_POST['hDate'] ?? '');
+        $hRoom = (string)($_POST['hRoom'] ?? '');
+        $hVal  = trim((string)($_POST['hVal'] ?? ''));
+
+        if (!in_array($hRole, ['cleaner1', 'cleaner2'], true)) {
+            fail('Λάθος ρόλος.', 'staff.php');
+        }
+        if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $hDate)) {
+            fail('Λάθος ημερομηνία.', 'staff.php');
+        }
+        if (!in_array($hRoom, CLEANER_ROOMS[$hRole] ?? [], true)) {
+            fail('Το δωμάτιο δεν ανήκει σε αυτή την καθαρίστρια.', 'staff.php');
+        }
+
+        if ($hVal === '') {
+            hours_save(hours_set(hours_load(), $hDate, $hRole, $hRoom, 0.0));
+            ok('Η καταχώρηση διαγράφηκε.');
+        } else {
+            $h = hours_norm($hVal);
+            if ($h === null) {
+                fail('Οι ώρες θέλουν αριθμό, π.χ. 2 ή 2,5 ή 2:30 (έως ' . hours_fmt(HOURS_MAX) . ').', 'staff.php');
+            }
+            hours_save(hours_set(hours_load(), $hDate, $hRole, $hRoom, $h))
+                ? ok('Οι ώρες αποθηκεύτηκαν: ' . hours_fmt($h) . ' ώρες, ' . $hDate . '.')
+                : fail('Δεν μπόρεσα να αποθηκεύσω.', 'staff.php');
+        }
+        header('Location: staff.php?mo=' . urlencode(substr($hDate, 0, 7))); exit;
+    }
 }
 
 $fresh = $_SESSION['fresh'] ?? [];
 unset($_SESSION['fresh']);
+
+/* ------------------------------------------------ ώρες καθαριότητας: ο μήνας
+ *
+ * Ο διαχειριστής βλέπει όλες τις καταχωρήσεις των καθαριστριών για έναν μήνα και
+ * διορθώνει ό,τι χρειάζεται. Ο μήνας έρχεται ως «YYYY-MM»· προεπιλογή ο τρέχων. */
+
+$hMonth = (string)($_GET['mo'] ?? date('Y-m'));
+if (!preg_match('/^\d{4}-\d{2}$/', $hMonth)) $hMonth = date('Y-m');
+$hYear  = (int)substr($hMonth, 0, 4);
+$hMon   = (int)substr($hMonth, 5, 2);
+if ($hMon < 1 || $hMon > 12) { $hYear = (int)date('Y'); $hMon = (int)date('n'); $hMonth = date('Y-m'); }
+
+$hoursAll = hours_load();
+
+/* Όλες οι ημέρες του μήνα που έχουν καταχώρηση, από όποια καθαρίστρια. */
+$hoursRows = [];
+foreach ($hoursAll as $e) {
+    if (!is_array($e)) continue;
+    $d = (string)($e['date'] ?? '');
+    if (!str_starts_with($d, $hMonth . '-')) continue;
+    $r = (string)($e['role'] ?? '');
+    if (!isset(CLEANER_ROOMS[$r])) continue;
+    $hoursRows[$d][$r][(string)($e['room'] ?? '')] = (float)($e['hours'] ?? 0);
+}
+ksort($hoursRows);
+
+$hoursMonthTotal = hours_month_total($hoursAll, $hYear, $hMon);
+$hoursPrev = date('Y-m', mktime(0, 0, 0, $hMon - 1, 1, $hYear));
+$hoursNext = date('Y-m', mktime(0, 0, 0, $hMon + 1, 1, $hYear));
 
 $store = store_active();
 ?>
@@ -127,6 +190,12 @@ label{display:block;font-weight:600;font-size:.85rem;margin:0 0 6px}
        border-radius:12px;padding:12px 14px;margin:0 0 14px;font-size:.9rem}
 /* Τα μεγάλα URLs σπάνε· αλλιώς σπρώχνουν τη σελίδα πλάγια στο κινητό. */
 code{word-break:break-all;overflow-wrap:anywhere}
+table{width:100%;border-collapse:collapse;font-size:.88rem}
+th,td{padding:8px 10px;border-bottom:1px solid var(--line);text-align:left;white-space:nowrap}
+th{font-size:.74rem;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);
+   background:var(--soft);font-weight:700}
+tfoot th{background:#fff;border-top:2px solid var(--line);font-size:.8rem;text-transform:none;
+         letter-spacing:0}
 @media(max-width:560px){.wrap{padding:18px 12px 48px}.row>div{flex:1 1 100%}}
 </style>
 </head>
@@ -143,6 +212,23 @@ code{word-break:break-all;overflow-wrap:anywhere}
       <a class="btn" href="calendar.php">Ημερολόγιο</a>
       <a class="btn" href="stats.php">Στατιστικά</a>
       <a class="btn" href="?logout=1">Αποσύνδεση</a>
+    </div>
+  </div>
+
+  <?php /* Ο διαχειριστής βλέπει τη σελίδα όπως τη βλέπει ο καθένας (απαίτηση 5).
+         Ανοίγει σε νέα καρτέλα, ώστε να μη χαθεί η δουλειά του εδώ. */ ?>
+  <div class="card">
+    <h2>Δες όπως βλέπει ο καθένας</h2>
+    <p class="hint" style="margin:0 0 12px">
+      Ανοίγει τη σελίδα του ρόλου με τα δικά του δικαιώματα, για να ελέγξεις τι
+      βλέπει. Μέσα από εκεί δεν αλλάζεις τίποτα — για αλλαγή, γύρνα εδώ.
+    </p>
+    <div class="acts">
+      <?php foreach ($assignable as $r): ?>
+        <a class="btn" target="_blank" rel="noopener"
+           href="?as=<?= h($r) ?>"><?= h(role_label($r)) ?> →</a>
+      <?php endforeach; ?>
+      <a class="btn" target="_blank" rel="noopener" href="?as=admin">Διαχειριστής →</a>
     </div>
   </div>
 
@@ -289,6 +375,96 @@ code{word-break:break-all;overflow-wrap:anywhere}
       <code><?= h($store['kind'] === 'outside' ? 'naxos-data/staff.json' : 'admin/staff.json') ?></code>,
       που δεν είναι στο GitHub.
     </p>
+  </div>
+
+  <?php /* ------------------------------------------- ώρες καθαριότητας, ανά μήνα
+     Ο διαχειριστής βλέπει τι έχει γράψει κάθε καθαρίστρια και διορθώνει. Η αλλαγή
+     γίνεται πάνω στην ίδια εγγραφή που βλέπει η καθαρίστρια στη σελίδα της. */ ?>
+  <div class="card">
+    <h2>Ώρες καθαριότητας</h2>
+    <p class="hint" style="margin:0 0 14px">
+      Ό,τι έχει καταχωρήσει κάθε καθαρίστρια. Διόρθωσε ένα ποσό και πάτησε
+      <strong>✓</strong>. Κενό πεδίο σβήνει την καταχώρηση.
+    </p>
+
+    <div class="acts" style="margin:0 0 14px">
+      <a class="btn" href="?mo=<?= h($hoursPrev) ?>">← <?= h($hoursPrev) ?></a>
+      <a class="btn" href="?mo=<?= h(date('Y-m')) ?>">Τρέχων μήνας</a>
+      <a class="btn" href="?mo=<?= h($hoursNext) ?>"><?= h($hoursNext) ?> →</a>
+      <span class="state on" style="margin-left:auto">
+        Σύνολο μήνα: <?= h(hours_fmt($hoursMonthTotal)) ?> ώρες
+      </span>
+    </div>
+
+    <?php if (!$hoursRows): ?>
+      <p class="hint" style="text-align:center;padding:18px;margin:0">
+        Δεν υπάρχει καμία καταχώρηση ώρων για τον μήνα <?= h($hMonth) ?>.
+      </p>
+    <?php else: ?>
+      <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>Ημέρα</th>
+            <?php foreach (['cleaner1', 'cleaner2'] as $cr): ?>
+              <?php foreach (CLEANER_ROOMS[$cr] ?? [] as $rm): ?>
+                <th><?= h(role_label($cr)) ?><br>
+                    <span style="font-weight:400"><?= h((string)(ROOMS_G[$rm]['el'] ?? $rm)) ?></span></th>
+              <?php endforeach; ?>
+            <?php endforeach; ?>
+            <th>Σύνολο ημέρας</th>
+          </tr>
+        </thead>
+        <tbody>
+          <?php foreach ($hoursRows as $d => $byRole): $rowTotal = 0.0; ?>
+            <tr>
+              <td><strong><?= h($d) ?></strong></td>
+              <?php foreach (['cleaner1', 'cleaner2'] as $cr): ?>
+                <?php foreach (CLEANER_ROOMS[$cr] ?? [] as $rm):
+                    $v = (float)($byRole[$cr][$rm] ?? 0);
+                    $rowTotal += $v;
+                ?>
+                  <td>
+                    <form method="post" style="display:flex;gap:6px;align-items:center">
+                      <input type="hidden" name="csrf" value="<?= h(csrf()) ?>">
+                      <input type="hidden" name="action" value="hours_edit">
+                      <input type="hidden" name="hRole" value="<?= h($cr) ?>">
+                      <input type="hidden" name="hDate" value="<?= h($d) ?>">
+                      <input type="hidden" name="hRoom" value="<?= h($rm) ?>">
+                      <input type="text" name="hVal" inputmode="decimal" style="width:74px;min-height:38px"
+                             value="<?= $v > 0 ? h(hours_fmt($v)) : '' ?>">
+                      <button type="submit" class="pri" style="min-height:38px;padding:6px 12px">✓</button>
+                    </form>
+                  </td>
+                <?php endforeach; ?>
+              <?php endforeach; ?>
+              <td><strong><?= h(hours_fmt($rowTotal)) ?></strong></td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+        <tfoot>
+          <tr>
+            <th>Σύνολο μήνα</th>
+            <?php foreach (['cleaner1', 'cleaner2'] as $cr): ?>
+              <?php foreach (CLEANER_ROOMS[$cr] ?? [] as $rm): ?>
+                <th><?= h(hours_fmt(hours_month_total($hoursAll, $hYear, $hMon, $cr, $rm))) ?></th>
+              <?php endforeach; ?>
+            <?php endforeach; ?>
+            <th><?= h(hours_fmt($hoursMonthTotal)) ?></th>
+          </tr>
+          <tr>
+            <th>Ανά άτομο</th>
+            <?php foreach (['cleaner1', 'cleaner2'] as $cr): ?>
+              <th colspan="<?= max(1, count(CLEANER_ROOMS[$cr] ?? [])) ?>">
+                <?= h(role_label($cr)) ?>: <?= h(hours_fmt(hours_month_total($hoursAll, $hYear, $hMon, $cr))) ?>
+              </th>
+            <?php endforeach; ?>
+            <th></th>
+          </tr>
+        </tfoot>
+      </table>
+      </div>
+    <?php endif; ?>
   </div>
 
 </div>

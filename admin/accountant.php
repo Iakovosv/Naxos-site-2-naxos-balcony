@@ -3,7 +3,7 @@
  *  Λογιστής — ημέρες διαμονής ανά άτομο, με στοιχεία για αποδείξεις
  *
  *  Βλέπει: επίθετο, δωμάτιο, ημερομηνίες, διανυκτερεύσεις, ΑΦΜ, διεύθυνση,
- *  ταυτότητα, τηλέφωνο, πηγή κράτησης, άτομα.
+ *  ταυτότητα, τηλέφωνο, email, πηγή κράτησης, άτομα.
  *  Μπορεί: να δει, να φιλτράρει ανά μήνα, και να κατεβάσει CSV για το
  *  λογιστικό πρόγραμμα.
  *  ΔΕΝ μπορεί: να αλλάξει, να διαγράψει, ή να δει κωδικούς πρόσβασης.
@@ -14,7 +14,11 @@
 declare(strict_types=1);
 
 require __DIR__ . '/_lib.php';
-require_login('accountant');
+// Ξεχωριστό κλείδωμα: οι αποτυχίες εδώ δεν κλειδώνουν τις καθαρίστριες.
+require_login('accountant', 'accountant');
+
+// view_role(): ο διαχειριστής που βλέπει «ως λογιστής» παίρνει αυτή τη σελίδα.
+$role = view_role();
 
 $guests = guests_load();
 
@@ -173,6 +177,14 @@ tr.total td{font-weight:800;background:#fafcfd;border-top:2px solid var(--line)}
 <body>
 <div class="wrap">
 
+  <?php if (viewing_as()): ?>
+    <div class="card noprint" style="border-left:4px solid var(--accent);margin:0 0 16px">
+      <strong>Βλέπεις τη σελίδα ως Λογιστής.</strong>
+      Έτσι τη βλέπει ο λογιστής. Δεν μπορείς να αλλάξεις τίποτα από εδώ —
+      <a href="?as=admin">γύρνα στον διαχειριστή</a>.
+    </div>
+  <?php endif; ?>
+
   <div class="top">
     <div>
       <h1>Λογιστήριο</h1>
@@ -180,6 +192,9 @@ tr.total td{font-weight:800;background:#fafcfd;border-top:2px solid var(--line)}
     </div>
     <div class="acts">
       <span class="role">Λογιστής</span>
+      <?php if (current_role() === 'admin'): ?>
+        <a class="btn" href="guests.php">Πίνακας</a>
+      <?php endif; ?>
       <a class="btn" href="?logout=1">Αποσύνδεση</a>
     </div>
   </div>
@@ -250,6 +265,7 @@ tr.total td{font-weight:800;background:#fafcfd;border-top:2px solid var(--line)}
           <th>Χώρα</th>
           <th>Ταυτ./Διαβ.</th>
           <th>Τηλέφωνο</th>
+          <th>Email</th>
           <th>Πηγή</th>
           <th class="num">Σύνολο</th>
           <th class="num">Καθαρή</th>
@@ -260,7 +276,7 @@ tr.total td{font-weight:800;background:#fafcfd;border-top:2px solid var(--line)}
       </thead>
       <tbody>
         <?php if (!$rows): ?>
-          <tr><td colspan="18" style="text-align:center;color:var(--muted);padding:26px">
+          <tr><td colspan="19" style="text-align:center;color:var(--muted);padding:26px">
             Καμία διαμονή σε αυτή την περίοδο.
           </td></tr>
         <?php else: foreach ($rows as $g): ?>
@@ -277,6 +293,7 @@ tr.total td{font-weight:800;background:#fafcfd;border-top:2px solid var(--line)}
             <td><?= h((string)($g['country'] ?? '')) ?: '<span style="color:#b6c0c9">—</span>' ?></td>
             <td><?= h((string)($g['idDoc'] ?? '')) ?: '<span style="color:#b6c0c9">—</span>' ?></td>
             <td><?= h((string)($g['phone'] ?? '')) ?: '<span style="color:#b6c0c9">—</span>' ?></td>
+            <td><?= h((string)($g['email'] ?? '')) ?: '<span style="color:#b6c0c9">—</span>' ?></td>
             <td><?= h(source_label((string)($g['source'] ?? 'direct'))) ?></td>
             <?php $c = booking_calc($g, $rates); ?>
             <td class="num"><strong><?= $c['has'] ? h(money($c['total'])) : '<span style="color:#b6c0c9">—</span>' ?></strong></td>
@@ -291,7 +308,7 @@ tr.total td{font-weight:800;background:#fafcfd;border-top:2px solid var(--line)}
             <td colspan="4">Σύνολο</td>
             <td class="num"><?= $totalNights ?></td>
             <td class="num"><?= $totalGuests ?></td>
-            <td colspan="7"></td>
+            <td colspan="8"></td>
             <td class="num"><?= h(money($sum['total'])) ?></td>
             <td class="num"><?= h(money($sum['net'])) ?></td>
             <td class="num"><?= h(money($sum['vat'])) ?></td>
