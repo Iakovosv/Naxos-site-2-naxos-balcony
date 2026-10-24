@@ -187,6 +187,22 @@ a content change, which the hard constraint forbids. Ask the owner whether to
 (a) keep as is, or (b) show each image once. If (b), drop the repeated entries
 from `gallery-tiles.json` and keep one appearance per image.
 
+## 5c. OPEN: the licence label is the only visible text change
+
+Comparing rendered (post-JS) text across 5 pages, the new build differs from the
+live site in exactly one string:
+
+| | live | new |
+|---|---|---|
+| Greek | `Αρ. Γνωστοποίησης: …` | `Αριθμός Γνωστοποίησης: …` |
+| English | `License Number: …` | `Notification Number: …` |
+
+This was a deliberate legal correction (ν. 4442/2016 art. 40 as amended by
+ν. 5073/2023), but it violates the owner's zero-text-change rule. **Ask first.**
+Everything else that looks new is a feature absent from the live site (skip link,
+cookie banner, privacy/cookies links, booking/WhatsApp/call/email buttons,
+lightbox captions), not a rewrite of existing copy.
+
 ## 6. Open questions for the owner
 
 1. **Duplicate photos:** see §5b for the measured numbers (26 groups, 56 unique
