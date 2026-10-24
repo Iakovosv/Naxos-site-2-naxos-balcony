@@ -1011,6 +1011,53 @@ else:
           _en.rfind("Need anything?") > _en.rfind("Have a great stay")
           if "Have a great stay" in _en else _en.rfind("Need anything?") > 0)
 
+# ---------------------------------------------------------------------------
+# Ο ΚΑΙΡΟΣ ΣΤΙΣ ΑΓΓΛΙΚΕΣ ΣΕΛΙΔΕΣ. Το api/ ζει στη ρίζα. Στις σελίδες του
+# /en/ το σχετικό «api/…» γινόταν «/en/api/…» → 404, οπότε ο καιρός έμενε
+# «—» στην αγγλική σελίδα καιρού. Το site.js πρέπει να χτίζει τη διαδρομή
+# από τη ρίζα του site, όπως κάνει ήδη το pro.js.
+# ---------------------------------------------------------------------------
+print("\n=== ΚΑΙΡΟΣ: Η ΔΙΑΔΡΟΜΗ ΤΟΥ api ===")
+
+_sj = open("site.js", encoding="utf-8").read()
+check("το site.js χτίζει τη διαδρομή του api από τη ρίζα",
+      "fetch(SITE_ROOT + 'api/weather-latest.php'" in _sj)
+check("το site.js ΔΕΝ έχει γυμνή σχετική διαδρομή για το api",
+      "fetch('api/weather-latest.php'" not in _sj)
+
+if not _pw:
+    print("  ⚠️  playwright λείπει — ο έλεγχος διαδρομής παραλείπεται")
+else:
+    # Το site.js δείχνει δείγμα σε localhost. Δίνουμε άλλο hostname στο
+    # 127.0.0.1 ώστε να τρέξει ο πραγματικός κώδικας, όπως στο live.
+    _root_bad = []
+    with sync_playwright() as _p:
+        _b2 = _p.chromium.launch(
+            args=["--host-resolver-rules=MAP naxostest.local 127.0.0.1"])
+        for _pg_path, _label in (("/weather.html", "ελληνικά"),
+                                 ("/en/weather.html", "αγγλικά")):
+            _pg7 = _b2.new_page(viewport={"width": 1280, "height": 900})
+            _urls = []
+            _pg7.on("request", lambda r: _urls.append(r.url)
+                    if "weather-latest" in r.url else None)
+            try:
+                _pg7.goto("http://naxostest.local:12000" + _pg_path, wait_until="load")
+                _pg7.wait_for_timeout(2500)
+            except Exception as _e:
+                _root_bad.append(f"{_label}: {_e}")
+                _pg7.close()
+                continue
+            if not _urls:
+                _root_bad.append(f"{_label}: κανένα αίτημα api")
+            elif any("/en/api/" in u for u in _urls):
+                _root_bad.append(f"{_label}: ζήτησε {_urls}")
+            elif not any(u.endswith("/api/weather-latest.php") for u in _urls):
+                _root_bad.append(f"{_label}: λάθος διαδρομή {_urls}")
+            _pg7.close()
+        _b2.close()
+    check("καιρός: ΕΛ και EN ζητούν το api στη ρίζα (όχι /en/api/)",
+          not _root_bad, f"({_root_bad})")
+
 # =============================================================== ΤΕΛΟΣ
 print("\n" + "=" * 70)
 print(f"  ΑΠΟΤΕΛΕΣΜΑ: {PASS} πέρασαν, {FAIL} απέτυχαν")

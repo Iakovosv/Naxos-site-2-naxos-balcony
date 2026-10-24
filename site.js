@@ -162,6 +162,15 @@
   const tempEl = document.getElementById('w_temp');
   if (!tempEl) return;
 
+  // Το api/ ζει ΠΑΝΤΑ στη ρίζα του site. Στις αγγλικές σελίδες (/en/) το
+  // σχετικό «api/…» γινόταν «/en/api/…» → 404, οπότε ο καιρός έμενε «—».
+  // Ίδια λύση με το pro.js: βρίσκουμε τη ρίζα από το src του ίδιου του site.js.
+  const SITE_ROOT = (function () {
+    const el = document.currentScript ||
+      Array.prototype.slice.call(document.scripts).filter(s => /site\.js/.test(s.src)).pop();
+    return el ? el.src.replace(/site\.js.*$/, '') : '';
+  })();
+
   const setTxt = function (id, v) { const el = document.getElementById(id); if (el) el.textContent = v; };
   const setI18n = function (id, key) { const el = document.getElementById(id); if (el) el.setAttribute('data-i18n', key); };
   const dot = document.getElementById('w_dot');
@@ -191,7 +200,7 @@
   };
   const request = isPreview
     ? Promise.resolve(DEMO)
-    : fetch('api/weather-latest.php', { cache: 'no-store' }).then(function (r) {
+    : fetch(SITE_ROOT + 'api/weather-latest.php', { cache: 'no-store' }).then(function (r) {
         if (!r.ok) throw new Error('no data');
         return r.json();
       });
