@@ -112,6 +112,28 @@
 > A PAT used for a push belongs only in the command line, never in config, a commit,
 > or a log.
 >
+> ### The local `.gitignore` is NOT the one on GitHub — never push it
+> The two layouts need different ignore rules, and getting this wrong publishes
+> personal data.
+>
+> | | local `preview/` layout | `gh/main` flat layout |
+> |---|---|---|
+> | credentials | `preview/admin/credentials.php` | `admin/credentials.php` |
+> | guest records | (inherited from `preview/.gitignore`) | `admin/guests-data.php` |
+> | fee settings | — | `admin/settings-data.php` |
+> | staff hashes | — | `admin/staff-data.php`, `admin/staff.json` |
+> | data dir | — | `naxos-data/` |
+>
+> The repo-root `.gitignore` in the working copy only names `preview/...` paths, so on
+> the flat tree it protects **nothing**. Verified with `git check-ignore`: after
+> swapping it in, `admin/credentials.php`, `admin/guests-data.php`,
+> `admin/staff-data.php`, `admin/settings-data.php` and `naxos-data/` all stop being
+> ignored. `admin/guests-data.php` holds guest names, ΑΦΜ, addresses and link codes.
+>
+> Copy **only the files you changed**. Do not `cp .gitignore`, and do not `git add -A`
+> in a worktree that has had the local ignore file copied into it. The flat
+> `.gitignore` is already correct in git; leave it alone.
+
 > ### Naming trap: the tax number field is called `vat`
 > In a booking, `$g['vat']` is the **customer's ΑΦΜ** (9-digit tax number), not the
 > VAT rate. The VAT *rate* is `vatRate` and lives in the fee settings. The name dates
@@ -234,9 +256,12 @@ forecast-pro commit on top.
 >    background states are verified working.
 > 2. `naxos-balcony-apartments-logo.png` DOES exist (2.1MB, uncropped). Our cropped
 >    `logo-naxos-balcony.png` is a deliberate improvement.
-> 3. Duplicates are far worse than reported: **83 files, only 60 unique, 22 duplicate
->    groups.** Critically **all of room3 == room5** and **all of room4 == room6** — so a
->    guest viewing Room 3 sees the same photos as Room 5. Owner decision needed.
+> 3. Duplicates: **83 files, only 60 unique, 22 duplicate groups** in the live
+>    gallery folder. Corrected later by measurement: room3 and room5 **overlap by
+>    15 images, they are not identical**, and room4 and room6 **overlap by 51, they
+>    are not identical either**. Neither room is a subset of the other. So a guest
+>    sees substantial repetition between the pairs, not an exact copy. Owner
+>    decision needed.
 
 - **GA4 measurement ID: `G-XVJ1VN5JLF`** — present on 5 live pages, absent from ours
   (regression). `forecast-pro.html` on the live site has none either.
@@ -501,12 +526,15 @@ never reached the booking page. Keep the two in step.
 
 ## 10c. Gallery duplicates are inherited from the live site
 
-A duplicate-photo audit reports **26 groups**, but all 26 exist on the live site
-already: live and preview both show 83 tiles covering 56 unique images, with the
-identical 26 groups. Do not "fix" them without the owner's decision — removing a
+A duplicate-photo audit reports duplicate groups, and **every one exists on the
+live site already**: live and preview both show 83 tiles covering 56 unique
+images. Count by distinct path and there are **22** groups; count by tile entry
+and there are **26**, because four exterior shots are listed twice under the same
+path. Either way nothing is new. Do not "fix" them without the owner's decision — removing a
 tile changes what a visitor sees, and the hard constraint forbids content change.
-The overlap is room4↔room6 (17 shared), room3↔room5 (5), and each room's last
-tile, which is an exterior shot also listed under `exterior`. Room 4 also lists
+The only cross-category overlap is room4↔room6 (17 shared tiles) and room3↔room5
+(5). **No room tile is shared with `exterior`** — that earlier claim was wrong.
+Within categories, `exterior` lists 4 photos twice each and Room 4 lists
 `room4_12.jpg` twice (as `room4_16.jpg`). The `idx` field is not unique within a
 category and is display metadata only — the render order is the array order.
 

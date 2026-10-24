@@ -28,6 +28,10 @@ commit **`fd8fa4e`** και **περιέχει τα πάντα**: το responsiv
 | `510e721` | Διορθώσεις: ετικέτα draft, κλείδωμα εισόδου |
 | `3e38dbc` | WebP στις κάρτες δωματίων, σταθερό layout γκαλερί, διορθώσεις αντίθεσης (a11y 100), `tools/audit/linkcheck.mjs`, και το `tools/` στο repo |
 | `fd8fa4e` | Τα docs στο τελευταίο push |
+| `bc6aad3` | **Πεδία κράτησης + τέλη λογιστηρίου**: ποσό, Τ.Κ., χώρα, ΑΦΜ, ταυτότητα, και αυτόματος υπολογισμός καθαρής αξίας / ΦΠΑ / ΤΑΚΚ / παρεπιδημούντων. Νέες στήλες στο CSV του λογιστή, έσοδα στα στατιστικά |
+| `bb1f448` | Ενημέρωση STATUS/AGENTS για το push |
+| `adad231` | Επαλήθευση του flat layout (αυτού που σερβίρει το GitHub) από άκρη σε άκρη |
+| `1d37a55`, `5c54030` | Διόρθωση: το STATUS δεν ονομάζει το δικό του commit |
 
 ## 2. Ανέβασμα στον server
 
@@ -156,6 +160,8 @@ python3 build.py     # γράφει τις 18 σελίδες + sitemap.xml
    πες μου: θα κρατήσω μία εμφάνιση ανά εικόνα.
 
 2. **Δοκιμαστικά δεδομένα.** Πριν ανεβάσεις, βεβαιώσου ότι **δεν** υπάρχουν
-   `admin/credentials.php`, `admin/guests-data.php`, `admin/.login-attempts.json`
-   και δοκιμαστικά `welcome/*.php` — είναι όλα στο `.gitignore` αλλά καλό είναι
-   να τα σβήσεις από τον server πριν δώσεις το link σε τρίτους.
+   `admin/credentials.php`, `admin/guests-data.php`, `admin/staff-data.php`,
+   `admin/settings-data.php`, `admin/.login-attempts.json` και δοκιμαστικά
+   `welcome/*.php` — είναι όλα στο `.gitignore` αλλά καλό είναι να τα σβήσεις από
+   τον server πριν δώσεις το link σε τρίτους. Τα `guests-data.php` και
+   `staff-data.php` κρατούν **ονόματα πελατών, ΑΦΜ και κωδικούς προσωπικού**.

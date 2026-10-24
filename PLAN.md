@@ -3,6 +3,29 @@
 > The complete blueprint. Read with `AGENTS.md`. Goal: professional-grade site,
 > EL + EN, nothing basic missing, no rework later.
 
+## Status at a glance (2026-10-24)
+
+This plan is a blueprint, so it says what to build, not what is already built.
+Where the phases stand:
+
+| Phase | What | Status |
+|---|---|---|
+| 0 | Decisions + data from the owner | ✅ enough was given to proceed |
+| 1 | Technical SEO, Greek only | ✅ done — all 18 pages |
+| 2 | GDPR + analytics | ✅ done — consent banner, privacy, cookies, GA4 back |
+| 3 | English tree | ✅ done — 9 real pages under `en/`, not JS swapping |
+| 4 | Content & conversion | ✅ done — booking/WhatsApp/call/email buttons |
+| 5 | Photo workflow | ✅ done — upload, delete, reorder, auto WebP |
+| 6 | Image performance | ✅ done — WebP, srcset, `fetchpriority` |
+| — | Responsive redesign (the owner's ask) | ✅ done — 12 breakpoints, 21/21 device checks |
+| — | Admin (bookings, cleaning, accountant, gallery) | ✅ done, tested live |
+| — | Booking amounts + accountant fee breakdown | ✅ done — §0b of `STATUS.md` |
+| — | **Deploy to the live server** | 🔴 **NOT DONE — the only large item left** |
+
+So every phase of the build is finished and pushed. What remains is publishing it,
+plus the owner decisions listed in `STATUS.md` §0c (duplicate photos, PAT
+revocation, test-data cleanup, how future pushes authenticate).
+
 ## 0. Corrections to earlier assumptions (verified 2026-10-22)
 
 Earlier notes were wrong on three points. Corrected:
@@ -14,10 +37,14 @@ Earlier notes were wrong on three points. Corrected:
 2. **`naxos-balcony-apartments-logo.png` exists** on the live site (2.1MB, the
    uncropped logo). Our cropped `logo-naxos-balcony.png` is a deliberate
    improvement, not a fix for a missing file.
-3. **Duplicate images are worse than reported.** 83 files, only 60 unique,
-   **22 duplicate groups**. Critically: **all of room3 == room5**, and
-   **all of room4 == room6**. So a guest viewing "Room 3" sees exactly the same
-   photos as "Room 5". Needs an owner decision (see §6).
+3. **Duplicate images: measured precisely.** Earlier notes mixed up two different
+   counts, so here is the definition of each. 83 tile entries, **79 distinct
+   paths**, **56 distinct image contents**, **22 groups of distinct paths sharing
+   content**, 27 excess entries. Counting tile entries rather than paths gives 26
+   groups, because 4 exterior images are listed twice under the *same* path.
+   Critically: most of room3 overlaps room5, and most of room4 overlaps room6, so a
+   guest viewing "Room 3" sees largely the same photos as "Room 5". Needs an owner
+   decision (see §6).
 
 ## 1. Verified facts about the current site
 
@@ -44,7 +71,7 @@ Earlier notes were wrong on three points. Corrected:
 | Contact form | none (tel/WhatsApp/Viber/email links only) |
 | Booking engine | none — CTA links to `index.html` |
 | Search Console verification | none found |
-| Images | 83 files, 60 unique, 22 dup groups; 13 files >250KB; hero 740KB |
+| Images | 83 files, 60 unique, 22 dup groups; 13 files >250KB; hero 740KB (live site's own gallery folder — a different basis from the tile counts in §5b) |
 
 ### Language architecture (critical)
 - `lang-system.js` (503 lines, must stay unmodified) holds `translations.el` /
@@ -181,8 +208,8 @@ Recommended: PHP auto-scan + optional `captions.json`, static list as fallback.
 
 ## 5b. Open: duplicate gallery photos (needs an owner decision)
 
-The gallery shows 83 tiles covering 56 unique images — 26 groups repeat, exactly
-as the live site does today. Nothing was changed: deleting or swapping a tile is
+The gallery shows 83 tiles covering 56 unique images — 22 groups of distinct paths
+share content, exactly as the live site does today. Nothing was changed: deleting or swapping a tile is
 a content change, which the hard constraint forbids. Ask the owner whether to
 (a) keep as is, or (b) show each image once. If (b), drop the repeated entries
 from `gallery-tiles.json` and keep one appearance per image.
@@ -205,10 +232,11 @@ lightbox captions), not a rewrite of existing copy.
 
 ## 6. Open questions for the owner
 
-1. **Duplicate photos:** see §5b for the measured numbers (26 groups, 56 unique
-   images of 83 tiles; room4↔room6 share 17, room3↔room5 share 5, each room's
-   last tile is also in `exterior`; Room 4 lists `room4_12.jpg` twice). All 26
-   groups already exist on the live site. Keep as-is, or show each image once?
+1. **Duplicate photos:** see §5b for the measured numbers (83 tiles, 79 paths, 56
+   unique images, 22 content-sharing groups; room4↔room6 share 17 tiles,
+   room3↔room5 share 5, and no room tile is shared with `exterior`; within
+   `exterior` 4 photos appear twice, and Room 4 lists `room4_12.jpg` twice). All
+   of these already exist on the live site. Keep as-is, or show each image once?
 2. **`geo` coordinates** — exact latitude/longitude of the property?
 3. **`priceRange`** — e.g. "€70–€150" per night in high season?
 4. **Check-in / check-out times?**
