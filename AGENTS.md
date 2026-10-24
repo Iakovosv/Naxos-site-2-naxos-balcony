@@ -1186,6 +1186,34 @@ Two traps in the seed data, both of which cost a debugging round:
   tests assert a specific day (`?pdate=<today>`); a frozen seed date makes them
   fail the moment the real date moves on.
 
+### 18.4 The three access pills must line up (2026-10-24 alignment fix)
+
+The owner asked for the room / WiFi / door values to be "στοιχισμένα όμορφα
+μεταξύ τους". They were not: `.w-room` carried `font-size:1.3rem` while
+`.w-code` overrode it back to `1.05rem`, and the room pill has no `.w-code`
+class. So the room pill was **20.8px / 50px tall** and the two codes **16.8px /
+44px tall** — the room value stuck up above the others and the row looked untidy.
+
+Fix: one size for all three. `.w-room` is now `font-size:1.05rem;
+letter-spacing:.08em`, and the redundant `.w-code` rule is gone.
+
+⚠️ **The size is capped by the longest real WiFi code.** The seeded guest Weber
+has `NAXOS-ROOM6` (11 chars), which measures 188px at `1.05rem` inside a 197px
+column — only 9px of slack. Measured pill widths at each candidate size:
+
+| text | 1.05rem | 1.1rem | 1.15rem | 1.2rem |
+|---|---|---|---|---|
+| NAXOS-ROOM6 | **198** ⚠ | 205 ⚠ | 213 ⚠ | 220 ⚠ |
+| NAXOS2027 | 165 | 171 | 177 | 183 |
+| Room 3 | 120 | 123 | 127 | 131 |
+
+So `1.05rem` is the largest size that keeps an 11-char code on one line. Do not
+raise it without re-measuring against a long code.
+
+`tests/test_audit.py` §"στοίχιση" asserts, at 700/768/1280px, that all three
+pills share the same height, the same computed `font-size` and the same `top`.
+Reverting the CSS makes it fail with `(ύψη=[44, 50] γραμμ.['16.8px', '20.8px'])`.
+
 ## 15. Session 5 — fixes from the four-link audit (2026-10-24)
 
 The audit (§0f in `STATUS.md`, 238 checks) left 5 findings. Four were ours and are

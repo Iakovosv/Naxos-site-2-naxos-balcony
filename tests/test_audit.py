@@ -936,6 +936,32 @@ else:
                   _lines == 2, f"({_lines} γραμμές)")
             _pg5.close()
 
+            # 8. ΣΤΟΙΧΙΣΗ. Ο ιδιοκτήτης ζήτησε τα τρία χάπια «στοιχισμένα
+            #    όμορφα μεταξύ τους». Ίδιο ύψος, ίδιο μέγεθος γραμματοσειράς
+            #    και ίδια κορυφή — αλλιώς το «Room 3» (μεγαλύτερο) πετάγεται
+            #    πάνω από τα δύο κλειδιά και η σειρά δείχνει ατημέλητη.
+            _pg6 = _b.new_page()
+            for _w in (700, 768, 1280):
+                _pg6.set_viewport_size({"width": _w, "height": 900})
+                _pg6.goto(_url, wait_until="load")
+                _al = _pg6.evaluate("""() => {
+                    const pills = [...document.querySelectorAll(
+                        'main .w-access .w-room')];
+                    return pills.map(p => {
+                        const b = p.getBoundingClientRect();
+                        const cs = getComputedStyle(p);
+                        return { h: Math.round(b.height), top: Math.round(b.top),
+                                 fs: cs.fontSize, lh: cs.lineHeight };
+                    });
+                }""")
+                _h = {p["h"] for p in _al}
+                _f = {p["fs"] for p in _al}
+                _t = {p["top"] for p in _al}
+                check(f"στοίχιση {_w}px → ίδιο ύψος και μέγεθος στα 3 χάπια",
+                      len(_h) == 1 and len(_f) == 1 and len(_t) == 1,
+                      f"(ύψη={sorted(_h)} γραμμ.{sorted(_f)} κορυφές={sorted(_t)})")
+            _pg6.close()
+
             _b.close()
 
 # ---------------------------------------------------------------------------

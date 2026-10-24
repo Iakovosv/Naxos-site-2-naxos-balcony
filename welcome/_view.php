@@ -312,14 +312,14 @@ $otherLang = ($guest !== null && $status === 'active')
   .w-card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);
           padding:24px;box-shadow:var(--shadow);margin:0 0 18px}
   .w-room{display:inline-block;font-weight:700;color:#fff;background:var(--accent-dark);
-          padding:8px 20px;border-radius:999px;font-size:1.3rem;margin-top:4px}
+          padding:8px 20px;border-radius:999px;font-size:1.05rem;letter-spacing:.08em;
+          margin-top:4px}
   .w-photo{width:100%;height:auto;border-radius:var(--radius);display:block;margin:0 0 18px}
   .w-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}
   .w-item .k{font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
   .w-item .v{font-size:1.03rem;margin-top:3px;color:var(--ink)}
   .w-access-k{margin:0 0 6px;color:var(--muted);font-size:.94rem}
   .w-hint{margin:8px 0 0;color:var(--muted);font-size:.86rem}
-  .w-code{font-size:1.05rem;letter-spacing:.08em}
 
   /* Δωμάτιο + WiFi + κωδικός εισόδου: δίπλα-δίπλα όταν χωράνε, στοιβαγμένα
      στο κινητό. Ο περιορισμός δεν είναι το «Room 3» (117px) αλλά η υπόδειξη
