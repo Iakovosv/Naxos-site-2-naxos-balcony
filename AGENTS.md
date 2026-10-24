@@ -158,10 +158,14 @@ Redesign **www.naxosbalcony.gr** (Naxos Balcony Apartments, Glinado, Naxos, Gree
 apartment rental) so it is:
 
 1. **Fully responsive** — tablet, mobile, desktop.
+
 2. **More modern visually** — appearance only.
+
 3. **Texts byte-identical** to the live site. This is a hard constraint. No wording,
    no translation, no label changes without explicit owner approval.
+
 4. **EL/EN language system must not break** (`lang-system.js` is reused unmodified).
+
 5. Then: make the site **"υπερπλήρες"** (complete/superb from every angle) — full SEO,
    English search visibility, and anything else needed.
 
@@ -170,21 +174,27 @@ apartment rental) so it is:
 - **NEVER change any text.** Verify with the i18n identity check (section 7) before pushing.
   Adding a NEW translation key (e.g. a new gallery category label) IS a text addition and
   needs explicit owner approval.
+
 - **`lang-system.js` must not be modified.** It holds all EL/EN strings and swaps them
   via JS on `[data-i18n]` elements.
+
 - **Never push to the live site.** Deliverables go to GitHub only; the owner uploads to
   cPanel manually. The step-by-step guide is `DEPLOY-CPANEL.md`.
+
 - **Build the deploy ZIP with `tools/gen/package.py`.** It uses an allow-list, so only
   explicitly named files go in, and it re-checks the finished ZIP — aborting if it finds
   a `*-data.php`, `credentials.php`, a `.md`, a test, or a per-guest `welcome/*.php`.
   Never hand-roll the ZIP: the previous one silently shipped without `admin/_captcha.php`
   (breaking login) and without the three role aliases.
+
 - **Never upload `*.md`, `tests/` or `tools/` to the site.** They contain the test
   passwords (`demo1234`, `acc1234`, `cln1234`). The host is nginx, which ignores
   `.htaccess`, so those files would be publicly readable.
+
 - **Never commit the owner's GitHub token.** Use it for the push, then confirm no remnants
   (`grep -rl <token>` across the work dirs) and reset the git remote URL to the plain
   https form.
+
 - Preserve the `api/` folder and `api/weather-latest.php` on the server — the weather
   page depends on them.
 
@@ -192,14 +202,23 @@ apartment rental) so it is:
 
 | Thing | Location |
 |---|---|
+
 | **Deliverable repo (GitHub)** | `Iakovosv/Naxos-site-2-naxos-balcony`, branch `main`, public, default branch `main` |
+
 | **Files live at repo ROOT** | (not in a subfolder) so the owner can extract a ZIP straight into `public_html` |
+
 | **Working preview dir** | `/workspace/project/preview/` |
+
 | **Generator script** | `/tmp/gen/build.py` (builds all HTML + `gallery-data.js`) |
+
 | **Page body fragments** | `/tmp/gen/*_body.html` (index, gallery, amenities, weather, contact, forecast-pro) |
+
 | **Audit/CDP scripts** | `/tmp/naxos/*.mjs` (see section 7) |
+
 | **Live site** | `https://www.naxosbalcony.gr` |
+
 | **Preview server** | `python3 -m http.server 12000` from `/workspace/project/preview` |
+
 | **Public preview URL** | `https://work-1-hnyicijvgiyfjvbs.prod-runtime.all-hands.dev/` (port 12000) |
 
 Note: `/tmp` is wiped between sessions. **If `/tmp/gen/build.py` is gone, regenerate the
@@ -220,39 +239,53 @@ forecast-pro commit on top.
 ## 5. What was done (complete)
 
 ### Responsive redesign — 5 pages
+
 - `index`, `gallery`, `amenities`, `weather`, `contact`.
+
 - Shared `styles.css` + `site.js` (mobile menu, gallery render/filters/lightbox, weather).
+
 - Layout checked at 375 / 768 / 1280 — **zero horizontal overflow** on all pages.
 
 ### Bugs fixed (present in the live site)
+
 1. **«ΚΑΛΕΣΤΕ ΜΑΣ» was white-on-white** (invisible until hover). Cause: `.nav-links a`
    won specificity over `.call-btn` → `background:transparent`. Fix: terracotta pill
    with white text.
+
 2. **White logo invisible on white navbar.** Fix: navbar is now dark translucent
    (`rgba(12,24,34,.72)` unscrolled → `rgba(10,20,29,.92)` scrolled); logo height capped
    at 56px desktop / 44px mobile.
+
 3. **Logo had a huge transparent margin** (1536×1024 canvas, content only 818×414).
    Cropped to `logo-naxos-balcony.png` (bbox 356,288–1174,702).
+
 4. **favicon was 404** on the live site → generated `favicon-naxos-balcony.png` (128×128)
    from the logo.
+
 5. **Footer was inconsistent** in the originals (index = address only; amenities =
    phone + email). Matched each page's original footer exactly.
 
 ### Weather Station Pro page (was missing)
+
 - `weather.html` links to `forecast-pro.html` with the **WEATHER PRO 📊** button, but the
   page had never been built.
+
 - Created `forecast-pro.html` + `pro.js`: live station data, 3-day forecast, 3 charts
   (monthly rain, 24h pressure, min/max temperature).
+
 - Reads `api/weather-latest-pro.php` and `api/weather-forecast.php` (same-origin, as the
   original). Falls back to sample data on localhost.
+
 - Background `images/gallery/exterior/ai-exterior.jpg` stored locally. The night/rain
   variants (`naxos-balcony-exterior-night.jpg`, `-rain.jpg`, `-night-rain.jpg`) are
   **404 on the live site**; our code probes the image and gracefully keeps the default
   background instead of breaking.
+
 - `weather.html`: the WEATHER PRO button now uses a relative link (`forecast-pro.html`)
   instead of the absolute live-site URL.
 
 ### Assets downloaded locally
+
 - 80 gallery photos + hero + logo + favicon + pro background (~16MB) so the preview and
   the repo are self-contained. Zero remote asset references remain.
 
@@ -273,29 +306,44 @@ forecast-pro commit on top.
 
 - **GA4 measurement ID: `G-XVJ1VN5JLF`** — present on 5 live pages, absent from ours
   (regression). `forecast-pro.html` on the live site has none either.
+
 - Licence number: **1174Κ13000166800**.
+
 - Phone **+30 694 227 9665**, email **naxosbalcony@gmail.com**.
+
 - Facebook `naxosbalconyapartments`, Instagram `naxos_balcony_apartments`.
+
 - `robots.txt` returns **404**.
+
 - `sitemap.xml` lists BOTH `https://www.naxosbalcony.gr/` and `.../index.html`
   (duplicate content, no canonical).
+
 - Hero image is 740KB and is a **CSS background** → not preloaded → slow LCP.
+
 - No canonical, no Open Graph, no structured data, no hreflang anywhere.
+
 - **No cookie consent banner and no privacy/cookie policy pages** — EU/GDPR gap.
+
 - No Search Console verification found.
+
 - PHP is available on the host (confirmed: `api/*.php` respond 200).
+
 - Directory listing is disabled (403) — good for security. `.htaccess` exists.
 
 ## 6b. Language architecture (critical for the EN work)
 
 - `lang-system.js` (503 lines, never modify) holds `translations.el`/`translations.en`
   and swaps `[data-i18n]` elements via JS.
+
 - Language comes from `localStorage.preferredLang`, else `'el'`. **The URL plays no part.**
+
 - **Google therefore only ever indexes Greek.** The English text is invisible to crawlers
   and the site cannot rank for any English query.
+
 - Untranslated visible text: `weather` has 8 (incl. **"Προσανατολισμός"**),
   `contact` 8, `index`/`gallery` 3 each, and **`forecast-pro` has 19 of 19** —
   the entire page, including its visible `<h1>` and its meta title/description.
+
 - Full plan: see **`PLAN.md`**.
 
 ## 6b. Session 2 — booking button and hit areas
@@ -370,12 +418,18 @@ def kv(f):
 ```
 
 **CDP audit scripts** (Chrome DevTools Protocol on port 9222, via `/tmp/naxos/*.mjs`):
+
 - `audit.mjs` — responsive/overflow, callBtn bg, nav link colour, logo visibility, lang buttons
+
 - `func.mjs` — gallery tiles/lightbox, weather values, EL/EN switching
+
 - `allresp.mjs` — all 6 pages × 375/768/1280, overflow + hamburger + logo
+
 - `allimg.mjs` / `scrolltest.mjs` — image loading (note: lazy images appear "broken"
   until scrolled — scroll the page before judging)
+
 - `procheck.mjs` — forecast-pro functional check
+
 - `navbg.mjs`, `logom.mjs`, `wcheck.mjs`, `imgcheck.mjs` — navbar/logo/weather/image checks
 
 Note: if the port changes, `sed -i 's/12005/12000/g' *.mjs` — the scripts have hardcoded ports.
@@ -413,18 +467,24 @@ Priority order agreed:
 
 1. **Restore Google Analytics** — the live site has `G-XVJ1VN5JLF` on 5 pages;
    our pages have **none**. Regression we introduced. Non-negotiable, ~5 min.
+
 2. **Structured data (JSON-LD `LodgingBusiness`)** — biggest win for a rental.
    Address, geo coordinates, telephone, image, price range, aggregateRating.
    Enables rich results (price, stars, photos, map) in Google.
+
 3. **Open Graph + Twitter Card tags** — currently absent; link shares show no preview image.
+
 4. **Canonical URLs + `robots.txt` + fix `sitemap.xml`** (drop the duplicate `/index.html`
    entry). Live `robots.txt` is 404.
+
 5. **Fix the gallery regression** — the live site had 84 `<img>` in the raw HTML; we moved
    them into `gallery-data.js`, so Google must run JS to see them. Pre-render the tiles
    into `gallery.html` while keeping the JS filters/lightbox.
+
 6. **Image optimisation** — WebP + `srcset` + explicit `width`/`height` (fixes CLS);
    hero is 740KB and is a CSS background so it is not preloaded (slow LCP). 13 images
    >250KB, 15MB total.
+
 7. **English pages with real URLs** (`/en/...`) + `hreflang` — the big one. Currently the
    English text lives only inside `lang-system.js` and is applied via JS, so **Google only
    ever sees Greek**; the site is invisible for searches like "Naxos apartments sea view".
@@ -432,6 +492,7 @@ Priority order agreed:
    ⚠️ Constraint tension: separate `/en/` pages duplicate the text. That does NOT violate
    the "no text changes" rule (no wording changes) but it DOES duplicate content — needs
    `hreflang` + canonical handled carefully. Confirm with the owner.
+
 8. **Gallery upload workflow** — the owner wants to add/delete photos himself easily.
    Options discussed (decision still open):
    - **A. PHP folder auto-scan** — drop a file in the folder, it appears. Zero maintenance.
@@ -450,71 +511,97 @@ Priority order agreed:
 
 - `/tmp` is volatile — `/tmp/gen/build.py` and `/tmp/naxos/*.mjs` may be gone. Re-derive
   the generator from the repo, and re-create audit scripts as needed.
+
 - The preview dir `/workspace/project/preview/` is currently **untracked** in
   `/workspace/project` git (`?? preview/`); the deliverable is tracked in the GitHub repo
   instead.
+
 - `lang-system.js` in the repo is byte-identical to the live one (copy it, never edit it).
+
 - Owner will delete the GitHub token he shared. Ask for a fresh one when a push is needed.
 
 ## 10. Session results (redesign + tooling)
 
 ### What shipped
+
 - `tools/gen/build.py` regenerates all 18 pages (9 EL + 9 EN) from `*_body.html`
   fragments + `translations.json`. Run `python3 build.py` in `tools/gen/`.
+
 - English is a real directory (`preview/en/`) with its own URLs, `hreflang` +
   `canonical`. `data-i18n` attributes are stripped from the EN output (no
   `lang-system.js` there), so the text is in the HTML and Google can read it.
+
 - `preview/admin/index.php` — single-file photo manager (password setup on first
   visit, per-room upload, delete, move, duplicate detection). It rewrites
   `gallery-tiles.json`, `gallery-data.js` **and** the pre-rendered tile list in both
   `gallery.html` and `en/gallery.html`, so new photos are visible without a rebuild.
+
 - `preview/consent.js` — consent-first banner + Google Consent Mode v2. Analytics
   starts `denied`, flips to `granted` only on Accept. Do NOT pre-enable.
+
 - `.htaccess` (https, caching, compression, security headers, 404), `robots.txt`,
   `sitemap.xml`, `site.webmanifest`, favicons, responsive hero variants.
 
 ### Bugs found and fixed in this session
+
 1. `GdImage` cannot be `clone`d in PHP 8 → build the grid thumbnail by re-reading the
    written file.
+
 2. The admin regex for the tile block did not match once the section gained a
    `data-room-info` attribute → matched `[^>]*`, and the attribute is preserved.
+
 3. `localize()` emitted `>%s<` although the captured prefix already ended in `>`,
    producing `<h1>>Gallery</h1>` on EN pages.
+
 4. `hero_img()` prefixed `../` and then `asset_paths()` prefixed it again → `../../`.
    `asset_paths()` now skips URLs already starting with `../`, and handles `srcset`
    (it previously ignored srcset entirely, so EN hero candidates 404'd).
+
 5. `pro.js` used document-relative `api/` and `images/` paths, which resolved to
    `/en/api/...` on the English page. It now derives `SITE_ROOT` from its own
    `<script src>`.
+
 6. `<img id="lbImg" src="">` made `asset_paths()` rewrite the empty value to `../`,
    requesting the directory itself. The attribute is gone; JS sets it on open.
+
 7. EN contact page kept three Greek values that sit *after* a translated label
    inside the same element (Glinado, distance, parking) → `INLINE_EN` in `build.py`.
    The LIVE site has the same gap; the EN tree now translates them.
+
 8. `.call-btn` was white on `--accent` (3.70:1, fails WCAG AA). Now `--accent-dark`
    (4.95:1). This is the "white on white" bug the owner reported.
 
 ### Verification tooling (keep these)
+
 - `tools/audit/fullcheck.mjs` — responsive overflow, broken images, alt text, gallery
   filter/lightbox, consent, language links, mobile menu, skip link. Expect 0 problems.
+
 - `tools/audit/encheck.mjs` — every page (EL+EN): HTTP status of all subresources,
   broken images, `lang`, `canonical`. Expect 0 problems.
+
 - `tools/audit/contrast.mjs` — computed contrast of the call button and logo.
+
 - These drive Chrome over CDP on port 9222 (no Playwright available) and need the
   static PHP server: `/tmp/php -S 127.0.0.1:8099 -t preview`.
 
 ### Rules to keep
+
 - Never edit `lang-system.js`.
+
 - Never commit `preview/admin/credentials.php` (in `preview/.gitignore`).
+
 - The GitHub repo holds the **front-end only**. `api/`, `.htaccess` and the
   `weather-*.php` endpoints live only on the real host; do not delete them there.
+
 - Text parity is verified word-by-word against `/tmp/naxos` (the LIVE copy). The only
   expected differences are the footer's `Αρ. Γνωστοποίησης` (JS rewrites
   `Αριθμός άδειας` on LIVE too) and the intentional additions.
+
 - **Compare against the LIVE originals, not against `HEAD`.** A `git diff HEAD` only
   proves the files have not changed since the last commit; it cannot prove they match
   what visitors see. Re-download the six originals first:
   `curl -sS https://www.naxosbalcony.gr/<page>.html -o /tmp/live/<page>.html`.
+
 - **A Lighthouse a11y score of 100 does not mean zero findings.** Three WCAG 2.5.3
   label-in-name failures sat on all 18 pages while the score read 100, because
   Lighthouse weights that audit at 0. Check `audits[*].score < 1` over
@@ -674,13 +761,16 @@ EL home -> click EN -> nav Contact -> nav Gallery -> footer Privacy -> click EL 
 and asserts the path and `documentElement.lang` at each step.
 
 ### Audit-script traps found the hard way
+
 - The preview tunnel is slow. An image count taken right after load reports
   lazy images as broken. `publichk.mjs` now scrolls the page and awaits every
   pending image before counting; it then reports 0 problems.
+
 - A closed mobile menu is collapsed with `max-height:0`, so
   `getBoundingClientRect()` returns ~1px and a naive visibility helper calls it
   "visible". `menu2.mjs` measures the real height instead: closed 1px, open
   268px, links 46px tall.
+
 - `/tmp` does not survive a restart of the environment. After one, the PHP
   binary, the preview router, the API proxy, headless Chrome and the Lighthouse
   cache all have to be recreated. Reinstall PHP with
@@ -690,6 +780,7 @@ and asserts the path and `documentElement.lang` at each step.
   --remote-debugging-port=9222 --user-data-dir=/tmp/chrome-prof about:blank`.
   The audit scripts do not start either service; they just fail with a
   connection error, which reads like a site bug if you forget.
+
 - `allresp.mjs` used to report the hamburger and the logo as broken on a freshly
   restarted server. Both were false: it read the DOM after a fixed 2.5 s while
   the page was still loading. It now waits for `document.readyState` and the
@@ -798,9 +889,13 @@ and revokes them; passwords are shown exactly once.
 
 | Role | Page | Sees | Can change |
 |---|---|---|---|
+
 | admin | all | everything | everything |
+
 | accountant | `accountant.php` | receipt fields + CSV export | nothing |
+
 | cleaner1 | `cleaning.php` | rooms 3 and 4: dates, headcount, cleaning days | nothing |
+
 | cleaner2 | `cleaning.php` | rooms 5 and 6: same | nothing |
 
 The photo gallery (`/admin/`) is **admin only** — staff passwords are rejected there,
@@ -838,12 +933,15 @@ Three rules that matter here:
 
 - **The gate must come before `check_csrf()` and the action block.** If it runs after,
   the POST has already been dispatched.
+
 - **Do not `require` `_lib.php` from the gallery.** It declares `h`, `csrf`,
   `logged_in`, `ok` too — a `Cannot redeclare` fatal. The redirect map is duplicated
   on purpose; keep the two in step.
+
 - **Do not send an unknown/empty role to a `_lib.php` page.** That page requires a
   role, bounces the user back, and you get the 50-hop loop from §10b. Unknown role →
   destroy the session and show the login form.
+
 - The sign-out is explained with `$_SESSION['notice']`, the key `render_notice()`
   reads, so it never looks like "all the links show the same thing".
 
@@ -878,6 +976,7 @@ are only as private as the link. When changing this code, keep in mind:
 
 - The door code is the actual key to the apartment. Advise changing it after each
   stay, or leaving it blank and sending it by message.
+
 - Codes must never reach the accountant or cleaner pages. `cleaning.php` and
   `accountant.php` contain zero references to `['wifi']` / `['doorCode']` — keep it
   that way, and re-grep after edits.
@@ -944,11 +1043,15 @@ Then drive it over HTTP. Traps that cost time:
   form deliberately omits the field and `require_login()` handles `action=login`
   *before* `check_csrf()`. Do not "fix" this: adding CSRF to the login form would
   break login on an expired session.
+
 - **`guests.php` action is `add`**, not `save`. Wrong action = silent no-op, no error.
+
 - **Room keys are `room3`…`room6`**, not "Studio 1". A bad room fails validation
   silently in a script.
+
 - **`calendar.php` takes `?m=YYYY-MM`** (not `y`/`mo`). `accountant.php` takes
   `?y=`&`mo=` — the two pages differ.
+
 - **Role checks redirect** (302) to the role's own home. Assert on the **final URL**,
   not on response text, or every role looks like it can see everything.
   - **Every staff page shares one `$_SESSION`**, but `/admin/` (the gallery) does **not**:
@@ -970,6 +1073,36 @@ Then drive it over HTTP. Traps that cost time:
 
 - **`cleaning.php` prints no guest PII.** Assert on the *visible* text (strip
   `<script>`/`<style>` first) — a raw `'@' in html` test matches CSS `@media`.
+
+### 17.4 Access card: room + WiFi + door code side by side
+
+The owner asked whether the three elements could sit horizontally. They do — but
+only where they fit, and "where they fit" was **measured, not guessed**.
+
+The binding constraint is **not** the room label ("Room 3" = 117px). It is the
+WiFi hint ("Όλα κεφαλαία, λατινικά γράμματα, χωρίς κενά."), which wants ~350px on
+one line. Three columns therefore need ~350px each, and the card is capped at
+632px — so three comfortable columns are **impossible at any viewport width**.
+The fix: let the hint wrap to two lines when it has to.
+
+```css
+.w-access{display:grid;grid-template-columns:1fr;gap:18px;align-items:start}
+@media(min-width:700px){
+  .w-access{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px 20px}
+}
+```
+
+`auto-fit` + `minmax(170px,1fr)` also handles the case where a guest has no door
+code: two items get two wide columns (~305px), not three cramped ones.
+
+Measured with Playwright across 19 widths (320→1920px): no horizontal scroll, no
+element crossing the card edge, stacked ≤640px, one row ≥700px. The guest page is
+a narrow centered column (max 632px) at every width, so this is consistent with
+the rest of the page. `tests/test_audit.py` asserts all of it in a real browser —
+including the 2-item case and the English text (longer, so it is the tighter fit).
+
+**Do not "simplify" the breakpoint to a wider value.** 700px is where three
+columns stop squeezing the hint; below that, stacking is the honest answer.
 
 ## 15. Session 5 — fixes from the four-link audit (2026-10-24)
 
@@ -1048,6 +1181,7 @@ Two cards, **below** the existing "Οι επόμενες καθαριότητε�
    Filters: `pscope` = `all` | `day` | `week` | `month` (default `all`), `pdate`
    (anchor date for day/week/month), `proom[]` (one or more rooms). On screens
    ≥900px the two cards sit side by side (`.pair`), stacked on phones.
+
 2. **Καθαριότητες ανά κράτηση** — per stay: room, dates, **how many** cleanings,
    and the actual dates. This is the "so we can plan" part.
 
@@ -1078,6 +1212,7 @@ foreach(guests_load() as $g){ if(!in_array($g["room"]??"",["room3","room4"],true
 - `rowspan` on the day cell means the **first `<td>` of a group is a date, not a
   room**. A test that reads cell 0 as the room will fail on multi-row days. Look
   for cells matching `Room \d+` instead.
+
 - The room `<select>` legitimately contains every room she owns, so "does the
   page mention Room 3" is the wrong assertion when filtering by Room 4. Assert on
   the table rows.

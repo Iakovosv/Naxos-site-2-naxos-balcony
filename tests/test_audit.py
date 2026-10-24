@@ -778,6 +778,129 @@ if _any:
     check("σελίδα επισκέπτη → Cache-Control no-store",
           "no-store" in (hdr.get("Cache-Control", "") or "").lower())
 
+# ---------------------------------------------------------------------------
+# Η κάρτα πρόσβασης: δωμάτιο + WiFi + κωδικός εισόδου. Δίπλα-δίπλα όταν
+# χωράνε, στοιβαγμένα στο κινητό. Ο έλεγχος γίνεται με πραγματικό browser,
+# γιατί «χωράει» είναι μέτρηση, όχι γνώμη.
+# ---------------------------------------------------------------------------
+try:
+    from playwright.sync_api import sync_playwright
+    _pw = True
+except ImportError:
+    _pw = False
+
+if not _pw:
+    print("\n  ⚠️  playwright λείπει — οι έλεγχοι διάταξης παραλείπονται")
+else:
+    print("\n=== ΔΙΑΤΑΞΗ ΚΑΡΤΑΣ ΠΡΟΣΒΑΣΗΣ (πραγματικός browser) ===")
+
+    _guest = next((g for g in guests_raw()
+                   if g.get("code") and g.get("doorCode") and g.get("enabled")), None)
+    _url = f"{BASE}/welcome/{_guest['slug']}-{_guest['code']}.php" if _guest else None
+
+    if not _url:
+        check("υπάρχει επισκέπτης με κωδικό για έλεγχο διάταξης", False)
+    else:
+        def _probe(page, width, drop_third=False):
+            page.set_viewport_size({"width": width, "height": 900})
+            page.goto(_url, wait_until="load")
+            if drop_third:
+                page.evaluate("""() => { const i = [...document.querySelectorAll(
+                    'main .w-access-item')]; if (i.length > 2) i[2].remove(); }""")
+            return page.evaluate("""() => {
+                const de = document.documentElement;
+                const wrap = document.querySelector('main .w-access');
+                if (!wrap) return null;
+                const cb = wrap.getBoundingClientRect();
+                let over = false;
+                wrap.querySelectorAll('*').forEach(e => {
+                    const q = e.getBoundingClientRect();
+                    if (q.right > cb.right + 1 || q.left < cb.left - 1) over = true; });
+                const items = [...wrap.querySelectorAll('.w-access-item')];
+                const hints = [...wrap.querySelectorAll('.w-hint')];
+                return {
+                    hscroll: de.scrollWidth > de.clientWidth + 1,
+                    over,
+                    cols: items.length,
+                    rows: new Set(items.map(i =>
+                        Math.round(i.getBoundingClientRect().top))).size,
+                    hintLines: hints.map(e => {
+                        const lh = parseFloat(getComputedStyle(e).lineHeight);
+                        return Math.round(e.getBoundingClientRect().height / lh); }),
+                    codes: [...wrap.querySelectorAll('.w-code')].map(e => e.textContent.trim())
+                };
+            }""")
+
+        with sync_playwright() as _p:
+            _b = _p.chromium.launch()
+
+            # 1. Καμία υπερχείλιση σε κανένα πλάτος — 19 πλάτη.
+            _WIDTHS = [320, 360, 390, 414, 430, 480, 540, 600, 640, 700, 720,
+                       768, 820, 900, 1024, 1200, 1280, 1440, 1920]
+            _bad = []
+            _pg = _b.new_page()
+            for _w in _WIDTHS:
+                _r = _probe(_pg, _w)
+                if not _r:
+                    _bad.append(f"{_w}: λείπει το .w-access")
+                elif _r["hscroll"] or _r["over"]:
+                    _bad.append(f"{_w}px")
+            _pg.close()
+            check("διάταξη → καμία υπερχείλιση σε 19 πλάτη", not _bad, f"({_bad})")
+
+            # 2. Στο κινητό στοιβάζεται· στο tablet/desktop μπαίνουν δίπλα.
+            _pg = _b.new_page()
+            _m = _probe(_pg, 390)
+            check("κινητό 390px → στοιβαγμένα (όχι στενές στήλες)",
+                  _m and _m["rows"] == _m["cols"], f"({_m})")
+            _t = _probe(_pg, 768)
+            check("tablet 768px → δίπλα-δίπλα σε μία σειρά",
+                  _t and _t["rows"] == 1, f"({_t})")
+            _d = _probe(_pg, 1280)
+            check("desktop 1280px → δίπλα-δίπλα σε μία σειρά",
+                  _d and _d["rows"] == 1, f"({_d})")
+
+            # 3. Ο κωδικός εισόδου εμφανίζεται αυτούσιος, χωρίς κόψιμο.
+            check("ο κωδικός εισόδου φαίνεται αυτούσιος",
+                  _d and _guest["doorCode"] in _d["codes"], f"({_d['codes'] if _d else None})")
+            check("ο κωδικός WiFi φαίνεται αυτούσιος",
+                  _d and all(c in " ".join(_d["codes"]) for c in
+                             ([_guest["wifi"]] if _guest.get("wifi") else [])), "")
+
+            # 4. Με 2 στοιχεία (χωρίς κωδικό εισόδου) → 2 στήλες, όχι 3 στενές.
+            _pg2 = _b.new_page()
+            _two = _probe(_pg2, 1280, drop_third=True)
+            check("χωρίς κωδικό εισόδου → 2 στοιχεία σε 2 στήλες",
+                  _two and _two["cols"] == 2 and _two["rows"] == 1, f"({_two})")
+            _two_s = _probe(_pg2, 390, drop_third=True)
+            check("χωρίς κωδικό εισόδου στο κινητό → στοιβαγμένα",
+                  _two_s and _two_s["rows"] == 2, f"({_two_s})")
+            _pg2.close()
+
+            # 5. Το ίδιο και στα αγγλικά — τα κείμενα είναι πιο μακριά.
+            _pg3 = _b.new_page()
+            _pg3.set_viewport_size({"width": 700, "height": 900})
+            _pg3.goto(_url + "?lang=en", wait_until="load")
+            _en = _pg3.evaluate("""() => {
+                const items = [...document.querySelectorAll('main .w-access-item')];
+                const wrap = document.querySelector('main .w-access');
+                const cb = wrap.getBoundingClientRect();
+                let over = false;
+                wrap.querySelectorAll('*').forEach(e => {
+                    const q = e.getBoundingClientRect();
+                    if (q.right > cb.right + 1 || q.left < cb.left - 1) over = true; });
+                return { rows: new Set(items.map(i =>
+                    Math.round(i.getBoundingClientRect().top))).size,
+                    cols: items.length, over,
+                    hs: document.documentElement.scrollWidth >
+                        document.documentElement.clientWidth + 1 };
+            }""")
+            check("αγγλικά 700px → δίπλα-δίπλα, χωρίς υπερχείλιση",
+                  _en["rows"] == 1 and not _en["over"] and not _en["hs"], f"({_en})")
+            _pg3.close()
+
+            _b.close()
+
 # =============================================================== ΤΕΛΟΣ
 print("\n" + "=" * 70)
 print(f"  ΑΠΟΤΕΛΕΣΜΑ: {PASS} πέρασαν, {FAIL} απέτυχαν")

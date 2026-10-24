@@ -317,9 +317,21 @@ $otherLang = ($guest !== null && $status === 'active')
   .w-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:16px}
   .w-item .k{font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
   .w-item .v{font-size:1.03rem;margin-top:3px;color:var(--ink)}
-  .w-access-k{margin:16px 0 6px;color:var(--muted);font-size:.94rem}
+  .w-access-k{margin:0 0 6px;color:var(--muted);font-size:.94rem}
   .w-hint{margin:8px 0 0;color:var(--muted);font-size:.86rem}
   .w-code{font-size:1.05rem;letter-spacing:.08em}
+
+  /* Δωμάτιο + WiFi + κωδικός εισόδου: δίπλα-δίπλα όταν χωράνε, στοιβαγμένα
+     στο κινητό. Ο περιορισμός δεν είναι το «Room 3» (117px) αλλά η υπόδειξη
+     του WiFi (~350px σε μία γραμμή). Γι' αυτό, όταν στενεύει, η υπόδειξη
+     σπάει σε δύο γραμμές και τα τρία μπαίνουν στην ίδια σειρά.
+     Μετρημένο: κάτω από 700px στοιβάζεται, από 700px και πάνω μπαίνουν δίπλα.
+     Το auto-fit κρατά 2 στήλες αν λείπει ο κωδικός εισόδου. */
+  .w-access{display:grid;grid-template-columns:1fr;gap:18px;align-items:start}
+  .w-access-item{min-width:0}
+  @media(min-width:700px){
+    .w-access{grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:16px 20px}
+  }
 
   /* ---------------------------------------------------- οδηγίες & κανόνες
      Αναγνώσιμα: μεγάλα περιθώρια, καθαρές ενότητες, λίστες με οδηγό. */
@@ -414,20 +426,31 @@ $otherLang = ($guest !== null && $status === 'active')
     <img class="w-photo" src="../<?= h($photo) ?>" alt="<?= h($roomLabel) ?>" width="700" height="467">
   <?php endif; ?>
 
+  <?php /* Δωμάτιο, WiFi και κωδικός εισόδου: ένα ζευγάρι μάτια τα ψάχνει μαζί,
+           οπότε μπαίνουν δίπλα-δίπλα όταν χωράνε. Στο κινητό στοιβάζονται —
+           ο κωδικός WiFi είναι το φαρδύτερο στοιχείο, γι' αυτό το όριο. */ ?>
   <div class="w-card">
-    <p style="margin:0 0 6px;color:var(--muted);font-size:.94rem"><?= h($t['yourRoom']) ?></p>
-    <span class="w-room"><?= h($roomLabel) ?></span>
+    <div class="w-access">
+      <div class="w-access-item">
+        <p class="w-access-k"><?= h($t['yourRoom']) ?></p>
+        <span class="w-room"><?= h($roomLabel) ?></span>
+      </div>
 
-    <?php if ($wifiPass !== ''): ?>
-      <p class="w-access-k"><?= h($t['wifiLabel']) ?></p>
-      <span class="w-room w-code"><?= h($wifiPass) ?></span>
-      <p class="w-hint"><?= h($t['wifiHint']) ?></p>
-    <?php endif; ?>
+      <?php if ($wifiPass !== ''): ?>
+        <div class="w-access-item">
+          <p class="w-access-k"><?= h($t['wifiLabel']) ?></p>
+          <span class="w-room w-code"><?= h($wifiPass) ?></span>
+          <p class="w-hint"><?= h($t['wifiHint']) ?></p>
+        </div>
+      <?php endif; ?>
 
-    <?php if ($doorCode !== ''): ?>
-      <p class="w-access-k"><?= h($t['doorLabel']) ?></p>
-      <span class="w-room w-code"><?= h($doorCode) ?></span>
-    <?php endif; ?>
+      <?php if ($doorCode !== ''): ?>
+        <div class="w-access-item">
+          <p class="w-access-k"><?= h($t['doorLabel']) ?></p>
+          <span class="w-room w-code"><?= h($doorCode) ?></span>
+        </div>
+      <?php endif; ?>
+    </div>
   </div>
 
   <div class="w-card">
