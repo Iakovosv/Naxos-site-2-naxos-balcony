@@ -437,5 +437,69 @@ check("ανά κράτηση → πλήθος == αριθμός ημερομην
 found = [t for t in ["Παπαδόπουλος", "555666777", "123456789", "ΑΦΜ"] if t in page]
 check("πρόγραμμα → καμία διαρροή προσωπικών", not found, f"({found})")
 
+print("\n=== 24. ΤΑΞΙΝΟΜΗΣΗ LINKS (μήνας / δωμάτιο) ===")
+
+def links_info(op, url):
+    st, p, _ = get(op, url)
+    m = re.search(r"Όλα τα links \((\d+)(?: από (\d+))?\)", p)
+    rooms = sorted(set(re.findall(r'class="room-tag">(Room \d+)<', p)))
+    rows = len(re.findall(r'data-l="Επισκέπτης"', p))
+    return st, (m.groups() if m else None), rooms, rows
+
+op = session(); login(op, "/admin/guests.php", "demo1234")
+
+st, cnt, rooms, rows = links_info(op, "/admin/guests.php")
+check("προεπιλογή → όλα, χωρίς φίλτρο", st == 200 and cnt and cnt[1] is None,
+      f"(HTTP {st}, count={cnt})")
+check("προεπιλογή → η κατάσταση πρώτη (Ενεργό πριν το Προγραμματισμένο)",
+      re.search(r"Ενεργό.*?Προγραμματισμένο", " ".join(re.findall(
+          r'class="badge b-\w+">([^<]+)<', get(op, "/admin/guests.php")[1])), re.S) is not None)
+
+# Ο μήνας φιλτράρει και ταξινομεί. Όταν φιλτράρει, το «(Ν από Μ)» δείχνει
+# πόσες φαίνονται από το σύνολο — άρα συγκρίνουμε με το σύνολο, όχι με τον εαυτό.
+st, cnt, rooms, rows = links_info(op, "/admin/guests.php?sort=month&m=2026-11")
+check("μήνας 2026-11 → στενεύει το σύνολο",
+      st == 200 and cnt and cnt[1] is not None and int(cnt[0]) < int(cnt[1]),
+      f"(HTTP {st}, count={cnt})")
+check("μήνας 2026-11 → οι γραμμές συμφωνούν με το πλήθος",
+      cnt and rows == int(cnt[0]), f"(count={cnt}, rows={rows})")
+_, page, _ = get(op, "/admin/guests.php?sort=month&m=2026-11")
+check("μήνας 2026-11 → η κράτηση είναι του Νοεμβρίου",
+      "Νοέ" in page and "15 Οκτ" not in page)
+
+# Δωμάτιο: μόνο του δωματίου, και μετράει σωστά.
+st, cnt, rooms, rows = links_info(op, "/admin/guests.php?sort=room&r=room4")
+check("δωμάτιο Room 4 → μόνο Room 4", st == 200 and rooms == ["Room 4"], f"({rooms})")
+check("δωμάτιο Room 4 → το πλήθος συμφωνεί με τις γραμμές",
+      cnt and int(cnt[0]) == rows, f"(count={cnt}, rows={rows})")
+
+# Μήνας ΚΑΙ δωμάτιο μαζί — αυτό ζήτησε ο ιδιοκτήτης.
+st, cnt, rooms, rows = links_info(op, "/admin/guests.php?sort=month&m=2026-10&r=room4")
+check("μήνας + δωμάτιο μαζί → στενεύει", st == 200 and rows >= 1 and rooms == ["Room 4"],
+      f"(rows={rows}, rooms={rooms})")
+
+# Άκυρα: πίσω στην προεπιλογή, χωρίς σφάλμα.
+for bad in ["?sort=olokliro", "?sort=month&m=9999-99", "?sort=room&r=room9",
+            "?sort=month&m=<script>", "?sort=room&r=<script>x</script>"]:
+    st, cnt, rooms, rows = links_info(op, "/admin/guests.php" + bad)
+    check(f"άκυρο {bad[:28]:28s} → χωρίς σφάλμα, χωρίς διαρροή",
+          st == 200 and "<script>x</script>" not in (get(op, "/admin/guests.php" + bad)[1]),
+          f"(HTTP {st})")
+
+# Τα μενού προσφέρουν ό,τι υπάρχει, με πλήθος.
+_, page, _ = get(op, "/admin/guests.php?sort=month")
+check("μενού μηνών → υπάρχει επιλογή «Όλοι οι μήνες»", "Όλοι οι μήνες" in page)
+check("μενού μηνών → οι μήνες έχουν πλήθος", re.search(r"\(\d+\)", page) is not None)
+_, page, _ = get(op, "/admin/guests.php?sort=room")
+check("μενού δωματίων → «Όλα τα δωμάτια»", "Όλα τα δωμάτια" in page)
+check("μενού δωματίων → μόνο δωμάτια που υπάρχουν",
+      "Room 3 (2)" in page and "Room 4 (2)" in page)
+
+# Ο καθαρισμός φίλτρου υπάρχει μόνο όταν έχει νόημα.
+_, page, _ = get(op, "/admin/guests.php?sort=room&r=room4")
+check("όταν φιλτράρεις → κουμπί «Καθαρισμός φίλτρου»", "Καθαρισμός φίλτρου" in page)
+_, page, _ = get(op, "/admin/guests.php")
+check("χωρίς φίλτρο → δεν υπάρχει το κουμπί", "Καθαρισμός φίλτρου" not in page)
+
 print(f"\n{'='*60}\n  ΑΠΟΤΕΛΕΣΜΑ: {ok} πέρασαν, {fail} απέτυχαν\n{'='*60}")
 sys.exit(1 if fail else 0)

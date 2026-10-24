@@ -52,6 +52,7 @@ $T = [
         'welcome'     => 'Καλώς ήρθατε!',
         'yourRoom'    => 'Το δωμάτιό σας είναι το',
         'wifiLabel'   => 'Κωδικός WiFi',
+        'wifiHint'    => 'Όλα κεφαλαία, λατινικά γράμματα, χωρίς κενά.',
         'doorLabel'   => 'Κωδικός πρόσβασης',
         'stay'        => 'Η διαμονή σας',
         'checkin'     => 'Άφιξη από',
@@ -74,12 +75,79 @@ $T = [
         'langOther'   => 'English',
         'goSite'      => 'Πηγαίνετε στο site',
         'draft'       => 'ΠΡΟΧΕΙΡΟ ΚΕΙΜΕΝΟ',
+
+        /* ---------------------------------------------- Οδηγίες εισόδου & κάρτας */
+        'guideT'      => '🔑 Οδηγίες Εισόδου & Χρήσης Κάρτας',
+        'guideIntro'  => 'Κατά την πρώτη σας άφιξη, θα χρησιμοποιήσετε έναν προσωρινό κωδικό για να ανοίξετε την πόρτα. Ο κωδικός αυτός είναι μοναδικός και ισχύει μόνο για μία χρήση. Θα σας τον στείλουμε με μήνυμα πριν την άφιξή σας.',
+
+        'guideAT'     => '🔢 Χρήση προσωρινού κωδικού',
+        'guideA1'     => 'Κατά την πληκτρολόγηση, θα ακούγεται χαρακτηριστικός ήχος σε κάθε πάτημα, ώστε να γνωρίζετε πως το κάθε πλήκτρο έχει καταχωρηθεί.',
+        'guideA2'     => 'Αφού εισάγετε τον κωδικό, πατήστε το πλήκτρο # για να τον επικυρώσετε και να ανοίξει η πόρτα.',
+
+        'guideCardT'  => '💳 Κάρτα Πρόσβασης',
+        'guideCard1'  => 'Μόλις μπείτε, πάνω στο τραπέζι θα βρείτε μια κάρτα πρόσβασης, με το λογότυπό μας μπροστά και τον αριθμό του δωματίου σας στο πίσω μέρος.',
+        'guideCard2'  => 'Από εκείνη τη στιγμή και μετά, θα χρησιμοποιείτε μόνο την κάρτα για την είσοδο στο διαμέρισμα, καθώς ο αρχικός κωδικός θα απενεργοποιηθεί.',
+        'guideCard3'  => '❗ Πάντα να έχετε μαζί σας την κάρτα, ώστε να μπορείτε να επιστρέψετε στο διαμέρισμα.',
+
+        'guideDoorT'  => '🚪 Είσοδος με κάρτα',
+        'guideDoor1'  => 'Ακουμπήστε την κάρτα στο μαύρο πλαίσιο κάτω από το πληκτρολόγιο που χρησιμοποιήσατε για την πρώτη είσοδο.',
+        'guideDoor2'  => 'Μόλις γίνει η αναγνώριση:',
+        'guideDoorL1' => 'Τραβήξτε απαλά την πόρτα προς τα έξω',
+        'guideDoorL2' => 'Σπρώξτε στη συνέχεια προς τα μέσα για να ανοίξει',
+
+        'guidePowerT' => '⚡ Ρεύμα στο δωμάτιο',
+        'guidePower1' => 'Για να ενεργοποιηθεί το ρεύμα, τοποθετήστε την κάρτα στον καρτοδιακόπτη, που βρίσκεται δίπλα στο κουμπί EXIT και κοντά στην πόρτα.',
+        'guidePower2' => 'Όσο η κάρτα είναι στον καρτοδιακόπτη, το διαμέρισμα έχει ρεύμα.',
+
+        'guideAcT'     => '❄️ Κλιματισμός',
+        'guideAc1'     => 'Για να λειτουργεί το κλιματιστικό, όλα τα παράθυρα πρέπει να είναι κλειστά. Αν κάποιο παραμένει ανοιχτό, η μονάδα δεν ενεργοποιείται.',
+
+        'guideInsideT' => '🔒 Όταν είστε μέσα',
+        'guideInside1' => 'Η πόρτα κλειδώνει αυτόματα μόλις την κλείσετε.',
+        'guideInside2' => 'Για να βγείτε:',
+        'guideInsideL1'=> 'Πατήστε το κουμπί «EXIT»',
+        'guideInsideL2'=> 'Σπρώξτε απαλά την πόρτα προς τα έξω',
+        'guideInsideL3'=> 'Έπειτα, τραβήξτε την προς το μέρος σας για να ανοίξει',
+        'guideInside3' => '❗ Πριν φύγετε, μην ξεχάσετε να πάρετε την κάρτα από τον καρτοδιακόπτη, ώστε να μπορέσετε να επιστρέψετε.',
+
+        /* ---------------------------------------------- Κανόνες καταλύματος */
+        'rulesT'       => '🏡 Οδηγίες & Κανόνες Καταλύματος',
+        'rulesToiletT' => '🧻 Τουαλέτα',
+        'rulesToilet1' => 'Παρακαλούμε μην απορρίπτετε χαρτιά, χαρτομάντιλα ή άλλα αντικείμενα μέσα στη λεκάνη.',
+        'rulesToilet2' => 'Χρησιμοποιείτε πάντα τον κάδο που υπάρχει στον χώρο, για να αποφύγουμε φραξίματα στο αποχετευτικό σύστημα.',
+        'rulesSmokeT'  => '🚭 Κάπνισμα',
+        'rulesSmoke1'  => 'Το κάπνισμα απαγορεύεται αυστηρά σε όλους τους χώρους του καταλύματος.',
+        'rulesPetsT'   => '🐾 Κατοικίδια',
+        'rulesPets1'   => 'Τα κατοικίδια ζώα δεν επιτρέπονται σε κανένα χώρο του καταλύματος μας.',
+        'rulesThanks'  => '🙏 Σας ευχαριστούμε που συμβάλλετε στη διατήρηση της καθαριότητας, της υγιεινής και της θετικής εμπειρίας για όλους!',
+
+        /* ---------------------------------------------- Δώρο & αναχώρηση */
+        'gift1'        => '🎁 Πάνω στο τραπέζι θα βρείτε την κάρτα εισόδου, καθώς και ένα δώρο από εμάς – με τις ευχές μας για καλή διαμονή!',
+        'gift2'        => '🚪 Παρακαλούμε, κατά την αναχώρησή σας, αφήστε την κάρτα εισόδου στο ίδιο τραπέζι όπου τη βρήκατε.',
+
+        /* ---------------------------------------------- Το τελευταίο, το κρίσιμο */
+        'finalT'       => '🚪 Πώς να μπείτε και να βγείτε',
+        'finalNote'    => 'Διαβάστε το προσεκτικά — χωρίς αυτό η πόρτα δεν ανοίγει.',
+        'finalInT'     => 'Για να μπείτε στο διαμέρισμα:',
+        'finalIn1'     => '🔹 Ακουμπήστε την κάρτα εισόδου στο μαύρο πλαίσιο κάτω από το πληκτρολόγιο.',
+        'finalIn2'     => '🔹 Μόλις ακούσετε τον ήχο επιβεβαίωσης και ανάψει πράσινο φως,',
+        'finalIn3'     => '🔹 Τραβήξτε ελαφρώς την πόρτα προς τα έξω, και μετά σπρώξτε απαλά προς τα μέσα για να ανοίξει.',
+        'finalOutT'    => 'Για να βγείτε από το διαμέρισμα:',
+        'finalOut1'    => '🔹 Πατήστε το κουμπί EXIT.',
+        'finalOut2'    => '🔹 Στη συνέχεια, σπρώξτε ελαφρώς την πόρτα προς τα έξω και έπειτα τραβήξτε την προς το μέρος σας.',
+        'mustRead'     => 'Διάβασα τις οδηγίες εισόδου',
+        'readHint'     => 'Είναι απαραίτητο για να ανοίξετε την πόρτα.',
+        'readDone'     => 'Τέλεια — είστε έτοιμοι! ✓',
+
+        'closing'      => 'Αν χρειαστείτε οτιδήποτε κατά τη διάρκεια της διαμονής σας, μη διστάσετε να επικοινωνήσετε μαζί μας.',
+        'goodStay'     => 'Καλή διαμονή! 😊',
     ],
     'en' => [
         'title'       => 'Your room — Naxos Balcony Apartments',
         'welcome'     => 'Welcome!',
         'yourRoom'    => 'Your room is',
         'wifiLabel'   => 'Wi-Fi password',
+        'wifiHint'    => 'All capital letters, no spaces.',
         'doorLabel'   => 'Access code',
         'stay'        => 'Your stay',
         'checkin'     => 'Check-in from',
@@ -102,6 +170,72 @@ $T = [
         'langOther'   => 'Ελληνικά',
         'goSite'      => 'Go to the website',
         'draft'       => 'DRAFT TEXT',
+
+        /* ---------------------------------------------- Entry & card instructions */
+        'guideT'      => '🔑 Entry Instructions & Card Use',
+        'guideIntro'  => 'On your first arrival, you will use a temporary code to open the door. This code is unique and valid for one use only. We will send it to you by message before your arrival.',
+
+        'guideAT'     => '🔢 Using the temporary code',
+        'guideA1'     => 'As you type, you will hear a distinct sound with every press, so you know each key has been registered.',
+        'guideA2'     => 'After entering the code, press the # key to confirm it and open the door.',
+
+        'guideCardT'  => '💳 Access Card',
+        'guideCard1'  => 'Once you are inside, you will find an access card on the table, with our logo on the front and your room number on the back.',
+        'guideCard2'  => 'From that moment on, you will use only the card to enter the apartment, as the initial code will be deactivated.',
+        'guideCard3'  => '❗ Always keep the card with you, so you can return to the apartment.',
+
+        'guideDoorT'  => '🚪 Entering with the card',
+        'guideDoor1'  => 'Touch the card to the black panel below the keypad you used for your first entry.',
+        'guideDoor2'  => 'Once it is recognised:',
+        'guideDoorL1' => 'Pull the door gently outwards',
+        'guideDoorL2' => 'Then push it inwards to open',
+
+        'guidePowerT' => '⚡ Power in the room',
+        'guidePower1' => 'To turn on the power, place the card in the card switch, which is next to the EXIT button and close to the door.',
+        'guidePower2' => 'As long as the card is in the card switch, the apartment has power.',
+
+        'guideAcT'     => '❄️ Air conditioning',
+        'guideAc1'     => 'For the air conditioner to work, all windows must be closed. If any window stays open, the unit will not turn on.',
+
+        'guideInsideT' => '🔒 When you are inside',
+        'guideInside1' => 'The door locks automatically as soon as you close it.',
+        'guideInside2' => 'To get out:',
+        'guideInsideL1'=> 'Press the "EXIT" button',
+        'guideInsideL2'=> 'Push the door gently outwards',
+        'guideInsideL3'=> 'Then pull it towards you to open',
+        'guideInside3' => '❗ Before you leave, do not forget to take the card from the card switch, so you can return.',
+
+        /* ---------------------------------------------- Property rules */
+        'rulesT'       => '🏡 Property Instructions & Rules',
+        'rulesToiletT' => '🧻 Toilet',
+        'rulesToilet1' => 'Please do not throw paper, tissues or other items into the toilet bowl.',
+        'rulesToilet2' => 'Always use the bin provided in the area, to avoid blockages in the drainage system.',
+        'rulesSmokeT'  => '🚭 Smoking',
+        'rulesSmoke1'  => 'Smoking is strictly prohibited in all areas of the property.',
+        'rulesPetsT'   => '🐾 Pets',
+        'rulesPets1'   => 'Pets are not allowed in any area of our property.',
+        'rulesThanks'  => '🙏 Thank you for helping us keep the property clean, hygienic and a positive experience for everyone!',
+
+        /* ---------------------------------------------- Gift & departure */
+        'gift1'        => '🎁 On the table you will find the access card, as well as a gift from us – with our best wishes for a pleasant stay!',
+        'gift2'        => '🚪 When you check out, please leave the access card on the same table where you found it.',
+
+        /* ---------------------------------------------- The last one, the critical one */
+        'finalT'       => '🚪 How to enter and exit',
+        'finalNote'    => 'Please read this carefully — without it the door will not open.',
+        'finalInT'     => 'To enter the apartment:',
+        'finalIn1'     => '🔹 Touch the access card to the black panel below the keypad.',
+        'finalIn2'     => '🔹 Once you hear the confirmation sound and a green light appears,',
+        'finalIn3'     => '🔹 Pull the door slightly outwards, then push it gently inwards to open.',
+        'finalOutT'    => 'To leave the apartment:',
+        'finalOut1'    => '🔹 Press the EXIT button.',
+        'finalOut2'    => '🔹 Then push the door slightly outwards and then pull it towards you.',
+        'mustRead'     => 'I have read the entry instructions',
+        'readHint'     => 'This is required so you can open the door.',
+        'readDone'     => 'All set — you are ready! ✓',
+
+        'closing'      => 'If you need anything during your stay, do not hesitate to contact us.',
+        'goodStay'     => 'Enjoy your stay! 😊',
     ],
 ];
 
@@ -184,7 +318,40 @@ $otherLang = ($guest !== null && $status === 'active')
   .w-item .k{font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700}
   .w-item .v{font-size:1.03rem;margin-top:3px;color:var(--ink)}
   .w-access-k{margin:16px 0 6px;color:var(--muted);font-size:.94rem}
+  .w-hint{margin:8px 0 0;color:var(--muted);font-size:.86rem}
   .w-code{font-size:1.05rem;letter-spacing:.08em}
+
+  /* ---------------------------------------------------- οδηγίες & κανόνες
+     Αναγνώσιμα: μεγάλα περιθώρια, καθαρές ενότητες, λίστες με οδηγό. */
+  .w-guide h3{margin:22px 0 8px;font-size:1.02rem;color:var(--ink);
+              display:flex;align-items:center;gap:8px}
+  .w-guide h3:first-of-type{margin-top:4px}
+  .w-guide p{margin:0 0 10px;color:var(--ink);font-size:.96rem;line-height:1.62}
+  .w-guide ul{margin:0 0 12px;padding-left:22px;color:var(--ink);font-size:.96rem;line-height:1.62}
+  .w-guide li{margin:0 0 5px}
+  .w-guide .w-warn{color:var(--accent-dark);font-weight:600}
+  .w-guide .w-soft{background:var(--soft);border-radius:10px;padding:13px 15px;margin:0 0 12px}
+  .w-guide .w-soft p:last-child{margin-bottom:0}
+  .w-closing{background:var(--soft);border-left:4px solid var(--accent-2);
+             border-radius:10px;padding:16px 18px;margin:0 0 18px}
+  .w-closing p{margin:0;font-size:.98rem;color:var(--ink)}
+  .w-closing .w-good{margin-top:8px;font-weight:700;font-size:1.05rem}
+
+  /* Το κρίσιμο μπλοκ: ξεχωρίζει, αλλά δεν κρύβεται. */
+  .w-final{border:2px solid var(--accent-dark);border-radius:var(--radius);
+           background:#fffdf9;padding:22px 22px 18px;margin:0 0 18px}
+  .w-final h2{margin:0 0 6px;font-size:1.12rem;color:var(--accent-dark)}
+  .w-final .w-must{color:var(--accent-dark);font-weight:700;font-size:.94rem;margin:0 0 14px}
+  .w-final h3{margin:16px 0 8px;font-size:.98rem}
+  .w-final ul{margin:0;padding-left:20px;font-size:.96rem;line-height:1.6}
+  /* Το «διάβασα»: καθαρή, μεγάλη επιλογή — όχι μικρό checkbox. */
+  .w-read{margin:18px 0 0;padding:14px 16px;border:1px solid var(--line);border-radius:12px;
+          background:#fff;display:flex;gap:12px;align-items:flex-start;cursor:pointer}
+  .w-read input{width:22px;height:22px;margin:1px 0 0;flex:0 0 auto;accent-color:var(--accent-dark);cursor:pointer}
+  .w-read .w-read-t{font-weight:700;font-size:.97rem;color:var(--ink)}
+  .w-read .w-read-h{font-size:.85rem;color:var(--muted);margin-top:3px}
+  .w-read.is-done{background:#f0f8f3;border-color:#bfe3c9}
+  .w-read.is-done .w-read-h{color:#1d7a4d;font-weight:600}
   .w-note{background:var(--soft);border-left:4px solid var(--accent-2);border-radius:10px;
           padding:14px 16px;font-size:.94rem;margin:0 0 18px}
   .w-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:4px}
@@ -206,6 +373,8 @@ $otherLang = ($guest !== null && $status === 'active')
     .w-card{padding:19px}
     .w-lang{top:12px;right:14px}
     .w-hero .logo img{height:36px}
+    .w-final{padding:18px 16px 14px}
+    .w-guide p,.w-guide ul{font-size:.94rem}
   }
 </style>
 </head>
@@ -252,6 +421,7 @@ $otherLang = ($guest !== null && $status === 'active')
     <?php if ($wifiPass !== ''): ?>
       <p class="w-access-k"><?= h($t['wifiLabel']) ?></p>
       <span class="w-room w-code"><?= h($wifiPass) ?></span>
+      <p class="w-hint"><?= h($t['wifiHint']) ?></p>
     <?php endif; ?>
 
     <?php if ($doorCode !== ''): ?>
@@ -298,6 +468,105 @@ $otherLang = ($guest !== null && $status === 'active')
     </div>
   </div>
 
+  <?php /* ------------------------------------------------------ ΟΔΗΓΙΕΣ ΕΙΣΟΔΟΥ
+     Τα κείμενα είναι ακριβώς όπως τα έδωσε ο ιδιοκτήτης. Δεν αλλάζουμε λέξη. */ ?>
+  <div class="w-card w-guide">
+    <h2 style="margin:0 0 14px;font-size:1.15rem"><?= h($t['guideT']) ?></h2>
+    <p><?= h($t['guideIntro']) ?></p>
+
+    <h3><?= h($t['guideAT']) ?></h3>
+    <p><?= h($t['guideA1']) ?></p>
+    <p><?= h($t['guideA2']) ?></p>
+
+    <h3><?= h($t['guideCardT']) ?></h3>
+    <p><?= h($t['guideCard1']) ?></p>
+    <p><?= h($t['guideCard2']) ?></p>
+    <p class="w-warn"><?= h($t['guideCard3']) ?></p>
+
+    <h3><?= h($t['guideDoorT']) ?></h3>
+    <p><?= h($t['guideDoor1']) ?></p>
+    <p><?= h($t['guideDoor2']) ?></p>
+    <ul>
+      <li><?= h($t['guideDoorL1']) ?></li>
+      <li><?= h($t['guideDoorL2']) ?></li>
+    </ul>
+
+    <h3><?= h($t['guidePowerT']) ?></h3>
+    <p><?= h($t['guidePower1']) ?></p>
+    <p><?= h($t['guidePower2']) ?></p>
+
+    <h3><?= h($t['guideAcT']) ?></h3>
+    <p><?= h($t['guideAc1']) ?></p>
+
+    <h3><?= h($t['guideInsideT']) ?></h3>
+    <p><?= h($t['guideInside1']) ?></p>
+    <p><?= h($t['guideInside2']) ?></p>
+    <ul>
+      <li><?= h($t['guideInsideL1']) ?></li>
+      <li><?= h($t['guideInsideL2']) ?></li>
+      <li><?= h($t['guideInsideL3']) ?></li>
+    </ul>
+    <p class="w-warn"><?= h($t['guideInside3']) ?></p>
+  </div>
+
+  <?php /* ------------------------------------------------------ ΚΑΝΟΝΕΣ ΚΑΤΑΛΥΜΑΤΟΣ */ ?>
+  <div class="w-card w-guide">
+    <h2 style="margin:0 0 14px;font-size:1.15rem"><?= h($t['rulesT']) ?></h2>
+
+    <h3><?= h($t['rulesToiletT']) ?></h3>
+    <p><?= h($t['rulesToilet1']) ?></p>
+    <p><?= h($t['rulesToilet2']) ?></p>
+
+    <h3><?= h($t['rulesSmokeT']) ?></h3>
+    <p><?= h($t['rulesSmoke1']) ?></p>
+
+    <h3><?= h($t['rulesPetsT']) ?></h3>
+    <p><?= h($t['rulesPets1']) ?></p>
+
+    <div class="w-soft"><p><?= h($t['rulesThanks']) ?></p></div>
+  </div>
+
+  <?php /* ------------------------------------------------------ ΔΩΡΟ & ΑΝΑΧΩΡΗΣΗ */ ?>
+  <div class="w-card w-guide">
+    <p><?= h($t['gift1']) ?></p>
+    <p style="margin-bottom:0"><?= h($t['gift2']) ?></p>
+  </div>
+
+  <?php /* ------------------------------------- ΤΟ ΚΡΙΣΙΜΟ: ΜΠΑΙΝΕΙ ΤΕΛΕΥΤΑΙΟ
+     Ο ιδιοκτήτης το θέλει στο τέλος, ώστε να το έχουν διαβάσει όλοι. Γι' αυτό
+     έχει το πλαίσιο, τη μεγαλύτερη αντίθεση και το «Διάβασα» που πρέπει να
+     πατηθεί — αλλιώς περνά απαρατήρητο και η πόρτα δεν ανοίγει. */ ?>
+  <div class="w-final">
+    <h2><?= h($t['finalT']) ?></h2>
+    <p class="w-must"><?= h($t['finalNote']) ?></p>
+
+    <h3><?= h($t['finalInT']) ?></h3>
+    <ul>
+      <li><?= h($t['finalIn1']) ?></li>
+      <li><?= h($t['finalIn2']) ?></li>
+      <li><?= h($t['finalIn3']) ?></li>
+    </ul>
+
+    <h3><?= h($t['finalOutT']) ?></h3>
+    <ul>
+      <li><?= h($t['finalOut1']) ?></li>
+      <li><?= h($t['finalOut2']) ?></li>
+    </ul>
+
+    <label class="w-read" id="wRead">
+      <input type="checkbox" id="wReadBox">
+      <span>
+        <span class="w-read-t"><?= h($t['mustRead']) ?></span>
+        <span class="w-read-h" id="wReadHint"><?= h($t['readHint']) ?></span>
+      </span>
+    </label>
+  </div>
+
+  <div class="w-closing">
+    <p><?= h($t['closing']) ?></p>
+    <p class="w-good"><?= h($t['goodStay']) ?></p>
+  </div>
+
 <?php elseif ($status === 'scheduled' && $guest !== null): ?>
 
   <div class="w-card w-state">
@@ -341,6 +610,27 @@ $otherLang = ($guest !== null && $status === 'active')
 </main>
 
 <p class="w-foot"><?= h($t['footer']) ?></p>
+
+<script>
+/* Το «Διάβασα τις οδηγίες»: αλλάζει χρώμα όταν πατηθεί, ώστε να φαίνεται ότι
+   καταχωρήθηκε. Δεν μπλοκάρει τίποτα — η πόρτα ανοίγει με την κάρτα, όχι με
+   αυτό. Είναι υπενθύμιση, όχι φραγμός: ένα checkbox που σε εμποδίζει θα
+   εκνεύριζε τον επισκέπτη που μόλις ταξίδεψε. */
+(function () {
+  var box = document.getElementById('wReadBox');
+  var card = document.getElementById('wRead');
+  var hint = document.getElementById('wReadHint');
+  if (!box || !card) return;
+  var done = <?= json_encode($t['readDone'], JSON_UNESCAPED_UNICODE) ?>;
+  var back = <?= json_encode($t['readHint'], JSON_UNESCAPED_UNICODE) ?>;
+  function paint() {
+    card.classList.toggle('is-done', box.checked);
+    if (hint) hint.textContent = box.checked ? done : back;
+  }
+  box.addEventListener('change', paint);
+  paint();
+})();
+</script>
 
 </body>
 </html>

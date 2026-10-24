@@ -301,12 +301,67 @@ if (($_SERVER['HTTP_HOST'] ?? '') !== '' && str_contains((string)$_SERVER['HTTP_
     $base = 'https://' . $_SERVER['HTTP_HOST'];
 }
 
-// Πρώτα τα ενεργά, μετά τα προγραμματισμένα, τα απενεργοποιημένα, τα ληγμένα.
+/* --------------------------------------------------------------- ταξινόμηση
+ *
+ * Ο ιδιοκτήτης ζήτησε να βρίσκει μια κράτηση εύκολα. Ένας άξονας ταξινόμησης
+ * τη φορά — κατάσταση (η προεπιλογή), μήνας άφιξης, δωμάτιο — αλλά δύο
+ * φίλτρα που δουλεύουν ΜΑΖΙ: «Οκτώβριος» + «Room 4». Έτσι στενεύει όσο θέλει
+ * χωρίς να γεμίσει η οθόνη κουμπιά, και δεν χρειάζεται να διαλέξει ανάμεσα σε
+ * μήνα και δωμάτιο.
+ */
+$sortBy = (string)($_GET['sort'] ?? 'status');
+if (!in_array($sortBy, ['status', 'month', 'room'], true)) $sortBy = 'status';
+
+$monthOpts = [];   // 'YYYY-MM' => πλήθος
+$roomOpts  = [];   // room      => πλήθος
+foreach ($guests as $g) {
+    $sf = (string)($g['stayFrom'] ?? '');
+    if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $sf)) {
+        $k = substr($sf, 0, 7);
+        $monthOpts[$k] = ($monthOpts[$k] ?? 0) + 1;
+    }
+    $rm = (string)($g['room'] ?? '');
+    if ($rm !== '') $roomOpts[$rm] = ($roomOpts[$rm] ?? 0) + 1;
+}
+krsort($monthOpts);   // νεότερος μήνας πρώτος
+
+// Τα φίλτρα ισχύουν πάντα, αρκεί η τιμή να υπάρχει στα δεδομένα. Έτσι το
+// «μήνας + δωμάτιο» δουλεύει και με τους δύο άξονες ταξινόμησης.
+$filterMonth = (string)($_GET['m'] ?? '');
+if (!isset($monthOpts[$filterMonth])) $filterMonth = '';
+$filterRoom  = (string)($_GET['r'] ?? '');
+if (!isset($roomOpts[$filterRoom])) $filterRoom = '';
+
 $order = ['active' => 0, 'scheduled' => 1, 'disabled' => 2, 'expired' => 3];
-usort($guests, function ($a, $b) use ($order) {
+usort($guests, function ($a, $b) use ($order, $sortBy) {
+    $sfA = (string)($a['stayFrom'] ?? '');
+    $sfB = (string)($b['stayFrom'] ?? '');
+    if ($sortBy === 'month') {
+        // Μήνας, μετά δωμάτιο — ώστε μέσα στον ίδιο μήνα να μη μπερδεύονται.
+        $d = strcmp(substr($sfA, 0, 7), substr($sfB, 0, 7));
+        if ($d !== 0) return $d;
+        $d = strcmp((string)($a['room'] ?? ''), (string)($b['room'] ?? ''));
+        if ($d !== 0) return $d;
+    } elseif ($sortBy === 'room') {
+        $d = strcmp((string)($a['room'] ?? ''), (string)($b['room'] ?? ''));
+        if ($d !== 0) return $d;
+        $d = strcmp($sfA, $sfB);
+        if ($d !== 0) return $d;
+    }
+    // Πάντα, ως τελευταίο κριτήριο, η κατάσταση — ώστε τα ληγμένα να μη
+    // χάνονται ανάμεσα στα ενεργά μέσα σε έναν μήνα.
     $d = ($order[guest_status($a)] ?? 9) <=> ($order[guest_status($b)] ?? 9);
-    return $d !== 0 ? $d : strcmp((string)($a['stayFrom'] ?? ''), (string)($b['stayFrom'] ?? ''));
+    return $d !== 0 ? $d : strcmp($sfA, $sfB);
 });
+
+$shown = $guests;
+if ($filterMonth !== '') {
+    $shown = array_values(array_filter($shown,
+        fn($g) => str_starts_with((string)($g['stayFrom'] ?? ''), $filterMonth)));
+}
+if ($filterRoom !== '') {
+    $shown = array_values(array_filter($shown, fn($g) => (string)($g['room'] ?? '') === $filterRoom));
+}
 
 $feeRates = fee_rates();
 
@@ -314,6 +369,15 @@ $today   = date('Y-m-d');
 $defFrom = date('Y-m-d', strtotime('+1 day'));
 $defTo   = date('Y-m-d', strtotime('+4 days'));
 $defEnd  = date('Y-m-d', strtotime('+5 days'));
+
+/* «2026-10» -> «Οκτώβριος 2026» για το μενού ταξινόμησης. */
+function month_label(string $ym): string {
+    if (!preg_match('/^(\d{4})-(\d{2})$/', $ym, $m)) return $ym;
+    $names = [1=>'Ιανουάριος','Φεβρουάριος','Μάρτιος','Απρίλιος','Μάιος','Ιούνιος',
+              'Ιούλιος','Αύγουστος','Σεπτέμβριος','Οκτώβριος','Νοέμβριος','Δεκέμβριος'];
+    $n = (int)$m[2];
+    return ($names[$n] ?? $m[2]) . ' ' . $m[1];
+}
 
 function date_el(string $iso): string {
     $d = DateTime::createFromFormat('Y-m-d', $iso);
@@ -639,11 +703,66 @@ details.help div{margin-top:10px;font-size:.88rem;color:var(--muted)}
     </form>
   </div>
 
-  <div class="card">
-    <h2>Όλα τα links (<?= count($guests) ?>)</h2>
+  <div class="card" id="ola-ta-links">
+    <h2>Όλα τα links (<?= count($shown) ?><?= count($shown) !== count($guests) ? ' από ' . count($guests) : '' ?>)</h2>
+
+    <?php /* ---------------------------------------------------- ταξινόμηση
+       Ένας άξονας ταξινόμησης τη φορά, αλλά δύο φίλτρα που δουλεύουν μαζί:
+       «Οκτώβριος» + «Room 4». Τα μενού εμφανίζονται πάντα (εκτός από την
+       προεπιλογή χωρίς φίλτρο, για να μη γεμίζει η οθόνη) και διατηρούν ό,τι
+       έχει ήδη διαλέξει ο χρήστης — αλλιώς το ένα θα έσβηνε το άλλο. */ ?>
+    <?php if ($guests !== []): ?>
+      <form method="get" class="row" style="margin:0 0 16px">
+        <div style="flex:0 1 220px">
+          <label for="sort">Ταξινόμηση</label>
+          <select id="sort" name="sort" onchange="this.form.submit()">
+            <option value="status"<?= $sortBy === 'status' ? ' selected' : '' ?>>Κατάσταση (προεπιλογή)</option>
+            <option value="month"<?= $sortBy === 'month' ? ' selected' : '' ?>>Μήνας άφιξης</option>
+            <option value="room"<?= $sortBy === 'room' ? ' selected' : '' ?>>Δωμάτιο</option>
+          </select>
+        </div>
+        <?php if ($sortBy !== 'status' || $filterMonth !== ''): ?>
+          <div style="flex:0 1 200px">
+            <label for="m">Μήνας</label>
+            <select id="m" name="m" onchange="this.form.submit()">
+              <option value="">Όλοι οι μήνες</option>
+              <?php foreach ($monthOpts as $k => $n): ?>
+                <option value="<?= h($k) ?>"<?= $filterMonth === $k ? ' selected' : '' ?>>
+                  <?= h(month_label($k)) ?> (<?= $n ?>)
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+        <?php endif; ?>
+        <?php if ($sortBy !== 'status' || $filterRoom !== ''): ?>
+          <div style="flex:0 1 200px">
+            <label for="r">Δωμάτιο</label>
+            <select id="r" name="r" onchange="this.form.submit()">
+              <option value="">Όλα τα δωμάτια</option>
+              <?php foreach (array_intersect_key(ROOMS_G, $roomOpts) as $k => $info): ?>
+                <option value="<?= h($k) ?>"<?= $filterRoom === $k ? ' selected' : '' ?>>
+                  <?= h((string)($info['el'] ?? $k)) ?> (<?= (int)$roomOpts[$k] ?>)
+                </option>
+              <?php endforeach; ?>
+            </select>
+          </div>
+        <?php endif; ?>
+        <?php if ($filterMonth !== '' || $filterRoom !== ''): ?>
+          <div style="flex:0 0 auto">
+            <a class="tiny ghost" href="guests.php?sort=<?= h($sortBy) ?>#ola-ta-links"
+               style="text-decoration:none;display:inline-flex;align-items:center;min-height:44px">
+              Καθαρισμός φίλτρου
+            </a>
+          </div>
+        <?php endif; ?>
+        <noscript><div style="flex:0 0 auto"><button type="submit">Εφαρμογή</button></div></noscript>
+      </form>
+    <?php endif; ?>
 
     <?php if ($guests === []): ?>
       <div class="empty">Δεν έχεις φτιάξει ακόμη κανένα link.</div>
+    <?php elseif ($shown === []): ?>
+      <div class="empty">Καμία κράτηση με αυτό το φίλτρο.</div>
     <?php else: ?>
       <table>
         <thead>
@@ -653,7 +772,7 @@ details.help div{margin-top:10px;font-size:.88rem;color:var(--muted)}
           </tr>
         </thead>
         <tbody>
-        <?php foreach ($guests as $g):
+        <?php foreach ($shown as $g):
           $st    = guest_status($g);
           $url   = guest_link($g, $base);
           $fname = guest_file_name($g);

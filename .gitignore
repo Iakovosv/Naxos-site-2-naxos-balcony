@@ -32,3 +32,4 @@ naxos-data/
 welcome/*.php
 !welcome/_view.php
 !welcome/index.php
+__pycache__/

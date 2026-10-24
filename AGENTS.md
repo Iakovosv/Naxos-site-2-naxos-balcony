@@ -521,7 +521,6 @@ Priority order agreed:
   `categories.accessibility.auditRefs`, not just the score. The visible text must lead
   the accessible name: `aria-label="EL — Ελληνικά"`, not `aria-label="Ελληνικά"`.
 
-
 ## 10b. The two admin logins share one password
 
 `admin/index.php` (the gallery) keeps its **own** session flag and does not include
@@ -748,7 +747,6 @@ failures were white text on `--accent` (3.70:1) in `.cookie-accept` and
 `.call-btn`; both now use `--accent-dark` (4.95:1). The remaining `alt=""`
 attributes are deliberate — hero backgrounds carry `aria-hidden="true"` and
 `#lbImg` gets its `alt` from `site.js`.
-
 
 ## 11. Guest welcome system (2026-10-23)
 
@@ -1038,7 +1036,6 @@ now includes `deny all` for `tests/`, `tools/`, `preview/`, `*.md`, `*.py`, `*.m
 `welcome/`. The Apache `FilesMatch` denies were widened to match (added `mjs`,
 `*-data.php`, `staff.json`) so the two configs have no gap. **Keep them in step.**
 
-
 ## 16. Session 6 — cleaning schedule for the cleaners (2026-10-24)
 
 `admin/cleaning.php` used to show only "the next cleanings" (14 days ahead, sliced
@@ -1084,4 +1081,47 @@ foreach(guests_load() as $g){ if(!in_array($g["room"]??"",["room3","room4"],true
 - The room `<select>` legitimately contains every room she owns, so "does the
   page mention Room 3" is the wrong assertion when filtering by Room 4. Assert on
   the table rows.
+
+## 17. Session 7 — links sorting, WiFi hint, guest instructions (2026-10-24)
+
+Three separate requests in one session.
+
+### 17.1 Sorting the links (`admin/guests.php`)
+
+`?sort=` = `status` (default) | `month` | `room`, plus two filters that work
+**together**: `?m=YYYY-MM` and `?r=room4`. So "October + Room 4" is one URL.
+The heading shows `Όλα τα links (N από M)` whenever a filter is active.
+
+Trap that was hit while writing this: the two filter dropdowns must render
+whenever a filter is set, **even if `sort=status`**. Otherwise choosing a month
+under "Κατάσταση" would hide the room menu and the second filter would be
+impossible. The `<select>`s carry their current value forward so one does not
+clear the other.
+
+Invalid input is ignored: unknown `sort` → `status`, a month/room that is not in
+the data → no filter, and `?r=<script>…` is dropped before it reaches the page.
+`tests/test_admin.py` §24 covers all of it.
+
+### 17.2 WiFi hint (`welcome/_view.php`)
+
+Below the WiFi code: "Όλα κεφαλαία, λατινικά γράμματα, χωρίς κενά." / "All
+capital letters, no spaces." — one line, because guests mistype the password
+when it is all caps.
+
+### 17.3 Guest instructions (`welcome/_view.php`)
+
+The owner's entry/card instructions, rules, gift note, and the critical
+"how to enter and exit" block, in EL and EN. The texts are **his wording**,
+verbatim — do not reword them.
+
+Order matters: the critical block goes **last**, per his request, "so they read
+the rest first". It is visually separated (`.w-final`, warm border, darker
+accent) and ends with a "Διάβασα τις οδηγίες εισόδου" checkbox that turns green
+when ticked. The checkbox is a reminder, **not** a gate — it blocks nothing, and
+that is deliberate: the door opens with the card, and a blocking checkbox would
+just annoy a guest who has just travelled.
+
+**The guest page does not use `lang-system.js`.** `welcome/_view.php` carries its
+own `$T` array with `el`/`en` keys, so all of this is inside the untouched file.
+`lang-system.js` stays byte-identical.
 
