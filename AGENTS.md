@@ -112,6 +112,13 @@
 > A PAT used for a push belongs only in the command line, never in config, a commit,
 > or a log.
 >
+> ### Naming trap: the tax number field is called `vat`
+> In a booking, `$g['vat']` is the **customer's ΑΦΜ** (9-digit tax number), not the
+> VAT rate. The VAT *rate* is `vatRate` and lives in the fee settings. The name dates
+> from before the fee work and is baked into saved bookings and the CSV column order,
+> so renaming it would need a data migration. Read `vat` as "tax id" and `vatRate` as
+> "VAT percentage"; do not swap them.
+>
 > ### Known cosmetic gaps (low priority, none blocking)
 > - The hero image has `srcset` (480/800/1280/1600) but **no WebP variant**
 >   (`naxos-balcony-apartments-glinado-view*.webp` does not exist). The 84 gallery
