@@ -11,6 +11,12 @@
 
 declare(strict_types=1);
 
+// Ίδιες κεφαλίδες με τις σελίδες επισκεπτών (welcome/_view.php). Χωρίς αυτές η
+// σελίδα αυτή θα ήταν η μόνη του φακέλου χωρίς noindex και χωρίς αποτροπή cache.
+header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+header('X-Robots-Tag: noindex, nofollow, noarchive');
+header('Referrer-Policy: no-referrer');
+
 $lang = (($_GET['lang'] ?? '') === 'en') ? 'en' : 'el';
 
 $t = [

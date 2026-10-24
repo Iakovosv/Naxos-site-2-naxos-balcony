@@ -349,18 +349,15 @@ for override, label in STRICT:
     check(f"add: {label:28} → απορρίπτεται", n == 0, f"(δημιουργήθηκαν {n})")
     check(f"add: {label:28} → με μήνυμα", explained, f"(flash={flash})")
 
-print("\n=== Β4. Προαιρετικά/ασαφή πεδία: κανένα σφάλμα PHP, λογική τιμή ===")
-# Αυτά ΔΕΝ είναι σφάλματα: τα κενά είναι προαιρετικά, και τα «λάθος» ποσά/άτομα
-# προσαρμόζονται σιωπηλά αντί να σκάσουν. Ελέγχουμε ότι η αποθήκευση είναι λογική.
+print("\n=== Β4. Αποδεκτές τιμές: αποθηκεύονται σωστά ===")
 LENIENT = [
-    ({"total": "abc"}, "total", "", "ποσό με γράμματα → κενό"),
-    ({"total": "-50"}, "total", "", "αρνητικό ποσό → κενό"),
+    ({"total": ""}, "total", "", "κενό ποσό → μένει κενό (προαιρετικό)"),
     ({"total": "1.234,56"}, "total", "1234.56", "ελληνικό ποσό → 1234.56"),
     ({"total": "400.00"}, "total", "400.00", "δεκαδικό με τελεία"),
-    ({"adults": "0"}, "adults", 1, "μηδέν άτομα → 1 (κλειδώνει στο ελάχιστο)"),
-    ({"adults": "abc"}, "adults", 1, "άτομα γράμματα → 1 (το (int) δίνει 0)"),
+    ({"total": "12,5"}, "total", "12.50", "κόμμα ως δεκαδικό"),
+    ({"adults": "1"}, "adults", 1, "1 άτομο"),
     ({"adults": "12"}, "adults", 12, "12 άτομα (το μέγιστο της φόρμας)"),
-    ({"adults": "99"}, "adults", 99, "99 άτομα (η φόρμα λέει max=12)"),
+    ({"adults": ""}, "adults", 1, "κενό → 1"),
 ]
 for override, key, expect, label in LENIENT:
     n_before = n_named("Δοκιμη")
@@ -376,6 +373,27 @@ for override, key, expect, label in LENIENT:
     post(op, "/admin/guests.php", {"action": "delete", "csrf": csrf_of(page), "id": saved[-1]["id"]})
     for f in glob.glob(f"{DEMO}/welcome/dokim*.php"):
         os.remove(f)
+
+print("\n=== Β4β. Λάθος ποσό/άτομα: απορρίπτεται με μήνυμα (όχι σιωπηλή αλλαγή) ===")
+# Ο server πρέπει να συμφωνεί με τη φόρμα. Παλιά τα «λάθος» ποσά και άτομα
+# αποθηκεύονταν σιωπηλά (το «abc» γινόταν κενό, το 99 έμενε 99) — αυτό άλλαξε.
+REJECTED = [
+    ({"total": "abc"}, "ποσό με γράμματα"),
+    ({"total": "-50"}, "αρνητικό ποσό"),
+    ({"total": "1.2.3"}, "ποσό με δύο τελείες"),
+    ({"adults": "0"}, "μηδέν άτομα"),
+    ({"adults": "13"}, "13 άτομα (πάνω από το όριο)"),
+    ({"adults": "99"}, "99 άτομα (η φόρμα λέει max=12)"),
+    ({"adults": "abc"}, "άτομα με γράμματα"),
+    ({"adults": "-3"}, "αρνητικά άτομα"),
+]
+for override, label in REJECTED:
+    n_before = n_named("Δοκιμη")
+    n, page2 = add(override)
+    flash = flash_of(page2)
+    explained = bool(flash) and not any("Δημιουργήθηκε" in f for f in flash)
+    check(f"{label:38} → απορρίπτεται", n == n_before, f"(δημιουργήθηκαν {n - n_before})")
+    check(f"{label:38} → με μήνυμα", explained, f"(flash={flash})")
 
 print("\n=== Β5. Καμία εγγραφή-σκουπίδι από τα απορριφθέντα ===")
 check("καμία κράτηση «Δοκιμη» απέμεινε", n_named("Δοκιμη") == 0,
@@ -693,6 +711,72 @@ for p in ALL + ["/welcome/"]:
     meta = "noindex" in body.lower()
     head = "noindex" in (hdr.get("X-Robots-Tag", "") or "").lower()
     check(f"{p:26} → noindex", meta or head)
+
+print("\n=== Γ13. Cookie συνεδρίας: HttpOnly/SameSite πάντα, Secure πίσω από nginx ===")
+
+
+def raw_headers(path, extra=None):
+    """Ζητάει τη σελίδα με πρόσθετες κεφαλίδες και γυρίζει τα Set-Cookie."""
+    h = {"User-Agent": "audit"}
+    if extra:
+        h.update(extra)
+    r = urllib.request.Request(BASE + path, headers=h)
+    op2 = session()
+    try:
+        with op2.open(r, timeout=25) as f:
+            return f.headers.get_all("Set-Cookie") or []
+    except urllib.error.HTTPError as e:
+        return e.headers.get_all("Set-Cookie") or []
+
+
+def cookie_flags(path, extra=None):
+    """Ένωση των σημαιών όλων των Set-Cookie που επιστρέφει η σελίδα."""
+    joined = " ".join(raw_headers(path, extra)).lower()
+    return {
+        "httponly": "httponly" in joined,
+        "samesite": "samesite=lax" in joined,
+        "secure": "secure" in joined,
+        "set": "phpsessid" in joined,
+    }
+
+
+# 1) Χωρίς https: το cookie βγαίνει, με HttpOnly και SameSite, ΧΩΡΙΣ Secure
+#    (ένα Secure cookie σε απλό http δεν θα στελνόταν καθόλου — θα έσπαγε η σύνδεση).
+c = cookie_flags("/admin/")
+check("συνεδρία: το cookie ορίζεται", c["set"], f"({c})")
+check("συνεδρία: HttpOnly", c["httponly"], f"({c})")
+check("συνεδρία: SameSite=Lax", c["samesite"], f"({c})")
+check("συνεδρία: χωρίς https δεν μπαίνει Secure", not c["secure"], f"({c})")
+
+# 2) Πίσω από nginx: το TLS τερματίζεται πριν την PHP, οπότε το $_SERVER['HTTPS']
+#    λείπει και η μόνη ένδειξη είναι το X-Forwarded-Proto. Πρέπει να μπει Secure.
+c2 = cookie_flags("/admin/", {"X-Forwarded-Proto": "https"})
+check("συνεδρία: X-Forwarded-Proto=https → Secure", c2["secure"], f"({c2})")
+
+# 3) Ο πελάτης δεν μπορεί να ΧΑΛΑΡΩΣΕΙ την ασφάλεια με ψεύτικο header.
+c3 = cookie_flags("/admin/", {"X-Forwarded-Proto": "http"})
+check("συνεδρία: ψεύτικο «http» δεν χαλαρώνει τίποτα", not c3["secure"], f"({c3})")
+
+print("\n=== Γ14. /welcome/ έχει τις ίδιες κεφαλίδες με τις σελίδες επισκεπτών ===")
+st, body, hdr = get(session(), "/welcome/")
+cc = (hdr.get("Cache-Control", "") or "").lower()
+check("/welcome/ → X-Robots-Tag noindex",
+      "noindex" in (hdr.get("X-Robots-Tag", "") or "").lower(), f"({hdr.get('X-Robots-Tag')!r})")
+check("/welcome/ → Cache-Control no-store", "no-store" in cc, f"({cc!r})")
+check("/welcome/ → Referrer-Policy no-referrer",
+      "no-referrer" in (hdr.get("Referrer-Policy", "") or "").lower(),
+      f"({hdr.get('Referrer-Policy')!r})")
+
+# Η σελίδα κάθε επισκέπτη πρέπει να έχει τα ίδια — αλλιώς οι δύο σελίδες
+# του ίδιου φακέλου θα συμπεριφέρονταν διαφορετικά.
+_any = [g for g in guests_raw() if g.get("code")]
+if _any:
+    g0 = _any[0]
+    st, body, hdr = get(session(), f"/welcome/{g0['slug']}-{g0['code']}.php")
+    check("σελίδα επισκέπτη → X-Robots-Tag noindex",
+          "noindex" in (hdr.get("X-Robots-Tag", "") or "").lower())
+    check("σελίδα επισκέπτη → Cache-Control no-store",
+          "no-store" in (hdr.get("Cache-Control", "") or "").lower())
 
 # =============================================================== ΤΕΛΟΣ
 print("\n" + "=" * 70)

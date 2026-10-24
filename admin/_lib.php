@@ -16,16 +16,19 @@
 
 declare(strict_types=1);
 
+// Πρώτα το _captcha.php: ορίζει το request_is_https(), που χρειάζεται παρακάτω.
+require_once __DIR__ . '/_captcha.php';
+
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_set_cookie_params([
         'httponly' => true,
         'samesite' => 'Lax',
-        'secure'   => !empty($_SERVER['HTTPS']),
+        // Πίσω από nginx το $_SERVER['HTTPS'] μπορεί να λείπει· το request_is_https()
+        // κοιτάζει και το X-Forwarded-Proto (δες _captcha.php).
+        'secure'   => request_is_https(),
     ]);
     session_start();
 }
-
-require_once __DIR__ . '/_captcha.php';
 
 const ADMIN_DIR   = __DIR__;
 const CRED_FILE   = ADMIN_DIR . '/credentials.php';
@@ -1056,6 +1059,19 @@ function amount_norm($v): string {
 function amount_value($v): float {
     $n = amount_norm($v);
     return $n === '' ? 0.0 : (float)$n;
+}
+
+/** Άτομα: ακέραιος 1..12, ακριβώς ό,τι λέει η φόρμα (min="1" max="12").
+ *
+ *  Επιστρέφει null όταν η τιμή δεν είναι αποδεκτή, ώστε ο καλών να βγάλει μήνυμα
+ *  αντί να αποθηκεύσει σιωπηλά κάτι άλλο από αυτό που φαίνεται στη φόρμα.
+ *  Κενό = προεπιλογή 1, γιατί η φόρμα το στέλνει πάντα. */
+function adults_norm($v): ?int {
+    $s = trim((string)$v);
+    if ($s === '') return 1;
+    if (!preg_match('/^\d{1,2}$/', $s)) return null;
+    $n = (int)$s;
+    return ($n >= 1 && $n <= 12) ? $n : null;
 }
 
 /* ------------------------------------------------------------- guest records */

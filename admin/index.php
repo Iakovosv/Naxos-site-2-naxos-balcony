@@ -23,7 +23,9 @@ require_once __DIR__ . '/_captcha.php';
 session_set_cookie_params([
     'httponly' => true,
     'samesite' => 'Lax',
-    'secure'   => !empty($_SERVER['HTTPS']),
+    // Πίσω από nginx το $_SERVER['HTTPS'] μπορεί να λείπει· το request_is_https()
+    // κοιτάζει και το X-Forwarded-Proto (δες _captcha.php).
+    'secure'   => request_is_https(),
 ]);
 session_start();
 

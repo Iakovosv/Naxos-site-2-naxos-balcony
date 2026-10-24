@@ -21,6 +21,24 @@
 
 declare(strict_types=1);
 
+/** Είναι το αίτημα πάνω από https;
+ *
+ *  Ο server είναι nginx, που τερματίζει το TLS πριν φτάσει το αίτημα στην PHP.
+ *  Τότε το $_SERVER['HTTPS'] συχνά λείπει, και το cookie της συνεδρίας θα έβγαινε
+ *  χωρίς τη σημαία Secure — δηλαδή θα μπορούσε να σταλεί και πάνω από απλό http.
+ *
+ *  Η λογική είναι επίτηδες μονόδρομη: ο,τιδήποτε κι αν στείλει ο πελάτης μπορεί
+ *  μόνο να ΠΡΟΣΘΕΣΕΙ το Secure, ποτέ να το αφαιρέσει. Έτσι ένα ψεύτικο
+ *  X-Forwarded-Proto δεν χαλαρώνει τίποτα. */
+function request_is_https(): bool {
+    $https = strtolower((string)($_SERVER['HTTPS'] ?? ''));
+    if ($https !== '' && $https !== 'off' && $https !== '0') return true;
+    if ((int)($_SERVER['SERVER_PORT'] ?? 0) === 443) return true;
+    // Πίσω από proxy η τιμή μπορεί να είναι λίστα: «https, http».
+    $proto = strtolower(trim(explode(',', (string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''))[0]));
+    return $proto === 'https';
+}
+
 /** Νέα πράξη. Επιστρέφει το κείμενο της ερώτησης και ένα αναγνωριστικό. */
 function captcha_new(): array {
     $a = random_int(2, 9);

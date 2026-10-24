@@ -111,11 +111,12 @@ DirectoryIndex index.html index.php
 <FilesMatch "^\.(?!well-known)">
   Require all denied
 </FilesMatch>
-<FilesMatch "\.(md|bak|log|sql|sh|py)$">
+<FilesMatch "\.(md|bak|log|sql|sh|py|mjs)$">
   Require all denied
 </FilesMatch>
-# admin/credentials.php must never be fetchable, whatever else is allowed.
-<FilesMatch "^credentials\.php$">
+# credentials.php and every *-data.php (guest names, VAT, staff hashes) must never
+# be fetchable. The .php files execute and print nothing, so this is a second lock.
+<FilesMatch "^(credentials\.php|.*-data\.php|staff\.json)$">
   Require all denied
 </FilesMatch>
 # The weather API must stay reachable by the pages that call it.
@@ -148,12 +149,22 @@ DirectoryIndex index.html index.php
 #   add_header Referrer-Policy "strict-origin-when-cross-origin" always;
 #   add_header X-Frame-Options "SAMEORIGIN" always;
 #   add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
+#   # Ενεργοποίησέ το μόνο αφού βεβαιωθείς ότι όλα σερβίρονται από https:
+#   # add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+#
+#   # ---- Μην επιτρέψεις ΠΟΤΕ να κατέβουν αρχεία που δεν είναι σελίδες ----
+#   # Στο nginx το .htaccess δεν ισχύει, οπότε χωρίς αυτό τα *.md, τα tests/
+#   # και τα tools/ θα ήταν ΔΗΜΟΣΙΑ — και περιέχουν δοκιμαστικούς κωδικούς.
+#   location ~* /(tests|tools|preview)/                 { deny all; }
+#   location ~* \.(md|py|mjs|sh|sql|log|bak)$            { deny all; }
+#   location ~* ^/admin/(credentials\.php|.*-data\.php|\.login-attempts.*|staff\.json)$ { deny all; }
+#   location = /naxos-deploy.zip                        { deny all; }
+#
+#   # ---- noindex όπου χρειάζεται ----
+#   location ~* ^/(admin|welcome)/   { add_header X-Robots-Tag "noindex, nofollow, noarchive" always; }
 #
 #   # fonts are self-hosted, so no cross-origin font rule is needed:
 #   #   location ~* \.(woff2?)$ { expires 1y; add_header Access-Control-Allow-Origin "*"; }
-#   location = /admin/credentials.php { deny all; }
-#   location ~* ^/admin/            { add_header X-Robots-Tag "noindex, nofollow" always; }
-#
 #   location ~* \.(jpg|jpeg|png|webp|ico)$ { expires 1y; }
 #   location ~* \.(css|js)$                { expires 7d; }
 #   location ~* \.(html|xml)$              { expires -1; }

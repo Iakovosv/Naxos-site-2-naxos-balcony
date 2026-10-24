@@ -781,14 +781,16 @@ directly (verified: 0 bytes). Both paths are gitignored, as are `welcome/*.php` 
 (they embed surnames). Only `welcome/_view.php` is tracked.
 
 ### CRITICAL: local repo layout does NOT match the GitHub repo
-- **GitHub `main`**: files at the **repo ROOT** (`index.html`, `admin/`, `en/`, ...).
-- **Local `/workspace/project`**: the site lives in **`preview/`**, and the root holds
-  `preview/`, `tools/`, `*.bundle`, `*.patch`, docs.
+**SUPERSEDED — verified 2026-10-24.** The layout now matches: the site lives at the
+**repo root** in both `/workspace/project` and GitHub `main` (`index.html`, `admin/`,
+`en/`, ...). The old split (site under `preview/`) is gone; `preview/` now holds only
+`admin/`, `welcome/` and the built zip.
 
-So `git push` from `/workspace/project` would MOVE THE WHOLE SITE into `preview/` and
-break the deploy. Never push from there. Instead: clone the remote into a temp dir,
-copy only the changed files to their correct root-relative paths, commit, push.
-`WELCOME-SYSTEM.md` documents the system in Greek for the owner.
+Before pushing, still confirm with:
+```
+git ls-tree --name-only gh/main | head    # expect index.html, admin/, en/, ...
+```
+If `index.html` is NOT at the root, the old warning applies: do not push from here.
 
 ### Staff roles: least privilege, and one real leak that was found and fixed
 
@@ -935,5 +937,72 @@ Then drive it over HTTP. Traps that cost time:
     are three-line `require __DIR__ . '/<real>.php';` shims. They exist so each role
     has a memorable URL. Never copy the real page into them — a copy would drift and
     silently re-introduce the "identical login page" bug.
+
 - **`cleaning.php` prints no guest PII.** Assert on the *visible* text (strip
   `<script>`/`<style>` first) — a raw `'@' in html` test matches CSS `@media`.
+
+## 15. Session 5 — fixes from the four-link audit (2026-10-24)
+
+The audit (§0f in `STATUS.md`, 238 checks) left 5 findings. Four were ours and are
+fixed; the fifth is a hosting fact, not a bug.
+
+### 15.1 `request_is_https()` — session cookie behind a TLS-terminating proxy
+
+The host is nginx, so PHP sees no `$_SERVER['HTTPS']` and the session cookie was
+issued **without** `Secure`. The helper lives in `admin/_captcha.php` — the only file
+both login systems (`_lib.php` and `index.php`) already share — and is used by both.
+
+**Rule: the check is one-way.** It may only ADD `Secure`, never remove it:
+
+```php
+$https = strtolower((string)($_SERVER['HTTPS'] ?? ''));
+if ($https !== '' && $https !== 'off' && $https !== '0') return true;
+if ((int)($_SERVER['SERVER_PORT'] ?? 0) === 443) return true;
+$proto = strtolower(trim(explode(',', (string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? ''))[0]));
+return $proto === 'https';
+```
+
+A client can forge `X-Forwarded-Proto: http`, but that only *fails* to add `Secure` —
+it can never strip a flag set by the other two checks. Do not "simplify" this into
+trusting the header alone.
+
+Also: `_lib.php` now `require_once`s `_captcha.php` **before** the session block. The
+include order matters — the function must exist before `session_set_cookie_params()`
+calls it.
+
+### 15.2 Every page in `welcome/` must carry the same three headers
+
+`welcome/index.php` (the graceful "link not active" page) was the only file in the
+folder missing `X-Robots-Tag`, `Cache-Control: no-store` and `Referrer-Policy`. Any
+new page added to `welcome/` needs all three, matching `_view.php`. Tested in Γ14.
+
+### 15.3 `adults_norm()` — the server must agree with the form
+
+The form says `min="1" max="12"` but the server stored `99`. `adults_norm()` returns
+`null` outside 1..12 (empty → 1, since the form always sends it), and both `add` and
+`edit` fail with a message. Do not go back to `max(1, (int)$x)`.
+
+### 15.4 A bad amount must be reported, not silently dropped
+
+`amount_norm()` returns `''` for garbage. The caller now distinguishes "empty field"
+(optional, fine) from "has a value but it is not a number" (error). This is why
+`guests.php` keeps both `$totalRaw` and `$total`.
+
+In `edit`, an **absent** key means "leave unchanged" (`array_key_exists`), so a
+partial form cannot wipe a stored value.
+
+### 15.5 Test expectations were the old behaviour
+
+`test_audit.py` §Β4 asserted the lenient rules (`abc` → `''`, `99` → `99`). Rewritten:
+§Β4 now covers accepted values, §Β4β the rejected ones. **When behaviour changes on
+purpose, update the assertion — do not weaken it back.** Γ13/Γ14 were added and send
+real `X-Forwarded-Proto` headers, so the cookie fix is covered by an actual HTTP test.
+
+### 15.6 The nginx snippet is now safe to hand over
+
+`.htaccess` is inert on this host. The commented `nginx` block at the end of the file
+now includes `deny all` for `tests/`, `tools/`, `preview/`, `*.md`, `*.py`, `*.mjs`,
+`credentials.php`, `*-data.php`, `staff.json`, plus `noindex` on `admin/` and
+`welcome/`. The Apache `FilesMatch` denies were widened to match (added `mjs`,
+`*-data.php`, `staff.json`) so the two configs have no gap. **Keep them in step.**
+

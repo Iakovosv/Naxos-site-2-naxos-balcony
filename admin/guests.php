@@ -44,10 +44,12 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $idDoc    = trim((string)($_POST['idDoc'] ?? ''));
         $phone    = trim((string)($_POST['phone'] ?? ''));
         $email    = trim((string)($_POST['email'] ?? ''));
-        $adults   = max(1, (int)($_POST['adults'] ?? 2));
+        $adultsRaw = trim((string)($_POST['adults'] ?? ''));
+        $adults   = adults_norm($adultsRaw);
         $notes    = trim((string)($_POST['notes'] ?? ''));
         // Ποσό και στοιχεία διεύθυνσης — τα βλέπει ο λογιστής.
-        $total    = amount_norm($_POST['total'] ?? '');
+        $totalRaw = trim((string)($_POST['total'] ?? ''));
+        $total    = amount_norm($totalRaw);
         $postal   = trim((string)($_POST['postalCode'] ?? ''));
         $country  = trim((string)($_POST['country'] ?? ''));
         // Ο κωδικός WiFi έχει έτοιμη τιμή· ο κωδικός εισόδου μένει κενός μέχρι
@@ -67,6 +69,8 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         elseif ($at !== '' && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $at)) $err = 'Λάθος ημερομηνία λήξης.';
         elseif ($af !== '' && $at !== '' && $at < $af)       $err = 'Η λήξη του link είναι πριν την ενεργοποίηση.';
         elseif ($vat !== '' && !preg_match('/^\d{9}$/', $vat)) $err = 'Το ΑΦΜ έχει 9 ψηφία.';
+        elseif ($adults === null)                            $err = 'Τα άτομα πρέπει να είναι από 1 έως 12.';
+        elseif ($totalRaw !== '' && $total === '')           $err = 'Το ποσό δεν είναι αριθμός.';
 
         if ($err !== null) {
             fail($err);
@@ -128,12 +132,21 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $to    = (string)($_POST['stayTo'] ?? $g['stayTo']);
         $room  = (string)($_POST['room'] ?? $g['room']);
 
+        // Αν το πεδίο λείπει εντελώς από το αίτημα, κρατάμε την υπάρχουσα τιμή —
+        // μόνο όταν στέλνεται το ελέγχουμε, ώστε μια μερική φόρμα να μην τη μηδενίσει.
+        $adultsRaw = array_key_exists('adults', $_POST) ? trim((string)$_POST['adults']) : null;
+        $adults    = $adultsRaw === null ? (int)($g['adults'] ?? 1) : adults_norm($adultsRaw);
+        $totalRaw  = array_key_exists('total', $_POST) ? trim((string)$_POST['total']) : null;
+        $total     = $totalRaw === null ? (string)($g['total'] ?? '') : amount_norm($totalRaw);
+
         $err = null;
         if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $from)) $err = 'Λάθος ημερομηνία άφιξης.';
         elseif (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $to)) $err = 'Λάθος ημερομηνία αναχώρησης.';
         elseif ($to <= $from) $err = 'Η αναχώρηση πρέπει να είναι μετά την άφιξη.';
         elseif (!isset(ROOMS_G[$room])) $err = 'Λάθος δωμάτιο.';
         elseif (($v = trim((string)($_POST['vat'] ?? ''))) !== '' && !preg_match('/^\d{9}$/', $v)) $err = 'Το ΑΦΜ έχει 9 ψηφία.';
+        elseif ($adults === null) $err = 'Τα άτομα πρέπει να είναι από 1 έως 12.';
+        elseif ($totalRaw !== null && $totalRaw !== '' && $total === '') $err = 'Το ποσό δεν είναι αριθμός.';
 
         if ($err !== null) { fail($err, 'guest.php?id=' . urlencode($id)); }
 
@@ -149,9 +162,9 @@ if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST') {
         $g['idDoc']   = trim((string)($_POST['idDoc'] ?? ''));
         $g['phone']   = trim((string)($_POST['phone'] ?? ''));
         $g['email']   = trim((string)($_POST['email'] ?? ''));
-        $g['adults']  = max(1, (int)($_POST['adults'] ?? 2));
+        $g['adults']  = $adults;
         $g['notes']   = trim((string)($_POST['notes'] ?? ''));
-        $g['total']      = amount_norm($_POST['total'] ?? '');
+        $g['total']      = $total;
         $g['postalCode'] = trim((string)($_POST['postalCode'] ?? ''));
         $g['country']    = trim((string)($_POST['country'] ?? ''));
         // Κενό = ακολούθησε τον προεπιλεγμένο (δες guest_wifi() στο _lib.php).
